@@ -9,9 +9,26 @@
         </encoder>
     </appender>
 
+    <appender name="IDP_PROCESS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${idp.home:-.}/logs/idp-process.log</File>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${idp.home:-.}/logs/idp-process-%d{yyyy-MM-dd}.log</FileNamePattern>
+        </rollingPolicy>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
+            <Pattern>%date{HH:mm:ss.SSS} - %level [%logger:%line] - %msg%n</Pattern>
+        </encoder>
+    </appender>
+
     <root>
-        <level value="warn" />
+        <level value="WARN" />
         <appender-ref ref="STDOUT" />
     </root>
-    
+
+    <root level="INFO">
+        <appender-ref ref="IDP_PROCESS" />
+    </root>
+
 </configuration>
