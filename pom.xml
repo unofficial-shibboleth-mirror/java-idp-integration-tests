@@ -10,9 +10,9 @@
         <version>TRUNK-SNAPSHOT</version>
     </parent>
 
-    <name>java-idp-integration-tests</name>
+    <name>idp-integration-tests</name>
     <groupId>net.shibboleth.idp</groupId>
-    <artifactId>java-idp-integration-tests</artifactId>
+    <artifactId>idp-integration-tests</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
