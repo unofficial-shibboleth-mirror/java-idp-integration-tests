@@ -19,7 +19,9 @@
         <!-- The idp.home directory is where idp-conf and idp.war are copied to. -->
         <idp.home>idp.home</idp.home>
         <idp.version>3.0-SNAPSHOT</idp.version>
+        <opensaml.version>3.0-SNAPSHOT</opensaml.version>
         <java-support.version>3.0-SNAPSHOT</java-support.version>
+        <spring-extensions.version>1.2-SNAPSHOT</spring-extensions.version>
         <jetty9-data.version>1.0-SNAPSHOT</jetty9-data.version>
         <selenium.version>2.41.0</selenium.version>
         <svn.relative.location>java-idp-integration-tests</svn.relative.location>
@@ -87,6 +89,18 @@
         </dependency>
 
         <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-profile-impl</artifactId>
+            <version>${opensaml.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.shibboleth.ext</groupId>
+            <artifactId>spring-extensions</artifactId>
+            <version>${spring-extensions.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.unboundid</groupId>
             <artifactId>unboundid-ldapsdk</artifactId>
