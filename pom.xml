@@ -17,6 +17,7 @@
 
     <properties>
         <test-distributions.directory>test-distributions</test-distributions.directory>
+        <jetty.version>9.1.5.v20140505</jetty.version>
         <idp.version>3.0-SNAPSHOT</idp.version>
         <opensaml.version>3.0-SNAPSHOT</opensaml.version>
         <java-support.version>3.0-SNAPSHOT</java-support.version>
