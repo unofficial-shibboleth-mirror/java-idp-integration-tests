@@ -17,26 +17,32 @@
 
 package net.shibboleth.idp.test;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
+import net.shibboleth.idp.test.flows.AbstractFlowTest;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
+import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
+import net.shibboleth.utilities.java.support.xml.ParserPool;
 
+import org.opensaml.core.config.InitializationException;
+import org.opensaml.core.config.InitializationService;
+import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
+import org.opensaml.core.xml.io.UnmarshallerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.util.Assert;
+import org.springframework.core.io.ClassPathResource;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
-import com.unboundid.ldap.listener.InMemoryDirectoryServer;
-import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
-import com.unboundid.ldap.listener.InMemoryListenerConfig;
 import com.unboundid.ldap.sdk.LDAPException;
 
 /**
@@ -44,143 +50,103 @@ import com.unboundid.ldap.sdk.LDAPException;
  */
 public abstract class BaseIntegrationTest {
 
-    /** The IdP XML security manager property key. */
+    /** Directory in which distributions will be unpackaged. */
+    @Nonnull public final static String TEST_DISTRIBUTIONS_DIRECTORY = "test-distributions";
+    
+    /** IdP XML security manager property key. */
     @Nonnull public final static String IDP_XML_SECURITY_MANAGER_PROP_NAME = "idp.xml.securityManager";
 
-    /** The IdP XML security manager property value for this test. */
+    /** IdP XML security manager property value for this test. */
     @Nonnull public final static String IDP_XML_SECURITY_MANAGER_PROP_VALUE = "org.apache.xerces.util.SecurityManager";
 
-    /** Path to LDIF file to be imported into directory server. */
-    @Nonnull public final static String LDIF_FILE = "src/test/resources/test/ldap.ldif";
-
-    /** Spring application context in which Jetty is run. */
-    @NonnullAfterInit protected GenericXmlApplicationContext applicationContext;
+    /** IdP XML security manager value before and after this test. */
+    @NonnullAfterInit protected String idpXMLSecurityManager;
 
     /** In-memory directory server. */
-    @NonnullAfterInit protected InMemoryDirectoryServer directoryServer;
+    @NonnullAfterInit protected InMemoryDirectory directoryServer;
 
-    /** The IdP XML security manager value before and after this test. */
-    @NonnullAfterInit protected String idpXMLSecurityManager;
+    /** Jetty server process. */
+    @NonnullAfterInit protected JettyServerProcess server;
+
+    /** Path to idp.home. */
+    @NonnullAfterInit protected Path pathToIdPHome;
+
+    /** Path to jetty.base. */
+    @NonnullAfterInit protected Path pathToJettyBase;
+
+    /** Path to jetty.home. */
+    @NonnullAfterInit protected Path pathToJettyHome;
+
+    /** Parser pool */
+    @NonnullAfterInit protected ParserPool parserPool;
+
+    /** XMLObject unmarshaller factory */
+    @NonnullAfterInit protected UnmarshallerFactory unmarshallerFactory;
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(BaseIntegrationTest.class);
 
     /**
-     * Set the 'idp.home' system property as determined by {@link #pathToIdPHome()}.
+     * Initialize XMLObject support classes.
      * 
-     * @throws IllegalArgumentException if the path to idp.home is {@code null}
+     * @throws InitializationException
      */
-    @BeforeClass public static void setupPathToIdPHome() {
-        Path pathToIdPHome = pathToIdPHome();
-        Assert.notNull(pathToIdPHome, "Path to idp.home not found.");
-        System.setProperty("idp.home", pathToIdPHome.toFile().getAbsolutePath());
+    @BeforeClass public void initializeXMLbjectSupport() throws InitializationException {
+        InitializationService.initialize();
+        parserPool = XMLObjectProviderRegistrySupport.getParserPool();
+        unmarshallerFactory = XMLObjectProviderRegistrySupport.getUnmarshallerFactory();
+    }
+    
+    @BeforeClass public void initLogging() {
+        System.err.println("change log level");
+        LoggerFactory.getLogger("org.eclipse.jetty");
+        
     }
 
     /**
-     * Get the path to idp.home. First, look for the 'idp.home' directory created by Maven. Second, look for the
-     * java-identity-provider project.
-     * 
-     * @return the path to idp.home or null if not found
+     * Setup paths to the IdP and Jetty.
      */
-    @Nullable public static Path pathToIdPHome() {
+    @BeforeClass public void setupPaths() {
 
-        Path pathToIdPHomeMaven = pathToIdPHomeMaven();
-        if (pathToIdPHomeMaven.toFile().exists()) {
-            return pathToIdPHomeMaven;
+        // Path to the project build directory.
+        final Path buildPath = Paths.get(TEST_DISTRIBUTIONS_DIRECTORY);
+        log.debug("Path to build directory '{}'", buildPath.toAbsolutePath());
+        Assert.assertTrue(buildPath.toAbsolutePath().toFile().exists(), "Path to build directory '{}' not found");
+
+        // Path to Jetty distribution
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*jetty-distribution-*")) {
+            for (Path entry : stream) {
+                pathToJettyHome = entry;
+                break;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+        log.debug("Path to jetty.home '{}'", pathToJettyHome.toAbsolutePath());
+        Assert.assertNotNull(pathToJettyHome, "Path to jetty.home not found");
+        Assert.assertTrue(pathToJettyHome.toAbsolutePath().toFile().exists(), "Path to jetty.home '{}' not found");
 
-        Path pathToIdPHomeEclipse = pathToIdPHomeEclipse();
-        if (pathToIdPHomeEclipse.toFile().exists()) {
-            return pathToIdPHomeEclipse;
+        // Path to idp.home
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*idp-distribution-*")) {
+            for (Path entry : stream) {
+                pathToIdPHome = entry;
+                break;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+        log.debug("Path to idp.home '{}'", pathToIdPHome.toAbsolutePath());
+        Assert.assertNotNull(pathToIdPHome, "Path to idp.home not found");
+        Assert.assertTrue(pathToIdPHome.toAbsolutePath().toFile().exists(), "Path to idp.home '{}' not found");
 
-        return null;
-    }
+        // Set idp.home system property
+        System.setProperty("idp.home", pathToIdPHome.toAbsolutePath().toString());
 
-    /**
-     * Get the path to idp.home in the java-identity-provider project.
-     * 
-     * @return path to idp.home
-     */
-    @Nonnull public static Path pathToIdPHomeEclipse() {
-        // The parent path of the current directory
-        Path parentPath = Paths.get("").toAbsolutePath().getParent();
-
-        // Path to java-identity-provider
-        Path pathToIdP = parentPath.resolve(Paths.get("java-identity-provider"));
-
-        // Path to idp-conf/src/main/resources
-        Path pathToIdPHome = pathToIdP.resolve(Paths.get("idp-conf", "src", "main", "resources"));
-
-        return pathToIdPHome;
-    }
-
-    /**
-     * Get the path to idp.home created by Maven.
-     * 
-     * @return path to idp.home
-     */
-    @Nonnull public static Path pathToIdPHomeMaven() {
-        return Paths.get("idp.home").toAbsolutePath();
-    }
-
-    /**
-     * Set the 'idp.war.path' system property as determined by {@link #pathToIdPWar()}.
-     * 
-     * @throws IllegalArgumentException if the path to idp.war.path is {@code null}
-     */
-    @BeforeClass public static void setupPathToIdPWar() {
-        Path pathToIdPWar = pathToIdPWar();
-        Assert.notNull(pathToIdPWar, "Path to idp.war not found.");
-        System.setProperty("idp.war.path", pathToIdPWar.toFile().getAbsolutePath());
-    }
-
-    /**
-     * Get the path to idp.war. First, look for the 'idp.home' directory created by Maven. Second, look for the
-     * java-identity-provider project.
-     * 
-     * @return the path to idp.war or null if not found
-     */
-    @Nullable public static Path pathToIdPWar() {
-
-        Path pathToIdPWarMaven = pathToIdPWarMaven();
-        if (pathToIdPWarMaven.toFile().exists()) {
-            return pathToIdPWarMaven;
-        }
-
-        Path pathToIdPWarEclipse = pathToIdPWarEclipse();
-        if (pathToIdPWarEclipse.toFile().exists()) {
-            return pathToIdPWarEclipse;
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the path to idp.war in the java-identity-provider project.
-     * 
-     * @return path to idp.war
-     */
-    @Nonnull public static Path pathToIdPWarEclipse() {
-        // The parent path of the current directory
-        Path parentPath = Paths.get("").toAbsolutePath().getParent();
-
-        // Path to java-identity-provider
-        Path pathToIdP = parentPath.resolve(Paths.get("java-identity-provider"));
-
-        // Path to idp-war/src/main/webapp
-        Path pathToIdPWar = pathToIdP.resolve(Paths.get("idp-war", "src", "main", "webapp"));
-
-        return pathToIdPWar;
-    }
-
-    /**
-     * Get the path to idp.war created by Maven.
-     * 
-     * @return the path to idp.war
-     */
-    @Nonnull public static Path pathToIdPWarMaven() {
-        return Paths.get("idp.home", "war", "idp.war").toAbsolutePath();
+        // Path to jetty.base
+        pathToJettyBase = pathToIdPHome.resolve(Paths.get("jetty-base"));
+        log.debug("Path to jetty.base '{}'", pathToJettyBase.toAbsolutePath());
+        Assert.assertNotNull(pathToJettyBase, "Path to jetty.base not found");
+        Assert.assertTrue(pathToJettyBase.toAbsolutePath().toFile().exists(), "Path to jetty.base '{}' not found");
     }
 
     /**
@@ -202,39 +168,45 @@ public abstract class BaseIntegrationTest {
     }
 
     /**
-     * Starts an UnboundID in-memory directory server. Leverages LDIF found at {@value #LDIF_FILE}.
+     * Starts an UnboundID in-memory directory server. Leverages LDIF found at {@value AbstractFlowTest#LDIF_FILE}.
      * 
      * @throws LDAPException if the in-memory directory server cannot be created
+     * @throws IOException if the LDIF resource cannot be imported
      */
-    @BeforeMethod public void startDirectoryServer() throws LDAPException {
-        InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig("dc=example,dc=org", "ou=system");
-        config.setListenerConfigs(InMemoryListenerConfig.createLDAPConfig("default", 10389));
-        config.addAdditionalBindCredentials("cn=Directory Manager", "password");
-        directoryServer = new InMemoryDirectoryServer(config);
-        directoryServer.importFromLDIF(true, LDIF_FILE);
-        directoryServer.startListening();
+    @BeforeMethod(enabled = true) public void startDirectoryServer() throws LDAPException, IOException {
+        log.debug("starting directory server");
+        directoryServer = new InMemoryDirectory(new ClassPathResource(AbstractFlowTest.LDIF_FILE));
+        directoryServer.start();
     }
 
     /**
      * Shutdown the in-memory directory server.
      */
     @AfterMethod public void stopDirectoryServer() {
-        directoryServer.shutDown(true);
+        if (directoryServer != null) {
+            directoryServer.stop();
+        }
     }
 
     /**
-     * Start the Jetty server via Spring.
+     * Start the Jetty server.
+     * 
+     * @throws ComponentInitializationException if the server cannot be initialized
      */
-    @BeforeMethod(dependsOnMethods = {"startDirectoryServer"}) public void startJettyServer() {
-        applicationContext = new GenericXmlApplicationContext("/conf/idp-server.xml");
+    @BeforeMethod(dependsOnMethods = {"startDirectoryServer"}) public void startJettyServer()
+            throws ComponentInitializationException {
+        server = new JettyServerProcess(pathToJettyBase, pathToJettyHome);
+        server.initialize();
+        server.start();
     }
 
     /**
      * Stop the Jetty server.
      */
     @AfterMethod public void stopJettyServer() {
-        if (applicationContext != null) {
-            applicationContext.stop();
+        if (server != null) {
+            server.stop();
         }
     }
+
 }

@@ -23,7 +23,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
- * Status servlet test.
+ * Status test.
  */
 public class StatusTest extends BaseIntegrationTest {
 

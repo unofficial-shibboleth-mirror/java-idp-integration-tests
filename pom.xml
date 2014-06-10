@@ -16,14 +16,15 @@
     <packaging>jar</packaging>
 
     <properties>
-        <!-- The idp.home directory is where idp-conf and idp.war are copied to. -->
-        <idp.home>idp.home</idp.home>
+        <test-distributions.directory>test-distributions</test-distributions.directory>
+        <jetty.version>9.1.5.v20140505</jetty.version>
         <idp.version>3.0-SNAPSHOT</idp.version>
         <opensaml.version>3.0-SNAPSHOT</opensaml.version>
         <java-support.version>3.0-SNAPSHOT</java-support.version>
         <spring-extensions.version>1.2-SNAPSHOT</spring-extensions.version>
         <jetty9-data.version>1.0-SNAPSHOT</jetty9-data.version>
         <selenium.version>2.41.0</selenium.version>
+        <testbed.version>0.1.0-SNAPSHOT</testbed.version>
         <svn.relative.location>java-idp-integration-tests</svn.relative.location>
     </properties>
 
@@ -47,80 +48,31 @@
     <dependencies>
         <!-- Compile Dependencies -->
         <dependency>
-            <groupId>${spring.groupId}</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.shibboleth.utilities</groupId>
-            <artifactId>java-support</artifactId>
-            <version>${java-support.version}</version>
-        </dependency>
-
-        <!-- Provided Dependencies -->
-
-        <!-- Runtime Dependencies -->
-        <dependency>
             <groupId>net.shibboleth.idp</groupId>
             <artifactId>idp-conf</artifactId>
             <version>${idp.version}</version>
-            <scope>runtime</scope>
+            <type>test-jar</type>
         </dependency>
+
+        <!-- Provided Dependencies -->
         <dependency>
-            <groupId>net.shibboleth.idp</groupId>
-            <artifactId>idp-war</artifactId>
-            <version>${idp.version}</version>
-            <!-- Type is 'pom' and not 'war' to include transitive dependencies when run in Eclipse. -->
-            <type>pom</type>
-            <scope>runtime</scope>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>net.shibboleth.utilities.jetty9</groupId>
-            <artifactId>jetty9-dta-ssl</artifactId>
-            <version>${jetty9-data.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>${jetty.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-webapp</artifactId>
-            <version>${jetty.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-jsp</artifactId>
-            <version>${jetty.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${spring.groupId}</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>${spring.version}</version>
-            <scope>runtime</scope>
-        </dependency>
+
+        <!-- Runtime Dependencies -->
 
         <!-- Test Dependencies -->
         <dependency>
-            <groupId>org.opensaml</groupId>
-            <artifactId>opensaml-profile-impl</artifactId>
-            <version>${opensaml.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.shibboleth.ext</groupId>
-            <artifactId>spring-extensions</artifactId>
-            <version>${spring-extensions.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.unboundid</groupId>
             <artifactId>unboundid-ldapsdk</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${spring.groupId}</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -162,15 +114,16 @@
         <!-- Managed Dependencies -->
     </dependencies>
 
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
-                    <!-- Unpack idp-conf dependency to idp.home. -->
+                    <!-- Unpack idp-distribution to test-distributions directory. -->
                     <execution>
-                        <id>unpack</id>
+                        <id>unpack-idp-distribution</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>unpack</goal>
@@ -179,18 +132,36 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp</groupId>
-                                    <artifactId>idp-conf</artifactId>
+                                    <artifactId>idp-distribution</artifactId>
                                     <version>${idp.version}</version>
-                                    <type>jar</type>
-                                    <excludes>META-INF/**</excludes>
+                                    <type>tar.gz</type>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${idp.home}</outputDirectory>
+                            <outputDirectory>${test-distributions.directory}</outputDirectory>
                         </configuration>
                     </execution>
-                    <!-- Copy idp.war to idp.home/war. -->
+                    <!-- Unpack jetty-distribution to test-distributions directory. -->
                     <execution>
-                        <id>copy</id>
+                        <id>unpack-jetty-distribution</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.eclipse.jetty</groupId>
+                                    <artifactId>jetty-distribution</artifactId>
+                                    <version>${jetty.version}</version>
+                                    <type>tar.gz</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${test-distributions.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <!-- Copy testbed war to IdP distribution directory. -->
+                    <execution>
+                        <id>copy-testbed-war</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>copy</goal>
@@ -199,14 +170,34 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp</groupId>
-                                    <artifactId>idp-war</artifactId>
-                                    <version>${idp.version}</version>
+                                    <artifactId>idp-testbed</artifactId>
+                                    <version>${testbed.version}</version>
                                     <type>war</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${idp.home}/war/</outputDirectory>
-                                    <destFileName>idp.war</destFileName>
+                                    <destFileName>idp-testbed.war</destFileName>
                                 </artifactItem>
                             </artifactItems>
+                            <outputDirectory>${test-distributions.directory}/idp-distribution-${idp.version}/war/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <!-- Copy idp-testbed context deployment descriptor. -->
+                    <execution>
+                        <id>copy-testbed-deployment-descriptor</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/test/webapps</directory>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${test-distributions.directory}/idp-distribution-${idp.version}/jetty-base/webapps/</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -214,7 +205,7 @@
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <executions>
-                    <!-- Delete idp.home during initialize. -->
+                    <!-- Delete test-distributions.directory during initialize. -->
                     <execution>
                         <id>clean-initialize</id>
                         <phase>initialize</phase>
@@ -222,7 +213,7 @@
                             <goal>clean</goal>
                         </goals>
                     </execution>
-                    <!-- Delete idp.home after tests. -->
+                    <!-- Delete test-distributions.directory after tests. -->
                     <execution>
                         <id>clean-post-integration-test</id>
                         <phase>post-integration-test</phase>
@@ -234,7 +225,7 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${idp.home}</directory>
+                            <directory>${test-distributions.directory}</directory>
                         </fileset>
                     </filesets>
                 </configuration>
@@ -258,11 +249,10 @@
                                         <goals>
                                             <goal>unpack</goal>
                                             <goal>copy</goal>
-                                            <goal>clean</goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <execute />
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -286,6 +276,5 @@
         </pluginManagement>
 
     </build>
-
 
 </project>
