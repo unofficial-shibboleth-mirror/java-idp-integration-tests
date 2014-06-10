@@ -146,13 +146,14 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
     // TODO manually set log level to at least INFO ?
     public void waitForJettyServerToStart() throws IOException {
         log.debug("Waiting for Jetty server to start ...");
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        final Pattern pattern = Pattern.compile(startedRegex);
-        String line = "";
-        while ((line = reader.readLine()) != null) {
-            log.trace("Jetty log matches '{}' line '{}", pattern.matcher(line).find(), line);
-            if (pattern.matcher(line).find()) {
-                break;
+        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            final Pattern pattern = Pattern.compile(startedRegex);
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+                log.trace("Jetty log matches '{}' line '{}", pattern.matcher(line).find(), line);
+                if (pattern.matcher(line).find()) {
+                    break;
+                }
             }
         }
         isRunning = true;
