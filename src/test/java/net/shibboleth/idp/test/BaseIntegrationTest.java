@@ -96,12 +96,6 @@ public abstract class BaseIntegrationTest {
         parserPool = XMLObjectProviderRegistrySupport.getParserPool();
         unmarshallerFactory = XMLObjectProviderRegistrySupport.getUnmarshallerFactory();
     }
-    
-    @BeforeClass public void initLogging() {
-        System.err.println("change log level");
-        LoggerFactory.getLogger("org.eclipse.jetty");
-        
-    }
 
     /**
      * Setup paths to the IdP and Jetty.
