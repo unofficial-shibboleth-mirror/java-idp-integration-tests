@@ -18,4 +18,4 @@
 # The contents of the svn:ignoreproperty on the branch root.
 /test-output
 /target
-/idp.home
+/test-distributions
