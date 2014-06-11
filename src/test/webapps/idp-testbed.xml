@@ -5,7 +5,7 @@
 <!-- Configure the Shibboleth Testbed webapp                             -->
 <!-- =============================================================== -->
 <Configure class="org.eclipse.jetty.webapp.WebAppContext">
-  <Set name="war"><SystemProperty name="idp.home" />/war/idp-testbed.war</Set>
+  <Set name="war">../war/idp-testbed.war</Set>
   <Set name="contextPath">/</Set>
   <Set name="extractWAR">false</Set>
   <Set name="copyWebDir">false</Set>
