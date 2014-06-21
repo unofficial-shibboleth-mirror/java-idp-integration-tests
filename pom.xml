@@ -61,6 +61,23 @@
         </dependency>
 
         <!-- Runtime Dependencies -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-distribution</artifactId>
+            <version>${jetty.version}</version>
+            <scope>runtime</scope>
+            <type>zip</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>test-jetty-webapp</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>test-proxy-webapp</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>
@@ -133,7 +150,7 @@
                                     <groupId>net.shibboleth.idp</groupId>
                                     <artifactId>idp-distribution</artifactId>
                                     <version>${idp.version}</version>
-                                    <type>tar.gz</type>
+                                    <type>zip</type>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${test-distributions.directory}</outputDirectory>
@@ -152,7 +169,7 @@
                                     <groupId>org.eclipse.jetty</groupId>
                                     <artifactId>jetty-distribution</artifactId>
                                     <version>${jetty.version}</version>
-                                    <type>tar.gz</type>
+                                    <type>zip</type>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${test-distributions.directory}</outputDirectory>
