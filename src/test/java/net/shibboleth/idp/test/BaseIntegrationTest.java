@@ -25,7 +25,6 @@ import java.nio.file.Paths;
 
 import javax.annotation.Nonnull;
 
-import net.shibboleth.idp.test.flows.AbstractFlowTest;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
@@ -36,14 +35,11 @@ import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.io.UnmarshallerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
-
-import com.unboundid.ldap.sdk.LDAPException;
 
 /**
  * Abstract integration test which starts a Jetty server and an in-memory directory server.
@@ -61,9 +57,6 @@ public abstract class BaseIntegrationTest {
 
     /** IdP XML security manager value before and after this test. */
     @NonnullAfterInit protected String idpXMLSecurityManager;
-
-    /** In-memory directory server. */
-    @NonnullAfterInit protected InMemoryDirectory directoryServer;
 
     /** Jetty server process. */
     @NonnullAfterInit protected JettyServerProcess server;
@@ -162,32 +155,11 @@ public abstract class BaseIntegrationTest {
     }
 
     /**
-     * Starts an UnboundID in-memory directory server. Leverages LDIF found at {@value AbstractFlowTest#LDIF_FILE}.
-     * 
-     * @throws LDAPException if the in-memory directory server cannot be created
-     * @throws IOException if the LDIF resource cannot be imported
-     */
-    @BeforeMethod(enabled = true) public void startDirectoryServer() throws LDAPException, IOException {
-        log.debug("starting directory server");
-        directoryServer = new InMemoryDirectory(new ClassPathResource(AbstractFlowTest.LDIF_FILE));
-        directoryServer.start();
-    }
-
-    /**
-     * Shutdown the in-memory directory server.
-     */
-    @AfterMethod public void stopDirectoryServer() {
-        if (directoryServer != null) {
-            directoryServer.stop();
-        }
-    }
-
-    /**
      * Start the Jetty server.
      * 
      * @throws ComponentInitializationException if the server cannot be initialized
      */
-    @BeforeMethod(dependsOnMethods = {"startDirectoryServer"}) public void startJettyServer()
+    @BeforeMethod public void startJettyServer()
             throws ComponentInitializationException {
         server = new JettyServerProcess(pathToJettyBase, pathToJettyHome);
         server.initialize();
