@@ -70,8 +70,8 @@ public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1Integration
             }
         });
 
-        final WebElement username = driver.findElement(By.name("username"));
-        final WebElement password = driver.findElement(By.name("password"));
+        final WebElement username = driver.findElement(By.name("j_username"));
+        final WebElement password = driver.findElement(By.name("j_password"));
         final WebElement submit = driver.findElement(By.name("_eventId_proceed"));
 
         username.sendKeys("jdoe");
