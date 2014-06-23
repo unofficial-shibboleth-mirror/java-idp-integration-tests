@@ -16,7 +16,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <test-distributions.directory>test-distributions</test-distributions.directory>
+        <test-distributions.directory>${basedir}/test-distributions</test-distributions.directory>
         <idp.version>3.0-SNAPSHOT</idp.version>
         <opensaml.version>3.0-SNAPSHOT</opensaml.version>
         <java-support.version>3.0-SNAPSHOT</java-support.version>
@@ -239,9 +239,13 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
                     <filesets>
                         <fileset>
                             <directory>${test-distributions.directory}</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.build.directory}/dependency-maven-plugin-markers</directory>
                         </fileset>
                     </filesets>
                 </configuration>
