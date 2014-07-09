@@ -156,6 +156,26 @@
                             <outputDirectory>${test-distributions.directory}</outputDirectory>
                         </configuration>
                     </execution>
+                    <!-- Unpack test credentials from idp-conf test jar. -->
+                    <execution>
+                        <id>unpack-idp-conf-test-credentials</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>net.shibboleth.idp</groupId>
+                                    <artifactId>idp-conf</artifactId>
+                                    <version>${idp.version}</version>
+                                    <type>test-jar</type>
+                                    <includes>**/creds/*</includes>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${test-distributions.directory}/idp-distribution-${idp.version}</outputDirectory>
+                        </configuration>
+                    </execution>
                     <!-- Unpack jetty-distribution to test-distributions directory. -->
                     <execution>
                         <id>unpack-jetty-distribution</id>
