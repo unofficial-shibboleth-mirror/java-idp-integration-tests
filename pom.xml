@@ -212,7 +212,7 @@
                                     <destFileName>idp-testbed.war</destFileName>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/idp-distribution-${idp.version}/war/</outputDirectory>
+                            <outputDirectory>${test-distributions.directory}/idp-distribution-${idp.version}/testbed-war/</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
