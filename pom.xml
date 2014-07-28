@@ -16,14 +16,10 @@
     <packaging>jar</packaging>
 
     <properties>
-        <test-distributions.directory>${basedir}/test-distributions</test-distributions.directory>
         <idp.version>3.0-SNAPSHOT</idp.version>
-        <opensaml.version>3.0-SNAPSHOT</opensaml.version>
-        <java-support.version>3.0-SNAPSHOT</java-support.version>
-        <spring-extensions.version>1.2-SNAPSHOT</spring-extensions.version>
-        <jetty9-data.version>1.0-SNAPSHOT</jetty9-data.version>
         <selenium.version>2.41.0</selenium.version>
         <testbed.version>0.1.0-SNAPSHOT</testbed.version>
+        <test-distributions.directory>${basedir}/test-distributions</test-distributions.directory>
         <svn.relative.location>java-idp-integration-tests</svn.relative.location>
     </properties>
 
@@ -61,11 +57,33 @@
         </dependency>
 
         <!-- Runtime Dependencies -->
+
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>net.shibboleth.idp</groupId>
+            <artifactId>idp-distribution</artifactId>
+            <version>${idp.version}</version>
+            <scope>test</scope>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>net.shibboleth.idp</groupId>
+            <artifactId>idp-testbed</artifactId>
+            <version>${testbed.version}</version>
+            <scope>test</scope>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>com.unboundid</groupId>
+            <artifactId>unboundid-ldapsdk</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-distribution</artifactId>
             <version>${jetty.version}</version>
-            <scope>runtime</scope>
+            <scope>test</scope>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -77,13 +95,6 @@
                     <artifactId>test-proxy-webapp</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <!-- Test Dependencies -->
-        <dependency>
-            <groupId>com.unboundid</groupId>
-            <artifactId>unboundid-ldapsdk</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>${spring.groupId}</groupId>
