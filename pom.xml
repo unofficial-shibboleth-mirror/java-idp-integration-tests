@@ -181,7 +181,7 @@
                                     <artifactId>idp-conf</artifactId>
                                     <version>${idp.version}</version>
                                     <type>test-jar</type>
-                                    <includes>**/creds/*</includes>
+                                    <includes>**/credentials/*</includes>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${test-distributions.directory}/idp-distribution-${idp.version}</outputDirectory>
