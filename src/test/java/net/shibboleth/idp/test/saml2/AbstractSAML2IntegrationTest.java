@@ -47,10 +47,10 @@ import org.w3c.dom.Element;
 public class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
     /** SP private key resource location. */
-    @Nonnull public final String SP_KEY = "/creds/sp.key";
+    @Nonnull public final String SP_KEY = "/credentials/sp.key";
 
     /** SP certificate resource location. */
-    @Nonnull public final String SP_CRT = "/creds/sp.crt";
+    @Nonnull public final String SP_CRT = "/credentials/sp.crt";
 
     /**
      * Unmarshall the XML response into a SAML 2 Response object.
