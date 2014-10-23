@@ -22,11 +22,16 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import javax.annotation.Nonnull;
 
+import net.shibboleth.idp.installer.PropertiesWithComments;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
+import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
+import net.shibboleth.utilities.java.support.logic.Constraint;
+import net.shibboleth.utilities.java.support.primitive.StringSupport;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
 
 import org.opensaml.core.config.InitializationException;
@@ -35,6 +40,7 @@ import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.io.UnmarshallerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -48,7 +54,7 @@ public abstract class BaseIntegrationTest {
 
     /** Directory in which distributions will be unpackaged. */
     @Nonnull public final static String TEST_DISTRIBUTIONS_DIRECTORY = "test-distributions";
-    
+
     /** IdP XML security manager property key. */
     @Nonnull public final static String IDP_XML_SECURITY_MANAGER_PROP_NAME = "idp.xml.securityManager";
 
@@ -63,6 +69,9 @@ public abstract class BaseIntegrationTest {
 
     /** Path to idp.home. */
     @NonnullAfterInit protected Path pathToIdPHome;
+
+    /** Path to conf/idp.properties. */
+    @NonnullAfterInit protected Path pathToIdPProperties;
 
     /** Path to jetty.base. */
     @NonnullAfterInit protected Path pathToJettyBase;
@@ -134,6 +143,10 @@ public abstract class BaseIntegrationTest {
         log.debug("Path to jetty.base '{}'", pathToJettyBase.toAbsolutePath());
         Assert.assertNotNull(pathToJettyBase, "Path to jetty.base not found");
         Assert.assertTrue(pathToJettyBase.toAbsolutePath().toFile().exists(), "Path to jetty.base '{}' not found");
+
+        // Path to conf/idp.properties
+        pathToIdPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "idp.properties");
+        Assert.assertTrue(pathToIdPProperties.toFile().exists(), "Path to conf/idp.properties not found");
     }
 
     /**
@@ -159,8 +172,7 @@ public abstract class BaseIntegrationTest {
      * 
      * @throws ComponentInitializationException if the server cannot be initialized
      */
-    @BeforeMethod public void startJettyServer()
-            throws ComponentInitializationException {
+    @BeforeMethod public void startJettyServer() throws ComponentInitializationException {
         server = new JettyServerProcess(pathToJettyBase, pathToJettyHome);
         server.initialize();
         server.start();
@@ -173,6 +185,42 @@ public abstract class BaseIntegrationTest {
         if (server != null) {
             server.stop();
         }
+    }
+
+    /**
+     * Replace a property in conf/idp.properties.
+     * 
+     * @param key property key
+     * @param value property value
+     * @throws IOException if an I/O error occurs
+     */
+    public void replaceIdPProperty(@Nonnull @NotEmpty final String key, @Nonnull @NotEmpty final String value)
+            throws IOException {
+        Constraint.isNotNull(StringSupport.trimOrNull(key), "Replacement property key cannot be null nor empty");
+        Constraint.isNotNull(StringSupport.trimOrNull(value), "Replacement property value cannot be null nor empty");
+
+        log.debug("Replacing idp property '{}' with '{}'", key, value);
+
+        final FileSystemResource idpPropertiesResource =
+                new FileSystemResource(pathToIdPProperties.toAbsolutePath().toString());
+
+        final PropertiesWithComments pwc = new PropertiesWithComments();
+        pwc.load(idpPropertiesResource.getInputStream());
+        pwc.replaceProperty(key, value);
+        pwc.store(idpPropertiesResource.getOutputStream());
+    }
+
+    /**
+     * Restore conf/idp.properties from dist/conf/idp.properties.dist.
+     * 
+     * @throws IOException if an I/O error occurs
+     */
+    public void restoreIdPProperties() throws IOException {
+        final Path pathToIdPPropertiesDist =
+                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "dist", "conf", "idp.properties.dist");
+        Assert.assertTrue(pathToIdPPropertiesDist.toFile().exists());
+    
+        Files.copy(pathToIdPPropertiesDist, pathToIdPProperties, StandardCopyOption.REPLACE_EXISTING);
     }
 
 }
