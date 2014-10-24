@@ -49,7 +49,7 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
     @Nonnull private final Logger log = LoggerFactory.getLogger(SAML2UnsolicitedSSOIntegrationWithConsentTest.class);
 
     /** Property name to enable consent flows. */
-    public final static String ENABLE_CONSENT_FLOW_PROPERTY_KEY = "idp.post-authn.flows";
+    public final static String ENABLE_CONSENT_FLOW_PROPERTY_KEY = "idp.intercept.flows";
 
     /** Property value of consent flows to enable. */
     public final static String ENABLE_CONSENT_FLOW_PROPERTY_VALUE = "terms-of-use|attribute-release";
