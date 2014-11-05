@@ -36,7 +36,6 @@ import org.opensaml.saml.saml2.core.AuthnContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -47,9 +46,6 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(SAML2UnsolicitedSSOIntegrationWithConsentTest.class);
-
-    /** Property name to enable consent flows. */
-    public final static String ENABLE_CONSENT_FLOW_PROPERTY_KEY = "idp.intercept.flows";
 
     /** Property value of consent flows to enable. */
     public final static String ENABLE_CONSENT_FLOW_PROPERTY_VALUE = "terms-of-use|attribute-release";
@@ -102,15 +98,6 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
 
     /** Web driver. */
     @Nonnull protected WebDriver driver;
-
-    /**
-     * Activate consent flows.
-     * 
-     * @throws Exception
-     */
-    @BeforeClass protected void enableConsentFlows() throws Exception {
-        replaceIdPProperty(ENABLE_CONSENT_FLOW_PROPERTY_KEY, ENABLE_CONSENT_FLOW_PROPERTY_VALUE);
-    }
 
     /**
      * Restore idp.properties from original source.
