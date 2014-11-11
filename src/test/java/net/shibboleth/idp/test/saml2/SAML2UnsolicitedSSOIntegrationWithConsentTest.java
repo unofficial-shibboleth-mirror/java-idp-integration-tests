@@ -18,6 +18,10 @@
 package net.shibboleth.idp.test.saml2;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import javax.annotation.Nonnull;
 
@@ -35,7 +39,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.opensaml.saml.saml2.core.AuthnContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -100,12 +106,31 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
     @Nonnull protected WebDriver driver;
 
     /**
+     * Activate consent flows.
+     *
+     * @throws Exception
+     */
+    @BeforeClass protected void enableConsentFlows() throws Exception {
+        final Path pathToRelyingParty =
+                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party.xml");
+        Assert.assertTrue(pathToRelyingParty.toFile().exists());
+
+        final Path pathToRelyingPartyWithConsent =
+                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party-with-consent.xml");
+        Assert.assertTrue(pathToRelyingPartyWithConsent.toFile().exists());
+
+        Files.copy(pathToRelyingPartyWithConsent, pathToRelyingParty, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    /**
      * Restore idp.properties from original source.
+     * Restore relying-party.xml from original source.
      * 
      * @throws IOException if an I/O error occurs
      */
     @AfterClass(alwaysRun = true) protected void restoreConfiguration() throws IOException {
         restoreIdPProperties();
+        restoreRelyingPartyXML();
     }
 
     /**

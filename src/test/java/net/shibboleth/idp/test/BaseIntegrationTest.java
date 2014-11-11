@@ -219,8 +219,25 @@ public abstract class BaseIntegrationTest {
         final Path pathToIdPPropertiesDist =
                 Paths.get(pathToIdPHome.toAbsolutePath().toString(), "dist", "conf", "idp.properties.dist");
         Assert.assertTrue(pathToIdPPropertiesDist.toFile().exists());
-    
+
         Files.copy(pathToIdPPropertiesDist, pathToIdPProperties, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    /**
+     * Restore conf/relying-party.xml from dist/conf/relying-party.xml.dist.
+     * 
+     * @throws IOException if an I/O error occurs
+     */
+    public void restoreRelyingPartyXML() throws IOException {
+        final Path pathToRelyingParty =
+                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party.xml");
+        Assert.assertTrue(pathToRelyingParty.toFile().exists());
+
+        final Path pathToRelyingPartyDist =
+                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "dist", "conf", "relying-party.xml.dist");
+        Assert.assertTrue(pathToRelyingPartyDist.toFile().exists());
+
+        Files.copy(pathToRelyingPartyDist, pathToRelyingParty, StandardCopyOption.REPLACE_EXISTING);
     }
 
 }
