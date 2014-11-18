@@ -60,7 +60,7 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
     public final static String TERMS_OF_USE_PAGE_TITLE = "Terms of Use";
 
     /** Title of attribute release page. */
-    public final static String ATTRIBUTE_RELEASE_PAGE_TITLE = "Attribute Release";
+    public final static String ATTRIBUTE_RELEASE_PAGE_TITLE = "Information Release";
 
     /** ID of email attribute checkbox. */
     public final static String EMAIL_ID = "email";
