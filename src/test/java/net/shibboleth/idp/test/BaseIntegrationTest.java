@@ -73,6 +73,9 @@ public abstract class BaseIntegrationTest {
     /** Path to conf/idp.properties. */
     @NonnullAfterInit protected Path pathToIdPProperties;
 
+    /** Path to conf/ldap.properties. */
+    @NonnullAfterInit protected Path pathToLDAPProperties;
+
     /** Path to jetty.base. */
     @NonnullAfterInit protected Path pathToJettyBase;
 
@@ -147,6 +150,10 @@ public abstract class BaseIntegrationTest {
         // Path to conf/idp.properties
         pathToIdPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "idp.properties");
         Assert.assertTrue(pathToIdPProperties.toFile().exists(), "Path to conf/idp.properties not found");
+        
+        // Path to conf/ldap.properties
+        pathToLDAPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "ldap.properties");
+        Assert.assertTrue(pathToLDAPProperties.toFile().exists(), "Path to conf/ldap.properties not found");
     }
 
     /**
@@ -165,6 +172,28 @@ public abstract class BaseIntegrationTest {
         if (idpXMLSecurityManager != null) {
             System.setProperty(IDP_XML_SECURITY_MANAGER_PROP_NAME, idpXMLSecurityManager);
         }
+    }
+
+    /**
+     * Do not use STARTTLS for LDAP connection to test in-memory directory server.
+     *
+     * @throws Exception
+     */
+    @BeforeClass(dependsOnMethods = {"setupPaths"}) public void disableLDAPSTARTTLS() throws Exception {
+        replaceLDAPProperty("idp.authn.LDAP.useStartTLS", "false");
+    }
+
+    /**
+     * Restore conf/ldap.properties from dist/conf/ldap.properties.dist.
+     * 
+     * @throws IOException if an I/O error occurs
+     */
+    @AfterClass(alwaysRun = true) public void restoreLDAPProperties() throws IOException {
+        final Path pathToLDAPPropertiesDist =
+                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "dist", "conf", "ldap.properties.dist");
+        Assert.assertTrue(pathToLDAPPropertiesDist.toFile().exists());
+
+        Files.copy(pathToLDAPPropertiesDist, pathToLDAPProperties, StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**
@@ -196,18 +225,44 @@ public abstract class BaseIntegrationTest {
      */
     public void replaceIdPProperty(@Nonnull @NotEmpty final String key, @Nonnull @NotEmpty final String value)
             throws IOException {
+        replaceProperty(pathToIdPProperties, key, value);
+    }
+    
+    /**
+     * Replace a property in conf/ldap.properties.
+     * 
+     * @param key property key
+     * @param value property value
+     * @throws IOException if an I/O error occurs
+     */
+    public void replaceLDAPProperty(@Nonnull @NotEmpty final String key, @Nonnull @NotEmpty final String value)
+            throws IOException {
+        replaceProperty(pathToLDAPProperties, key, value);
+    }
+    
+    /**
+     * Replace a property in a properties file.
+     * 
+     * @param pathToPropertyFile path to the property file
+     * @param key property key
+     * @param value property value 
+     * @throws IOException if an I/O error occurs
+     */
+    public void replaceProperty(@Nonnull final Path pathToPropertyFile, @Nonnull @NotEmpty final String key,
+            @Nonnull @NotEmpty final String value) throws IOException {
+        Constraint.isNotNull(pathToPropertyFile, "Path to property file cannot be null nor empty");
         Constraint.isNotNull(StringSupport.trimOrNull(key), "Replacement property key cannot be null nor empty");
         Constraint.isNotNull(StringSupport.trimOrNull(value), "Replacement property value cannot be null nor empty");
 
-        log.debug("Replacing idp property '{}' with '{}'", key, value);
+        log.debug("Replacing property '{}' with '{}' in file '{}'", key, value, pathToPropertyFile);
 
-        final FileSystemResource idpPropertiesResource =
-                new FileSystemResource(pathToIdPProperties.toAbsolutePath().toString());
+        final FileSystemResource propertyResource =
+                new FileSystemResource(pathToPropertyFile.toAbsolutePath().toString());
 
         final PropertiesWithComments pwc = new PropertiesWithComments();
-        pwc.load(idpPropertiesResource.getInputStream());
+        pwc.load(propertyResource.getInputStream());
         pwc.replaceProperty(key, value);
-        pwc.store(idpPropertiesResource.getOutputStream());
+        pwc.store(propertyResource.getOutputStream());
     }
 
     /**
