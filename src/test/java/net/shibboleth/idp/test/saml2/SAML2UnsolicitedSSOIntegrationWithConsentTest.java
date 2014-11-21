@@ -69,16 +69,16 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
     public final static String EDU_PERSON_AFFILIATION_ID = "eduPersonAffiliation";
 
     /** ID of radio button to not remember consent. */
-    public final static String DO_NOT_REMEMBER_CONSENT_ID = "_idp_doNotRememberConsent";
+    public final static String DO_NOT_REMEMBER_CONSENT_ID = "_shib_idp_doNotRememberConsent";
 
     /** ID of radio button to remember consent. */
-    public final static String REMEMBER_CONSENT_ID = "_idp_rememberConsent";
+    public final static String REMEMBER_CONSENT_ID = "_shib_idp_rememberConsent";
 
     /** ID of radio button for global consent. */
-    public final static String GLOBAL_CONSENT_ID = "_idp_globalConsent";
+    public final static String GLOBAL_CONSENT_ID = "_shib_idp_globalConsent";
 
     /** Name of form input element containing consent IDs. */
-    public final static String CONSENT_IDS_INPUT_NAME = "consentIds";
+    public final static String CONSENT_IDS_INPUT_NAME = "_shib_idp_consentIds";
 
     /** Name of form input element to submit form. */
     public final static String SUBMIT_FORM_INPUT_NAME = "_eventId_proceed";
