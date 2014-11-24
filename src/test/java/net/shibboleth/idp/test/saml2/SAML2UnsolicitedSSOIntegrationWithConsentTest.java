@@ -57,7 +57,7 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
     public final static String ENABLE_CONSENT_FLOW_PROPERTY_VALUE = "terms-of-use|attribute-release";
 
     /** Title of terms of use page. */
-    public final static String TERMS_OF_USE_PAGE_TITLE = "Terms of Use";
+    public final static String TERMS_OF_USE_PAGE_TITLE = "Example Terms of Use";
 
     /** Title of attribute release page. */
     public final static String ATTRIBUTE_RELEASE_PAGE_TITLE = "Information Release";
