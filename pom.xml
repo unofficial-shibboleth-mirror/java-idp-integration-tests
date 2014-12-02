@@ -184,7 +184,7 @@
                                     <includes>**/credentials/*</includes>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/idp-distribution-${idp.version}</outputDirectory>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
                         </configuration>
                     </execution>
                     <!-- Unpack jetty-distribution to test-distributions directory. -->
@@ -223,7 +223,7 @@
                                     <destFileName>idp-testbed.war</destFileName>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/idp-distribution-${idp.version}/testbed-war/</outputDirectory>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/testbed-war/</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -244,7 +244,7 @@
                                     <directory>src/test/webapps</directory>
                                 </resource>
                             </resources>
-                            <outputDirectory>${test-distributions.directory}/idp-distribution-${idp.version}/jetty-base/webapps/</outputDirectory>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/jetty-base/webapps/</outputDirectory>
                         </configuration>
                     </execution>
                     <!-- Copy example metadata-providers.xml. -->
@@ -260,7 +260,7 @@
                                     <directory>src/test/conf</directory>
                                 </resource>
                             </resources>
-                            <outputDirectory>${test-distributions.directory}/idp-distribution-${idp.version}/conf/</outputDirectory>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/conf/</outputDirectory>
                             <overwrite>true</overwrite>
                         </configuration>
                     </execution>
@@ -277,7 +277,7 @@
                                     <directory>src/test/metadata</directory>
                                 </resource>
                             </resources>
-                            <outputDirectory>${test-distributions.directory}/idp-distribution-${idp.version}/metadata/</outputDirectory>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/metadata/</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

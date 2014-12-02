@@ -126,7 +126,7 @@ public abstract class BaseIntegrationTest {
         Assert.assertTrue(pathToJettyHome.toAbsolutePath().toFile().exists(), "Path to jetty.home '{}' not found");
 
         // Path to idp.home
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*idp-distribution-*")) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*shibboleth-identity-provider-*")) {
             for (Path entry : stream) {
                 pathToIdPHome = entry;
                 break;
