@@ -18,7 +18,11 @@
 package net.shibboleth.idp.test;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -62,6 +66,9 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
     /** Jetty server process. */
     @Nullable private Process process;
 
+    /** Current jetty log */
+    @Nullable private File logFile;
+
     /** Commands used to start the Jetty server process. */
     @NonnullAfterInit private List<String> commands;
 
@@ -80,6 +87,7 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void doInitialize() throws ComponentInitializationException {
 
         // Throw exception if jetty.base does not exist.
@@ -121,6 +129,7 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
     }
 
     /** {@inheritDoc} */
+    @Override
     public void start() {
         try {
             log.debug("Starting the Jetty server process");
@@ -146,27 +155,104 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
     // TODO manually set log level to at least INFO ?
     public void waitForJettyServerToStart() throws IOException {
         log.debug("Waiting for Jetty server to start ...");
-        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        
+        final File logsDir = pathToJettyBase. resolve("logs").toFile();
+        File[] files = null;
+        int loopCount = 0;
+        
+        while (true) {
+            files = logsDir.listFiles(new FilenameFilter() {
+                
+                @Override
+                public boolean accept(File arg0, String arg1) {
+                    return arg1.endsWith("stderrout.log");
+                }
+            });
+            
+            if (null != files && files.length > 0 && readFile(files[0])) {
+                break;
+            }
+            if (loopCount++ > 120) {
+                throw new RuntimeException("No log after 2 minutes");
+            }
+            log.trace("Jetty Log not there yet... waiting 500ms");
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        logFile = files[0];
+        isRunning = true;    
+        
+    }
+
+    /** Does the file have data which matches the pattern?
+     * @param file The file to open
+     * @return whether the pattern has been matched
+     * @throws IOException when badness occurrs.
+     */
+    private boolean readFile(File file) throws IOException {
+        BufferedReader reader = null;
+        InputStreamReader inputReader = null;
+        InputStream inputStream = null;
+        
+        try {
+            inputStream = new FileInputStream(file);
+            inputReader = new InputStreamReader(inputStream);
+            reader = new BufferedReader(inputReader);
+            log.trace("Opened Jetty log {}", file.getAbsolutePath());
+
             final Pattern pattern = Pattern.compile(startedRegex);
             String line = "";
             while ((line = reader.readLine()) != null) {
                 log.trace("Jetty log matches '{}' line '{}", pattern.matcher(line).find(), line);
                 if (pattern.matcher(line).find()) {
-                    break;
+                    return true;
                 }
             }
+            reader.close();
+        } catch (IOException ex) {
+            log.error("Could not open log", ex);
+            throw new RuntimeException("Could not open log", ex);
+        } finally {
+            if (null != reader) {
+                reader.close();
+            }
+            if (null != inputReader) {
+                inputReader.close();
+            }
+            if (null != inputStream) {
+                inputStream.close();
+            }
         }
-        isRunning = true;
+        return false;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void stop() {
         if (process != null) {
+            log.trace("Stopping process");
             process.destroy();
+            try {
+                log.trace("Waiting for process to exit");
+                process.waitFor();
+                log.trace("Done waiting");
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Unable to wait for Jetty server process", e);
+            }
+        }
+        if (null != logFile) {
+            log.trace("Deleteing logfile {}", logFile.getAbsolutePath());
+            logFile.delete();
+            log.trace("Deleted logfile {}", logFile.exists());
+            logFile = null; 
         }
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean isRunning() {
         return isRunning;
     }
