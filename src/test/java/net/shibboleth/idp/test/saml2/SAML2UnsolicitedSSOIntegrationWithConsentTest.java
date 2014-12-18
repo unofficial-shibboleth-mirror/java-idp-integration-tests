@@ -63,7 +63,7 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
     public final static String ATTRIBUTE_RELEASE_PAGE_TITLE = "Information Release";
 
     /** ID of email attribute checkbox. */
-    public final static String EMAIL_ID = "email";
+    public final static String EMAIL_ID = "mail";
 
     /** ID of eduPersonAffiliation attribute checkbox. */
     public final static String EDU_PERSON_AFFILIATION_ID = "eduPersonScopedAffiliation";
