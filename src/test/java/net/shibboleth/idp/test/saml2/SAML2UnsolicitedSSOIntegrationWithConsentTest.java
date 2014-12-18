@@ -66,7 +66,13 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
     public final static String EMAIL_ID = "email";
 
     /** ID of eduPersonAffiliation attribute checkbox. */
-    public final static String EDU_PERSON_AFFILIATION_ID = "eduPersonAffiliation";
+    public final static String EDU_PERSON_AFFILIATION_ID = "eduPersonScopedAffiliation";
+
+    /** ID of uid attribute checkbox. */
+    public final static String UID_ID = "uid";
+
+    /** ID of eduPersonAffiliation attribute checkbox. */
+    public final static String EDU_PERSON_PRINCIPAL_NAME_ID = "eduPersonPrincipalName";
 
     /** ID of radio button to not remember consent. */
     public final static String DO_NOT_REMEMBER_CONSENT_ID = "_shib_idp_doNotRememberConsent";
@@ -239,7 +245,17 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
         if (eduPersonAffiliation.isSelected()) {
             eduPersonAffiliation.click();
         }
-    }
+
+        final WebElement eduPersonPrincipalName = driver.findElement(By.id(EDU_PERSON_PRINCIPAL_NAME_ID));
+        if (eduPersonPrincipalName.isSelected()) {
+            eduPersonPrincipalName.click();
+        }
+
+        final WebElement uid = driver.findElement(By.id(UID_ID));
+        if (uid.isSelected()) {
+            uid.click();
+        }
+}
 
     /**
      * Select web element with id {@link #REMEMBER_CONSENT_ID}.
