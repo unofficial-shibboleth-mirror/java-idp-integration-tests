@@ -311,7 +311,11 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
      * @throws Exception
      */
     protected void validateResponse() throws Exception {
-        validator.validateResponse(unmarshallResponse(driver.getPageSource()));
+        if (driver instanceof FirefoxDriver) {
+            validator.validateResponse(unmarshallResponse(driver.findElement(By.tagName("body")).getText()));
+        } else {
+            validator.validateResponse(unmarshallResponse(driver.getPageSource()));
+        }
     }
 
     /**
