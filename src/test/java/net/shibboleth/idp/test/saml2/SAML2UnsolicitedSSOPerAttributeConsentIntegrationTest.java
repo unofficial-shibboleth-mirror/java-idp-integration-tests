@@ -17,19 +17,41 @@
 
 package net.shibboleth.idp.test.saml2;
 
+import java.io.IOException;
+
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
- * SAML 2 unsolicited SSO test.
+ * SAML 2 unsolicited SSO with per-attribute consent test.
  */
-public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2UnsolicitedSSOIntegrationTest {
+public class SAML2UnsolicitedSSOPerAttributeConsentIntegrationTest extends AbstractSAML2UnsolicitedSSOIntegrationTest {
 
     /**
-     * Test SAML 2 unsolicited SSO.
+     * Enable per attribute consent.
+     *
+     * @throws Exception
+     */
+    @BeforeClass protected void enablePerAttributeConsent() throws Exception {
+        replaceIdPProperty("idp.consent.allowPerAttribute", "true");
+    }
+
+    /**
+     * Restore idp.properties from original source.
+     * 
+     * @throws IOException if an I/O error occurs
+     */
+    @AfterClass(alwaysRun = true) protected void restoreConfiguration() throws IOException {
+        restoreIdPProperties();
+    }
+
+    /**
+     * Test releasing a single attribute.
      * 
      * @throws Exception if an error occurs
      */
-    @Test public void testSAML2UnsolicitedSSO() throws Exception {
+    @Test public void testSSOReleaseOneAttribute() throws Exception {
 
         driver.get(url);
 
@@ -39,7 +61,7 @@ public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2Unsolicited
 
         waitForAttributeReleasePage();
 
-        releaseAllAttributes();
+        releaseEmailAttributeOnly();
 
         rememberConsent();
 
@@ -49,23 +71,18 @@ public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2Unsolicited
 
         waitForResponsePage();
 
-        validateResponse();
-
-        // twice
-
-        driver.get(url);
-
-        waitForResponsePage();
+        validator.expectedAttributes.clear();
+        validator.expectedAttributes.add(validator.mailAttribute);
 
         validateResponse();
     }
 
     /**
-     * Test releasing all attributes and not remembering consent.
+     * Test releasing a single attribute and remember consent.
      * 
      * @throws Exception if an error occurs
      */
-    @Test public void testSSOReleaseAllAttributesDoNotRememberConsent() throws Exception {
+    @Test public void testSSOReleaseOneAttributeRememberConsent() throws Exception {
 
         driver.get(url);
 
@@ -75,55 +92,9 @@ public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2Unsolicited
 
         waitForAttributeReleasePage();
 
-        releaseAllAttributes();
+        releaseEmailAttributeOnly();
 
-        doNotRememberConsent();
-
-        submitForm();
-
-        // response
-
-        waitForResponsePage();
-
-        validateResponse();
-
-        // twice
-
-        driver.get(url);
-
-        // attribute release again
-
-        waitForAttributeReleasePage();
-
-        releaseAllAttributes();
-
-        doNotRememberConsent();
-
-        submitForm();
-
-        waitForResponsePage();
-
-        validateResponse();
-    }
-
-    /**
-     * Test global consent.
-     * 
-     * @throws Exception if an error occurs
-     */
-    @Test public void testSSOGlobalConsent() throws Exception {
-
-        driver.get(url);
-
-        login();
-
-        // attribute release
-
-        waitForAttributeReleasePage();
-
-        releaseAllAttributes();
-
-        globalConsent();
+        rememberConsent();
 
         submitForm();
 
@@ -131,13 +102,14 @@ public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2Unsolicited
 
         waitForResponsePage();
 
+        validator.expectedAttributes.clear();
+        validator.expectedAttributes.add(validator.mailAttribute);
+
         validateResponse();
 
         // twice
 
         driver.get(url);
-
-        // attribute release again
 
         waitForResponsePage();
 

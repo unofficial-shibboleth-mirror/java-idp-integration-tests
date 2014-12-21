@@ -18,10 +18,6 @@
 package net.shibboleth.idp.test.saml2;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 import javax.annotation.Nonnull;
 
@@ -39,19 +35,15 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.opensaml.saml.saml2.core.AuthnContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 /**
- * SAML 2 unsolicited SSO test with consent flows.
+ * Abstract SAML 2 unsolicited SSO test.
  */
-public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2IntegrationTest {
+public abstract class AbstractSAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2IntegrationTest {
 
     /** Class logger. */
-    @Nonnull private final Logger log = LoggerFactory.getLogger(SAML2UnsolicitedSSOIntegrationWithConsentTest.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(AbstractSAML2UnsolicitedSSOIntegrationTest.class);
 
     /** Property value of consent flows to enable. */
     public final static String ENABLE_CONSENT_FLOW_PROPERTY_VALUE = "terms-of-use|attribute-release";
@@ -110,34 +102,6 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
 
     /** Web driver. */
     @Nonnull protected WebDriver driver;
-
-    /**
-     * Activate consent flows.
-     *
-     * @throws Exception
-     */
-    @BeforeClass protected void enableConsentFlows() throws Exception {
-        final Path pathToRelyingParty =
-                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party.xml");
-        Assert.assertTrue(pathToRelyingParty.toFile().exists());
-
-        final Path pathToRelyingPartyWithConsent =
-                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party-with-consent.xml");
-        Assert.assertTrue(pathToRelyingPartyWithConsent.toFile().exists());
-
-        Files.copy(pathToRelyingPartyWithConsent, pathToRelyingParty, StandardCopyOption.REPLACE_EXISTING);
-    }
-
-    /**
-     * Restore idp.properties from original source.
-     * Restore relying-party.xml from original source.
-     * 
-     * @throws IOException if an I/O error occurs
-     */
-    @AfterClass(alwaysRun = true) protected void restoreConfiguration() throws IOException {
-        restoreIdPProperties();
-        restoreRelyingPartyXML();
-    }
 
     /**
      * Setup response validator.
@@ -255,7 +219,7 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
         if (uid.isSelected()) {
             uid.click();
         }
-}
+    }
 
     /**
      * Select web element with id {@link #REMEMBER_CONSENT_ID}.
@@ -316,271 +280,5 @@ public class SAML2UnsolicitedSSOIntegrationWithConsentTest extends AbstractSAML2
         } else {
             validator.validateResponse(unmarshallResponse(driver.getPageSource()));
         }
-    }
-
-    /**
-     * Test releasing all attributes.
-     * 
-     * @throws Exception if an error occurs
-     */
-    @Test public void testSSOReleaseAllAttributes() throws Exception {
-
-        driver.get(url);
-
-        login();
-
-        // terms of use
-
-        waitForTermsOfUsePage();
-
-        acceptTermsOfUse();
-
-        submitForm();
-
-        // attribute release
-
-        waitForAttributeReleasePage();
-
-        releaseAllAttributes();
-
-        rememberConsent();
-
-        submitForm();
-
-        // response
-
-        waitForResponsePage();
-
-        validateResponse();
-    }
-
-    /**
-     * Test releasing a single attribute.
-     * 
-     * @throws Exception if an error occurs
-     */
-    @Test public void testSSOReleaseOneAttribute() throws Exception {
-
-        driver.get(url);
-
-        login();
-
-        // terms of use
-
-        waitForTermsOfUsePage();
-
-        acceptTermsOfUse();
-
-        submitForm();
-
-        // attribute release
-
-        waitForAttributeReleasePage();
-
-        releaseEmailAttributeOnly();
-
-        rememberConsent();
-
-        submitForm();
-
-        // response
-
-        waitForResponsePage();
-
-        validator.expectedAttributes.clear();
-        validator.expectedAttributes.add(validator.mailAttribute);
-
-        validateResponse();
-    }
-
-    /**
-     * Test releasing a single attribute and remember consent.
-     * 
-     * @throws Exception if an error occurs
-     */
-    @Test public void testSSOReleaseOneAttributeRememberConsent() throws Exception {
-
-        driver.get(url);
-
-        login();
-
-        // terms of use
-
-        waitForTermsOfUsePage();
-
-        acceptTermsOfUse();
-
-        submitForm();
-
-        // attribute release
-
-        waitForAttributeReleasePage();
-
-        releaseEmailAttributeOnly();
-
-        rememberConsent();
-
-        submitForm();
-
-        // response
-
-        waitForResponsePage();
-
-        validator.expectedAttributes.clear();
-        validator.expectedAttributes.add(validator.mailAttribute);
-
-        validateResponse();
-
-        // twice
-
-        driver.get(url);
-
-        waitForResponsePage();
-
-        validateResponse();
-    }
-
-    /**
-     * Test releasing all attributes and remembering consent.
-     * 
-     * @throws Exception if an error occurs
-     */
-    @Test public void testSSOReleaseAllAttributesRememberConsent() throws Exception {
-
-        driver.get(url);
-
-        login();
-
-        // terms of use
-
-        waitForTermsOfUsePage();
-
-        acceptTermsOfUse();
-
-        submitForm();
-
-        // attribute release
-
-        waitForAttributeReleasePage();
-
-        releaseAllAttributes();
-
-        rememberConsent();
-
-        submitForm();
-
-        // response
-
-        waitForResponsePage();
-
-        validateResponse();
-
-        // twice
-
-        driver.get(url);
-
-        waitForResponsePage();
-
-        validateResponse();
-    }
-
-    /**
-     * Test releasing all attributes and not remembering consent.
-     * 
-     * @throws Exception if an error occurs
-     */
-    @Test public void testSSOReleaseAllAttributesDoNotRememberConsent() throws Exception {
-
-        driver.get(url);
-
-        login();
-
-        // terms of use
-
-        waitForTermsOfUsePage();
-
-        acceptTermsOfUse();
-
-        submitForm();
-
-        // attribute release
-
-        waitForAttributeReleasePage();
-
-        releaseAllAttributes();
-
-        doNotRememberConsent();
-
-        submitForm();
-
-        // response
-
-        waitForResponsePage();
-
-        validateResponse();
-
-        // twice
-
-        driver.get(url);
-
-        // attribute release again
-
-        waitForAttributeReleasePage();
-
-        releaseAllAttributes();
-
-        doNotRememberConsent();
-
-        submitForm();
-
-        waitForResponsePage();
-
-        validateResponse();
-    }
-
-    /**
-     * Test global consent.
-     * 
-     * @throws Exception if an error occurs
-     */
-    @Test public void testSSOGlobalConsent() throws Exception {
-
-        driver.get(url);
-
-        login();
-
-        // terms of use
-
-        waitForTermsOfUsePage();
-
-        acceptTermsOfUse();
-
-        submitForm();
-
-        // attribute release
-
-        waitForAttributeReleasePage();
-
-        releaseAllAttributes();
-
-        globalConsent();
-
-        submitForm();
-
-        // response
-
-        waitForResponsePage();
-
-        validateResponse();
-
-        // twice
-
-        driver.get(url);
-
-        // attribute release again
-
-        waitForResponsePage();
-
-        validateResponse();
     }
 }
