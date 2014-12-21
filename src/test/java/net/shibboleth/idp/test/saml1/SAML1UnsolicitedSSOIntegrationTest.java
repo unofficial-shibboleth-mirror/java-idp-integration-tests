@@ -17,40 +17,47 @@
 
 package net.shibboleth.idp.test.saml1;
 
-import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
-import net.shibboleth.idp.test.flows.saml1.SAML1TestResponseValidator;
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.opensaml.saml.saml1.core.AuthenticationStatement;
-import org.opensaml.saml.saml1.core.Response;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
  * SAML 1 unsolicited SSO test.
  */
-public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1IntegrationTest {
+public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1UnsolicitedSSOIntegrationTest {
 
-    /** IdP endpoint. */
-    @Nonnull public final String idpEndpoint = "https://localhost:8443/idp/profile/Shibboleth/SSO";
+    /**
+     * Activate terms-of-use flow.
+     *
+     * @throws Exception
+     */
+    @BeforeClass protected void enableConsentFlows() throws Exception {
+        final Path pathToRelyingParty =
+                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party.xml");
+        Assert.assertTrue(pathToRelyingParty.toFile().exists());
 
-    /** Provider ID. */
-    @Nonnull public final String providerID = "https://sp.example.org";
+        final Path pathToRelyingPartyWithConsent =
+                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party-with-consent.xml");
+        Assert.assertTrue(pathToRelyingPartyWithConsent.toFile().exists());
 
-    /** SHIRE. */
-    @Nonnull public final String shire = "https://localhost:8443/sp/SAML1/POST/ACS";
+        Files.copy(pathToRelyingPartyWithConsent, pathToRelyingParty, StandardCopyOption.REPLACE_EXISTING);
+    }
 
-    /** Target. */
-    @Nonnull public final String target = "MyRelayState";
-
-    /** URL. */
-    @Nonnull public final String url = idpEndpoint + "?providerId=" + providerID + "&shire=" + shire + "&target="
-            + target;
+    /**
+     * Restore relying-party.xml from original source.
+     * 
+     * @throws IOException if an I/O error occurs
+     */
+    @AfterClass(alwaysRun = true) protected void restoreConfiguration() throws IOException {
+        restoreRelyingPartyXML();
+    }
 
     /**
      * Test SAML 1 unsolicited SSO.
@@ -59,35 +66,32 @@ public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1Integration
      */
     @Test public void testSAML1UnsolicitedSSO() throws Exception {
 
-        final HtmlUnitDriver driver = new HtmlUnitDriver();
-        driver.setJavascriptEnabled(true);
+        startFlow();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        rememberConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // twice
 
         driver.get(url);
 
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-            public Boolean apply(WebDriver d) {
-                return d.getCurrentUrl().startsWith(idpEndpoint);
-            }
-        });
+        waitForResponsePage();
 
-        final WebElement username = driver.findElement(By.name("j_username"));
-        final WebElement password = driver.findElement(By.name("j_password"));
-        final WebElement submit = driver.findElement(By.name("_eventId_proceed"));
-
-        username.sendKeys("jdoe");
-        password.sendKeys("changeit");
-        submit.click();
-
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-            public Boolean apply(WebDriver d) {
-                return d.getCurrentUrl().equals(shire);
-            }
-        });
-
-        final Response response = unmarshallResponse(driver.getPageSource());
-
-        final SAML1TestResponseValidator validator = new SAML1TestResponseValidator();
-        validator.authenticationMethod = AuthenticationStatement.PASSWORD_AUTHN_METHOD;
-        validator.validateResponse(response);
+        validateResponse();
     }
 }

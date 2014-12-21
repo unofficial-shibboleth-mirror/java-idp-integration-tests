@@ -15,40 +15,40 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.test.saml2;
+package net.shibboleth.idp.test.saml1;
 
 import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
-import net.shibboleth.idp.test.flows.saml2.SAML2TestResponseValidator;
+import net.shibboleth.idp.test.flows.saml1.SAML1TestResponseValidator;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.opensaml.saml.saml2.core.AuthnContext;
+import org.opensaml.saml.saml1.core.AuthenticationStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 
 /**
- * Abstract SAML 2 unsolicited SSO test.
+ * Abstract SAML 1 unsolicited SSO test.
  */
-public abstract class AbstractSAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2IntegrationTest {
+public abstract class AbstractSAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1IntegrationTest {
 
     /** Class logger. */
-    @Nonnull private final Logger log = LoggerFactory.getLogger(AbstractSAML2UnsolicitedSSOIntegrationTest.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(AbstractSAML1UnsolicitedSSOIntegrationTest.class);
 
     /** IdP endpoint. */
-    @Nonnull public final String idpEndpoint = "https://localhost:8443/idp/profile/SAML2/Unsolicited/SSO";
+    @Nonnull public final String idpEndpoint = "https://localhost:8443/idp/profile/Shibboleth/SSO";
 
     /** Provider ID. */
     @Nonnull public final String providerID = "https://sp.example.org";
 
     /** SHIRE. */
-    @Nonnull public final String shire = "https://localhost:8443/sp/SAML2/POST/ACS";
+    @Nonnull public final String shire = "https://localhost:8443/sp/SAML1/POST/ACS";
 
     /** Target. */
     @Nonnull public final String target = "MyRelayState";
@@ -58,7 +58,7 @@ public abstract class AbstractSAML2UnsolicitedSSOIntegrationTest extends Abstrac
             + target;
 
     /** Response validator. */
-    @Nonnull protected SAML2TestResponseValidator validator;
+    @Nonnull protected SAML1TestResponseValidator validator;
 
     /**
      * Setup response validator.
@@ -66,20 +66,19 @@ public abstract class AbstractSAML2UnsolicitedSSOIntegrationTest extends Abstrac
      * @throws IOException if an I/O error occurs
      */
     @BeforeMethod protected void setUpValidator() throws IOException {
-        validator = new SAML2TestResponseValidator();
-        validator.spCredential = getSPCredential();
-        validator.authnContextClassRef = AuthnContext.PASSWORD_AUTHN_CTX;
+        validator = new SAML1TestResponseValidator();
+        validator.authenticationMethod = AuthenticationStatement.PASSWORD_AUTHN_METHOD;
     }
-    
+
     /**
      * <ul>
      * <li>Wait for login page.</li>
      * </ul>
      */
     protected void startFlow() {
-        
+
         driver.get(url);
-        
+
         (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.getCurrentUrl().startsWith(idpEndpoint);

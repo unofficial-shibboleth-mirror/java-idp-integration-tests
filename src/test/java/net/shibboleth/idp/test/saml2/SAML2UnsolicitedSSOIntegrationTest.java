@@ -31,7 +31,7 @@ public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2Unsolicited
      */
     @Test public void testSAML2UnsolicitedSSO() throws Exception {
 
-        driver.get(url);
+        startFlow();
 
         login();
 
@@ -67,7 +67,7 @@ public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2Unsolicited
      */
     @Test public void testSSOReleaseAllAttributesDoNotRememberConsent() throws Exception {
 
-        driver.get(url);
+        startFlow();
 
         login();
 
@@ -113,7 +113,7 @@ public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2Unsolicited
      */
     @Test public void testSSOGlobalConsent() throws Exception {
 
-        driver.get(url);
+        startFlow();
 
         login();
 

@@ -66,7 +66,7 @@ public class SAML2UnsolicitedSSOTermsOfUseIntegrationTest extends AbstractSAML2U
      */
     @Test public void testSSOReleaseAllAttributes() throws Exception {
 
-        driver.get(url);
+        startFlow();
 
         login();
 

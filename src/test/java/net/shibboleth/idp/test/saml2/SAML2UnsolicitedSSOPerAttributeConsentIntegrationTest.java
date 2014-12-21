@@ -53,7 +53,7 @@ public class SAML2UnsolicitedSSOPerAttributeConsentIntegrationTest extends Abstr
      */
     @Test public void testSSOReleaseOneAttribute() throws Exception {
 
-        driver.get(url);
+        startFlow();
 
         login();
 
@@ -84,7 +84,7 @@ public class SAML2UnsolicitedSSOPerAttributeConsentIntegrationTest extends Abstr
      */
     @Test public void testSSOReleaseOneAttributeRememberConsent() throws Exception {
 
-        driver.get(url);
+        startFlow();
 
         login();
 
