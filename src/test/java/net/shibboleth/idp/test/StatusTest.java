@@ -17,8 +17,6 @@
 
 package net.shibboleth.idp.test;
 
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -27,15 +25,19 @@ import org.testng.annotations.Test;
  */
 public class StatusTest extends BaseIntegrationTest {
 
-    @Test public void testStatus() {
+    /** IdP status URL. */
+    public final static String STATUS_URL = BASE_URL + "/idp/status";
 
-        final String statusURL = "https://localhost:8443/idp/status";
+    /** Initial text of status page . */
+    public final static String STARTS_WITH = "### Operating Environment Information";
 
-        final WebDriver driver = new HtmlUnitDriver();
+    @Test public void testStatus() throws Exception {
 
-        driver.get(statusURL);
+        startJettyServer();
 
-        Assert.assertTrue(driver.getPageSource().startsWith("### Operating Environment Information"));
+        driver.get(STATUS_URL);
+
+        Assert.assertTrue(getPageSource().startsWith(STARTS_WITH));
     }
 
 }

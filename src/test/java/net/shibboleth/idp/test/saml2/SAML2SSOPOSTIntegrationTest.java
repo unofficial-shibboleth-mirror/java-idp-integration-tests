@@ -17,39 +17,24 @@
 
 package net.shibboleth.idp.test.saml2;
 
-import javax.annotation.Nonnull;
-
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-/** SAML 2 unsolicited SSO test. */
-public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2IntegrationTest {
-
-    /** IdP endpoint. */
-    @Nonnull public final String idpEndpoint = BASE_URL + "/idp/profile/SAML2/Unsolicited/SSO";
-
-    /** Provider ID. */
-    @Nonnull public final String providerID = "https://sp.example.org";
-
-    /** SHIRE. */
-    @Nonnull public final String shire = BASE_URL + "/sp/SAML2/POST/ACS";
-
-    /** Target. */
-    @Nonnull public final String target = "MyRelayState";
-
-    /** URL. */
-    @Nonnull public final String url = idpEndpoint + "?providerId=" + providerID + "&shire=" + shire + "&target="
-            + target;
+/** SAML 2 HTTP POST binding test. */
+public class SAML2SSOPOSTIntegrationTest extends AbstractSAML2IntegrationTest {
 
     @BeforeClass public void setUpURLs() throws Exception {
 
-        startFlowURL = url;
+        startFlowURL = BASE_URL + "/sp/SAML2/InitSSO/POST";
 
-        loginPageURL = idpEndpoint;
+        loginPageURL = BASE_URL + "/idp/profile/SAML2/POST/SSO";
 
-        responsePageURL = shire;
+        responsePageURL = BASE_URL + "/sp/SAML2/POST/ACS";
+
+        isPassiveRequestURL = BASE_URL + "/sp/SAML2/InitSSO/POST/Passive";
+
+        forceAuthnRequestURL = BASE_URL + "/sp/SAML2/InitSSO/POST/ForceAuthn";
     }
-    
 
     @Test public void testSSOReleaseAllAttributes() throws Exception {
         super.testSSOReleaseAllAttributes();
@@ -70,4 +55,17 @@ public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2Integration
     @Test public void testSSOTermsOfUse() throws Exception {
         super.testSSOTermsOfUse();
     }
+    
+    @Test public void testSSOForceAuthn() throws Exception {
+        super.testSSOForceAuthn();
+    }
+
+    @Test public void testSSOPassiveWithoutSession() throws Exception {
+        super.testSSOPassiveWithoutSession();
+    }
+
+    @Test public void testSSOPassiveWithSession() throws Exception {
+        super.testSSOPassiveWithSession();
+    }
+
 }

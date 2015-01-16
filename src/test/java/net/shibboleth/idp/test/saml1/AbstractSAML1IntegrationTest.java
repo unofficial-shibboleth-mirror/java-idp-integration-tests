@@ -18,18 +18,22 @@
 package net.shibboleth.idp.test.saml1;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.shibboleth.idp.test.BaseIntegrationTest;
+import net.shibboleth.idp.test.flows.saml1.SAML1TestResponseValidator;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
 
 import org.opensaml.core.xml.io.Unmarshaller;
 import org.opensaml.core.xml.io.UnmarshallingException;
+import org.opensaml.saml.saml1.core.AuthenticationStatement;
 import org.opensaml.saml.saml1.core.Response;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -37,6 +41,28 @@ import org.w3c.dom.Element;
  * Abstract SAML 1 integration test.
  */
 public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
+
+    /** Response validator. */
+    @Nonnull protected SAML1TestResponseValidator validator;
+
+    /**
+     * Setup response validator.
+     * 
+     * @throws IOException if an I/O error occurs
+     */
+    @BeforeMethod public void setUpValidator() throws IOException {
+        validator = new SAML1TestResponseValidator();
+        validator.authenticationMethod = AuthenticationStatement.PASSWORD_AUTHN_METHOD;
+    }
+
+    /**
+     * Validate SAML 1 response
+     * 
+     * @throws Exception
+     */
+    public void validateResponse() throws Exception {
+        validator.validateResponse(unmarshallResponse(getPageSource()));
+    }
 
     /**
      * Unmarshall the XML response into a SAML 1 Response object.
@@ -58,5 +84,45 @@ public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
         final Response object = (Response) unmarshaller.unmarshall(element);
         Assert.assertNotNull(object);
         return object;
+    }
+    
+    /**
+     * Test SAML 1 SSO.
+     * 
+     * @throws Exception if an error occurs
+     */
+    public void testSSO() throws Exception {
+
+        enableCustomRelyingPartyConfiguration();
+        
+        startJettyServer();
+        
+        startFlow();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        rememberConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // twice
+
+        startFlow();
+
+        waitForResponsePage();
+
+        validateResponse();
     }
 }

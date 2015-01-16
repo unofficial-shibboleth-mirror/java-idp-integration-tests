@@ -27,30 +27,62 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.shibboleth.idp.test.BaseIntegrationTest;
+import net.shibboleth.idp.test.flows.saml2.SAML2TestResponseValidator;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
 
 import org.cryptacular.util.CertUtil;
 import org.cryptacular.util.KeyPairUtil;
 import org.opensaml.core.xml.io.Unmarshaller;
 import org.opensaml.core.xml.io.UnmarshallingException;
+import org.opensaml.saml.saml2.core.AuthnContext;
 import org.opensaml.saml.saml2.core.Response;
+import org.opensaml.saml.saml2.core.StatusCode;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.x509.BasicX509Credential;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
  * Abstract SAML 2 integration test.
  */
-public class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
+public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
+
+    /** Class logger. */
+    @Nonnull private final Logger log = LoggerFactory.getLogger(AbstractSAML2IntegrationTest.class);
+
+    /** Response validator. */
+    @Nonnull protected SAML2TestResponseValidator validator;
 
     /** SP private key resource location. */
     @Nonnull public final String SP_KEY = "/credentials/sp.key";
 
     /** SP certificate resource location. */
     @Nonnull public final String SP_CRT = "/credentials/sp.crt";
+
+    /**
+     * Setup response validator.
+     * 
+     * @throws IOException if an I/O error occurs
+     */
+    @BeforeMethod public void setUpValidator() throws IOException {
+        validator = new SAML2TestResponseValidator();
+        validator.spCredential = getSPCredential();
+        validator.authnContextClassRef = AuthnContext.PASSWORD_AUTHN_CTX;
+    }
+
+    /**
+     * Validate SAML 2 response
+     * 
+     * @throws Exception
+     */
+    public void validateResponse() throws Exception {
+        validator.validateResponse(unmarshallResponse(getPageSource()));
+    }
 
     /**
      * Unmarshall the XML response into a SAML 2 Response object.
@@ -91,5 +123,341 @@ public class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
         final X509Certificate spEntityCert = (X509Certificate) CertUtil.readCertificate(spCrtResource.getInputStream());
 
         return new BasicX509Credential(spEntityCert, spPrivateKey);
+    }
+
+    /**
+     * Test SAML 2 SSO releasing all attributes.
+     * 
+     * @throws Exception if an error occurs
+     */
+    public void testSSOReleaseAllAttributes() throws Exception {
+
+        startJettyServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        rememberConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // twice
+
+        startFlow();
+
+        waitForResponsePage();
+
+        validateResponse();
+    }
+
+    /**
+     * Test SAML 2 SSO releasing a single attribute.
+     * 
+     * @throws Exception if an error occurs
+     */
+    public void testSSOReleaseOneAttribute() throws Exception {
+
+        enablePerAttributeConsent();
+
+        startJettyServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseEmailAttributeOnly();
+
+        rememberConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validator.expectedAttributes.clear();
+        validator.expectedAttributes.add(validator.mailAttribute);
+
+        validateResponse();
+
+        // twice
+
+        startFlow();
+
+        waitForResponsePage();
+
+        validateResponse();
+    }
+
+    /**
+     * Test SAML 2 SSO releasing all attributes and not remembering consent.
+     * 
+     * @throws Exception if an error occurs
+     */
+    public void testSSODoNotRememberConsent() throws Exception {
+
+        startJettyServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        doNotRememberConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // twice
+
+        startFlow();
+
+        // attribute release again
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        doNotRememberConsent();
+
+        submitForm();
+
+        waitForResponsePage();
+
+        validateResponse();
+    }
+
+    /**
+     * Test SAML 2 SSO with global attribute consent.
+     * 
+     * @throws Exception if an error occurs
+     */
+    public void testSSOGlobalConsent() throws Exception {
+
+        startJettyServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        globalConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // twice
+
+        startFlow();
+
+        // attribute release again
+
+        waitForResponsePage();
+
+        validateResponse();
+    }
+
+    /**
+     * Test SAML 2 SSO terms of use flow.
+     * 
+     * @throws Exception if an error occurs
+     */
+    public void testSSOTermsOfUse() throws Exception {
+
+        enableCustomRelyingPartyConfiguration();
+
+        startJettyServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // terms of use
+
+        waitForTermsOfUsePage();
+
+        acceptTermsOfUse();
+
+        submitForm();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        rememberConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // twice
+
+        startFlow();
+
+        waitForResponsePage();
+
+        validateResponse();
+    }
+    
+    /**
+     * Test SAML 2 SSO ForceAuthn.
+     * 
+     * @throws Exception if an error occurs
+     */
+    public void testSSOForceAuthn() throws Exception {
+
+        startJettyServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        rememberConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // twice
+
+        driver.get(forceAuthnRequestURL);
+        
+        waitForLoginPage();
+
+        login();
+
+        waitForResponsePage();
+
+        validateResponse();
+    }
+
+    /**
+     * Test SSO isPasive without a session.
+     * 
+     * @throws Exception if an error occurs
+     */
+    public void testSSOPassiveWithoutSession() throws Exception {
+
+        startJettyServer();
+
+        // start flow
+        driver.get(isPassiveRequestURL);
+
+        waitForResponsePage();
+
+        final SAML2TestResponseValidator passiveValidator = new SAML2TestResponseValidator();
+        passiveValidator.spCredential = getSPCredential();
+        passiveValidator.statusCode = StatusCode.REQUESTER;
+        passiveValidator.statusCodeNested = StatusCode.NO_PASSIVE;
+        passiveValidator.statusMessage = "An error occurred.";
+
+        passiveValidator.validateResponse(unmarshallResponse(getPageSource()));
+    }
+
+    /**
+     * Test SSO isPassive with a pre-existing session.
+     * 
+     * @throws Exception if an error occurs
+     */
+    public void testSSOPassiveWithSession() throws Exception {
+
+        startJettyServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        rememberConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // isPassive
+
+        driver.get(isPassiveRequestURL);
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
     }
 }

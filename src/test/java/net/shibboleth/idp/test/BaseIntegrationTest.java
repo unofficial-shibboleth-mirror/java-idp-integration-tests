@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import net.shibboleth.idp.installer.PropertiesWithComments;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
@@ -60,6 +61,9 @@ import org.testng.annotations.BeforeMethod;
  * Abstract integration test which starts a Jetty server and an in-memory directory server.
  */
 public abstract class BaseIntegrationTest {
+
+    /** Base web server URL. */
+    @Nonnull public final static String BASE_URL = "https://localhost:8443";
 
     /** Directory in which distributions will be unpackaged. */
     @Nonnull public final static String TEST_DISTRIBUTIONS_DIRECTORY = "test-distributions";
@@ -135,6 +139,21 @@ public abstract class BaseIntegrationTest {
 
     /** Web driver. */
     @Nonnull protected WebDriver driver;
+
+    /** URL to start the flow. */
+    @Nullable protected String startFlowURL;
+
+    /** URL of login page. */
+    @Nullable protected String loginPageURL;
+
+    /** URL of page containing the SAML response at the SP. */
+    @Nullable protected String responsePageURL;
+
+    /** URL to start the passive flow. */
+    @Nullable protected String isPassiveRequestURL;
+
+    /** URL to start the force authn flow. */
+    @Nullable protected String forceAuthnRequestURL;
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(BaseIntegrationTest.class);
@@ -247,9 +266,12 @@ public abstract class BaseIntegrationTest {
     /**
      * Start the Jetty server.
      * 
+     * Note : this method must be called in each test to allow for customization of the IdP configuration before the
+     * server is started.
+     * 
      * @throws ComponentInitializationException if the server cannot be initialized
      */
-    @BeforeMethod public void startJettyServer() throws ComponentInitializationException {
+    public void startJettyServer() throws ComponentInitializationException {
         server = new JettyServerProcess(pathToJettyBase, pathToJettyHome);
         server.initialize();
         server.start();
@@ -344,10 +366,45 @@ public abstract class BaseIntegrationTest {
     }
 
     /**
+     * Restore idp.properties and relying-party.xml configuration files.
+     * 
+     * @throws Exception if an error occurs
+     */
+    @AfterMethod(alwaysRun = true) public void restoreConfiguration() throws IOException {
+        restoreIdPProperties();
+        restoreRelyingPartyXML();
+    }
+
+    /**
+     * Enable per attribute consent.
+     *
+     * @throws IOException
+     */
+    public void enablePerAttributeConsent() throws IOException {
+        replaceIdPProperty("idp.consent.allowPerAttribute", "true");
+    }
+
+    /**
+     * Activate terms-of-use flow.
+     *
+     * @throws Exception
+     */
+    public void enableCustomRelyingPartyConfiguration() throws Exception {
+        final Path pathToRelyingParty =
+                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party.xml");
+        Assert.assertTrue(pathToRelyingParty.toFile().exists());
+
+        final Path pathToRelyingPartyWithConsent =
+                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party-with-consent.xml");
+        Assert.assertTrue(pathToRelyingPartyWithConsent.toFile().exists());
+
+        Files.copy(pathToRelyingPartyWithConsent, pathToRelyingParty, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    /**
      * Setup HTML web driver.
      */
-    @BeforeMethod(enabled = true, dependsOnMethods = {"startJettyServer"}) protected void setUpDriver()
-            throws IOException {
+    @BeforeMethod(enabled = true) public void setUpDriver() throws IOException {
         driver = new HtmlUnitDriver();
         ((HtmlUnitDriver) driver).setJavascriptEnabled(true);
     }
@@ -355,11 +412,56 @@ public abstract class BaseIntegrationTest {
     /**
      * Setup Firefox web driver.
      */
-    @BeforeMethod(enabled = false, dependsOnMethods = {"startJettyServer"}) protected void setUpFirefoxDriver()
-            throws IOException {
+    @BeforeMethod(enabled = false) public void setUpFirefoxDriver() throws IOException {
         final ProfilesIni allProfiles = new ProfilesIni();
         final FirefoxProfile profile = allProfiles.getProfile("FirefoxShibtest");
         driver = new FirefoxDriver(profile);
+    }
+
+    /**
+     * Start the flow by accessing the {@link #startFlowURL}.
+     */
+    public void startFlow() {
+        driver.get(startFlowURL);
+    }
+
+    /**
+     * Wait for the login page at the {@link #loginPageURL}.
+     */
+    public void waitForLoginPage() {
+        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            public Boolean apply(WebDriver d) {
+                return d.getCurrentUrl().startsWith(loginPageURL);
+            }
+        });
+    }
+
+    /**
+     * Wait for page containing SAML response at {@link #responsePageURL}.
+     */
+    public void waitForResponsePage() {
+        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            public Boolean apply(WebDriver d) {
+                return d.getCurrentUrl().equals(responsePageURL);
+            }
+        });
+    }
+
+    /**
+     * Get the source of the last page loaded.
+     * 
+     * @return the source of the last page loaded or <code>null</code>
+     */
+    @Nullable public String getPageSource() {
+        String pageSource = null;
+
+        if (driver instanceof FirefoxDriver) {
+            pageSource = driver.findElement(By.tagName("body")).getText();
+        } else {
+            pageSource = driver.getPageSource();
+        }
+
+        return pageSource;
     }
 
     /**
@@ -369,7 +471,7 @@ public abstract class BaseIntegrationTest {
      * <li>Submit form.</li>
      * </ul>
      */
-    protected void login() {
+    public void login() {
         final WebElement username = driver.findElement(By.name("j_username"));
         final WebElement password = driver.findElement(By.name("j_password"));
         username.sendKeys("jdoe");
@@ -380,7 +482,7 @@ public abstract class BaseIntegrationTest {
     /**
      * Wait for page with title {@link #TERMS_OF_USE_PAGE_TITLE}.
      */
-    protected void waitForTermsOfUsePage() {
+    public void waitForTermsOfUsePage() {
         (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.getTitle().equals(TERMS_OF_USE_PAGE_TITLE);
@@ -391,7 +493,7 @@ public abstract class BaseIntegrationTest {
     /**
      * Accept terms of use by clicking the {@link #CONSENT_IDS_INPUT_NAME} checkbox.
      */
-    protected void acceptTermsOfUse() {
+    public void acceptTermsOfUse() {
         final WebElement element = driver.findElement(By.name(CONSENT_IDS_INPUT_NAME));
         if (!element.isSelected()) {
             element.click();
@@ -401,7 +503,7 @@ public abstract class BaseIntegrationTest {
     /**
      * Wait for page with title {@link #ATTRIBUTE_RELEASE_PAGE_TITLE}.
      */
-    protected void waitForAttributeReleasePage() {
+    public void waitForAttributeReleasePage() {
         (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.getTitle().equals(ATTRIBUTE_RELEASE_PAGE_TITLE);
@@ -412,7 +514,7 @@ public abstract class BaseIntegrationTest {
     /**
      * Select web element with id {@link #REMEMBER_CONSENT_ID}.
      */
-    protected void releaseAllAttributes() {
+    public void releaseAllAttributes() {
         final WebElement element = driver.findElement(By.id(REMEMBER_CONSENT_ID));
         if (!element.isSelected()) {
             element.click();
@@ -423,7 +525,7 @@ public abstract class BaseIntegrationTest {
      * Select release of email attribute only by selecting web element with id {@link #EMAIL_ID} and not selecting web
      * element with id {@link #EDU_PERSON_AFFILIATION_ID}.
      */
-    protected void releaseEmailAttributeOnly() {
+    public void releaseEmailAttributeOnly() {
         final WebElement email = driver.findElement(By.id(EMAIL_ID));
         if (!email.isSelected()) {
             email.click();
@@ -448,7 +550,7 @@ public abstract class BaseIntegrationTest {
     /**
      * Select web element with id {@link #REMEMBER_CONSENT_ID}.
      */
-    protected void rememberConsent() {
+    public void rememberConsent() {
         final WebElement element = driver.findElement(By.id(REMEMBER_CONSENT_ID));
         if (!element.isSelected()) {
             element.click();
@@ -458,7 +560,7 @@ public abstract class BaseIntegrationTest {
     /**
      * Select web element with id {@link #DO_NOT_REMEMBER_CONSENT_ID}.
      */
-    protected void doNotRememberConsent() {
+    public void doNotRememberConsent() {
         final WebElement element = driver.findElement(By.id(DO_NOT_REMEMBER_CONSENT_ID));
         if (!element.isSelected()) {
             element.click();
@@ -468,7 +570,7 @@ public abstract class BaseIntegrationTest {
     /**
      * Select web element with id {@link #GLOBAL_CONSENT_ID}.
      */
-    protected void globalConsent() {
+    public void globalConsent() {
         final WebElement element = driver.findElement(By.id(GLOBAL_CONSENT_ID));
         if (!element.isSelected()) {
             element.click();
@@ -478,7 +580,7 @@ public abstract class BaseIntegrationTest {
     /**
      * Submit form by clicking element with name {@link #SUBMIT_FORM_INPUT_NAME}.
      */
-    protected void submitForm() {
+    public void submitForm() {
         driver.findElement(By.name(SUBMIT_FORM_INPUT_NAME)).click();
     }
 

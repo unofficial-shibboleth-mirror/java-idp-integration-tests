@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
@@ -36,15 +37,27 @@ import javax.annotation.Nullable;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
 import net.shibboleth.utilities.java.support.component.AbstractInitializableComponent;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
+import net.shibboleth.utilities.java.support.httpclient.HttpClientBuilder;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+//import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.Lifecycle;
 
+import com.google.common.base.Stopwatch;
+
 /**
- * Start Jetty server in a new process via start.jar. Waits for the Jetty server to start until a regex is found in the
- * process log.
+ * Start Jetty server in a new process via start.jar. Waits for the Jetty server to start until the IdP status page
+ * is available.
  */
 public class JettyServerProcess extends AbstractInitializableComponent implements Lifecycle {
 
@@ -132,11 +145,14 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
     @Override
     public void start() {
         try {
+            final Stopwatch stopwatch = Stopwatch.createStarted();
             log.debug("Starting the Jetty server process");
             process = processBuilder.start();
-            waitForJettyServerToStart();
-            log.debug("Jetty server process started");
-        } catch (IOException e) {
+            // waitForJettyLogFile();
+            waitForStatusPage();
+            stopwatch.stop();
+            log.debug("Jetty server process started in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        } catch (Exception e) {
             log.error("Unable to start Jetty server process", e);
             throw new RuntimeException("Unable to start Jetty server process", e);
         }
@@ -153,22 +169,21 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
      */
     // TODO timeout ?
     // TODO manually set log level to at least INFO ?
-    public void waitForJettyServerToStart() throws IOException {
+    public void waitForJettyLogFile() throws IOException {
         log.debug("Waiting for Jetty server to start ...");
-        
-        final File logsDir = pathToJettyBase. resolve("logs").toFile();
+
+        final File logsDir = pathToJettyBase.resolve("logs").toFile();
         File[] files = null;
         int loopCount = 0;
-        
+
         while (true) {
             files = logsDir.listFiles(new FilenameFilter() {
-                
-                @Override
-                public boolean accept(File arg0, String arg1) {
+
+                @Override public boolean accept(File arg0, String arg1) {
                     return arg1.endsWith("stderrout.log");
                 }
             });
-            
+
             if (null != files && files.length > 0 && readFile(files[0])) {
                 break;
             }
@@ -183,11 +198,113 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
             }
         }
         logFile = files[0];
-        isRunning = true;    
-        
+        isRunning = true;
+
     }
 
-    /** Does the file have data which matches the pattern?
+    /**
+     * Wait up to 20 seconds for the IdP status page, trying every half-second.
+     * 
+     * @throws RuntimeException if the actual status page text is not expected
+     * @throws Exception if an error occurs
+     */
+    public void waitForStatusPage() throws Exception {
+        log.debug("Waiting for Jetty server to start ...");
+
+        final String statusPageText = getStatusPageText(40, 500);
+
+        if (!statusPageText.startsWith(StatusTest.STARTS_WITH)) {
+            log.error("Unable to determine if Jetty server has started.");
+            throw new RuntimeException("Unable to determine if Jetty server has started.");
+        }
+    }
+
+    /**
+     * Get the text of the IdP status page.
+     * 
+     * @param retries maximum number of times to retry
+     * @param millis length of time to sleep in milliseconds between retry attempts
+     * @return the text of the IdP status page or <code>null</code>
+     * @throws Exception if an error occurs
+     */
+    @Nullable public String getStatusPageText(@Nullable final int retries, @Nonnull final int millis) throws Exception {
+
+        final HttpClientBuilder builder = new HttpClientBuilder();
+        builder.setHttpRequestRetryHandler(new FiniteWaitHttpRequestRetryHandler(retries, millis));
+        builder.setConnectionCloseAfterResponse(false);
+        builder.setConnectionDisregardTLSCertificate(true);
+        final HttpClient httpClient = builder.buildClient();
+
+        final HttpGet httpget = new HttpGet(StatusTest.STATUS_URL);
+        final HttpResponse response = httpClient.execute(httpget);
+        log.trace("Status page response  '{}'", response);
+
+        try {
+            final HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                long len = entity.getContentLength();
+                if (len != -1 && len < 2048) {
+                    final String statusPageText = EntityUtils.toString(entity);
+                    log.trace("Status page text '{}'", statusPageText);
+                    return statusPageText;
+                }
+            }
+        } finally {
+            if (response instanceof CloseableHttpResponse) {
+                ((CloseableHttpResponse) response).close();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * A handler which retries requests until a maximum number of attempts has been made and which sleeps between retry
+     * attempts.
+     */
+    public class FiniteWaitHttpRequestRetryHandler implements HttpRequestRetryHandler {
+
+        /** Maximum number of retry attempts. */
+        private final int maxRetries;
+
+        /** Length of time to sleep in milliseconds between retry attempts. */
+        private final int sleepMillis;
+
+        /**
+         * 
+         * Constructor.
+         *
+         * @param retries maximum number of times to retry
+         * @param millis length of time to sleep in milliseconds between retry attempts
+         */
+        public FiniteWaitHttpRequestRetryHandler(@Nullable final int retries, @Nonnull final int millis) {
+            maxRetries = retries;
+            sleepMillis = millis;
+        }
+
+        /** {@inheritDoc} */
+        public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+            log.trace("Retry execution count '{}'", executionCount);
+
+            if (sleepMillis > 0) {
+                try {
+                    Thread.sleep(sleepMillis);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if (executionCount <= maxRetries) {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    /**
+     * Does the file have data which matches the pattern?
+     * 
      * @param file The file to open
      * @return whether the pattern has been matched
      * @throws IOException when badness occurrs.
@@ -196,7 +313,7 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
         BufferedReader reader = null;
         InputStreamReader inputReader = null;
         InputStream inputStream = null;
-        
+
         try {
             inputStream = new FileInputStream(file);
             inputReader = new InputStreamReader(inputStream);
@@ -247,7 +364,7 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
             log.trace("Deleteing logfile {}", logFile.getAbsolutePath());
             logFile.delete();
             log.trace("Deleted logfile {}", logFile.exists());
-            logFile = null; 
+            logFile = null;
         }
     }
 
