@@ -203,7 +203,7 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
     }
 
     /**
-     * Wait up to 30 seconds for the IdP status page, trying every half-second.
+     * Wait up to 60 seconds for the IdP status page, trying every half-second.
      * 
      * @throws RuntimeException if the actual status page text is not expected
      * @throws Exception if an error occurs
@@ -211,7 +211,7 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
     public void waitForStatusPage() throws Exception {
         log.debug("Waiting for Jetty server to start ...");
 
-        final String statusPageText = getStatusPageText(60, 500);
+        final String statusPageText = getStatusPageText(120, 500);
 
         if (!statusPageText.startsWith(StatusTest.STARTS_WITH)) {
             log.error("Unable to determine if Jetty server has started.");
