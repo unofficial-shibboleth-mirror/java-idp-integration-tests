@@ -34,6 +34,12 @@ public class SAML2SSOPOSTIntegrationTest extends AbstractSAML2IntegrationTest {
         isPassiveRequestURL = BASE_URL + "/sp/SAML2/InitSSO/POST/Passive";
 
         forceAuthnRequestURL = BASE_URL + "/sp/SAML2/InitSSO/POST/ForceAuthn";
+        
+        idpLogoutURL = BASE_URL + "/idp/profile/SAML2/POST/SLO";
+        
+        spLogoutURL = BASE_URL + "/sp/SAML2/Redirect/SLO";
+        
+        logoutTransientIDInputID = "InitSLO_POST";
     }
 
     @Test public void testSSOReleaseAllAttributes() throws Exception {
@@ -66,6 +72,10 @@ public class SAML2SSOPOSTIntegrationTest extends AbstractSAML2IntegrationTest {
 
     @Test public void testSSOPassiveWithSession() throws Exception {
         super.testSSOPassiveWithSession();
+    }
+    
+    @Test public void testSLO() throws Exception {
+        super.testSLO();
     }
 
 }

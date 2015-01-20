@@ -36,6 +36,8 @@ import net.shibboleth.utilities.java.support.primitive.StringSupport;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -154,6 +156,12 @@ public abstract class BaseIntegrationTest {
 
     /** URL to start the force authn flow. */
     @Nullable protected String forceAuthnRequestURL;
+    
+    /** IdP single logout service endpoint. */
+    @Nullable protected String idpLogoutURL;
+    
+    /** SP single logout service endpoint. */
+    @Nullable protected String spLogoutURL;
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(BaseIntegrationTest.class);
@@ -400,6 +408,17 @@ public abstract class BaseIntegrationTest {
 
         Files.copy(pathToRelyingPartyWithConsent, pathToRelyingParty, StandardCopyOption.REPLACE_EXISTING);
     }
+    
+    public void enableLogout() throws Exception {
+        // server-side storage of user sessions
+        replaceIdPProperty("idp.session.StorageService", "shibboleth.StorageService");
+
+        // track information about SPs logged into
+        replaceIdPProperty(" idp.session.trackSPSessions", "true");
+
+        // support lookup by SP for SAML logout
+        replaceIdPProperty("idp.session.secondaryServiceIndex", "true");
+    }
 
     /**
      * Setup HTML web driver.
@@ -416,6 +435,9 @@ public abstract class BaseIntegrationTest {
         final ProfilesIni allProfiles = new ProfilesIni();
         final FirefoxProfile profile = allProfiles.getProfile("FirefoxShibtest");
         driver = new FirefoxDriver(profile);
+        
+        driver.manage().window().setPosition(new Point(0, 0));
+        driver.manage().window().setSize(new Dimension(1024, 768));
     }
 
     /**
@@ -507,6 +529,29 @@ public abstract class BaseIntegrationTest {
         (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.getTitle().equals(ATTRIBUTE_RELEASE_PAGE_TITLE);
+            }
+        });
+    }
+    
+    /**
+     * Get and wait for testbed page at {@link #BASE_URL}.
+     */
+    public void getAndWaitForTestbedPage() {
+        driver.get(BASE_URL);
+        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            public Boolean apply(WebDriver d) {
+                return d.getCurrentUrl().equals(BASE_URL + "/");
+            }
+        });
+    }
+    
+    /**
+     * Wait for IdP logout page at {@link #idpLogoutURL}.
+     */
+    public void waitForLogoutPage() {
+        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            public Boolean apply(WebDriver d) {
+                return d.getCurrentUrl().startsWith(idpLogoutURL);
             }
         });
     }

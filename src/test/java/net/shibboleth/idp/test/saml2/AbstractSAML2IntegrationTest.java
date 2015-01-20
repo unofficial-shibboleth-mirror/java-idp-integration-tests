@@ -28,13 +28,18 @@ import javax.annotation.Nullable;
 
 import net.shibboleth.idp.test.BaseIntegrationTest;
 import net.shibboleth.idp.test.flows.saml2.SAML2TestResponseValidator;
+import net.shibboleth.idp.test.flows.saml2.SAML2TestStatusResponseTypeValidator;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
 
 import org.cryptacular.util.CertUtil;
 import org.cryptacular.util.KeyPairUtil;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.io.Unmarshaller;
 import org.opensaml.core.xml.io.UnmarshallingException;
 import org.opensaml.saml.saml2.core.AuthnContext;
+import org.opensaml.saml.saml2.core.LogoutResponse;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.StatusCode;
 import org.opensaml.security.credential.Credential;
@@ -64,6 +69,12 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     /** SP certificate resource location. */
     @Nonnull public final String SP_CRT = "/credentials/sp.crt";
 
+    /** ID of logout iframe element. */
+    @Nonnull public String logoutIFrameID = "buffer";
+
+    /** ID of transient ID input element to init logout. */
+    @Nonnull public String logoutTransientIDInputID;
+
     /**
      * Setup response validator.
      * 
@@ -76,7 +87,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Validate SAML 2 response
+     * Validate SAML 2 {@link Response}.
      * 
      * @throws Exception
      */
@@ -85,7 +96,45 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Unmarshall the XML response into a SAML 2 Response object.
+     * Validate SAML 2 {@link LogoutResponse}.
+     * 
+     * @throws Exception
+     */
+    public void validateLogoutResponse() throws Exception {
+
+        driver.switchTo().frame(logoutIFrameID);
+
+        final XMLObject xmlObject = unmarshallXMLObject(getPageSource());
+
+        Assert.assertTrue(xmlObject instanceof LogoutResponse);
+
+        final SAML2TestStatusResponseTypeValidator validator = new SAML2TestStatusResponseTypeValidator();
+        validator.destination = spLogoutURL;
+        validator.validateResponse((LogoutResponse) xmlObject);
+    }
+
+    /**
+     * Unmarshall the XML response into an {@link #XMLObject} object.
+     * 
+     * @param response
+     * @return
+     * @throws UnsupportedEncodingException
+     * @throws XMLParserException
+     * @throws UnmarshallingException
+     */
+    @Nonnull public XMLObject unmarshallXMLObject(@Nullable final String response) throws UnsupportedEncodingException,
+            XMLParserException, UnmarshallingException {
+        Assert.assertNotNull(response);
+        final Document doc = parserPool.parse(new ByteArrayInputStream(response.getBytes("UTF-8")));
+        final Element element = doc.getDocumentElement();
+        Assert.assertNotNull(element);
+        final Unmarshaller unmarshaller = unmarshallerFactory.getUnmarshaller(element);
+        Assert.assertNotNull(unmarshaller);
+        return unmarshaller.unmarshall(element);
+    }
+
+    /**
+     * Unmarshall the XML response into a SAML 2 {@link #Response} object.
      * 
      * @param response the XML response
      * @return the SAML 2 Response object
@@ -95,15 +144,9 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
      */
     @Nonnull public Response unmarshallResponse(@Nullable final String response) throws UnsupportedEncodingException,
             XMLParserException, UnmarshallingException {
-        Assert.assertNotNull(response);
-        final Document doc = parserPool.parse(new ByteArrayInputStream(response.getBytes("UTF-8")));
-        final Element element = doc.getDocumentElement();
-        Assert.assertNotNull(element);
-        final Unmarshaller unmarshaller = unmarshallerFactory.getUnmarshaller(element);
-        Assert.assertNotNull(unmarshaller);
-        final Response object = (Response) unmarshaller.unmarshall(element);
-        Assert.assertNotNull(object);
-        return object;
+        final XMLObject xmlObject = unmarshallXMLObject(response);
+        Assert.assertTrue(xmlObject instanceof Response);
+        return (Response) xmlObject;
     }
 
     /**
@@ -123,6 +166,32 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
         final X509Certificate spEntityCert = (X509Certificate) CertUtil.readCertificate(spCrtResource.getInputStream());
 
         return new BasicX509Credential(spEntityCert, spPrivateKey);
+    }
+
+    /**
+     * Get the value of the principal's name identifier.
+     * 
+     * This method unmarshalls the page source into a {@link Response} and assumes that {@link #validateResponse()} was
+     * successful.
+     * 
+     * @return the value of the principal's name identifier
+     * @throws Exception if an error occurs
+     */
+    @Nullable public String getNameIDValue() throws Exception {
+        final Response response = unmarshallResponse(getPageSource());
+        return response.getAssertions().get(0).getSubject().getNameID().getValue();
+    }
+
+    /**
+     * Init logout at mock SP by submitting a nameID on the testbed page.
+     * 
+     * @param inputID ID of transient name identifier input element
+     * @param nameID value of the transient name identifier
+     */
+    public void initLogout(@Nonnull final String inputID, @Nonnull final String nameID) {
+        final WebElement input = driver.findElement(By.id(inputID));
+        input.sendKeys(nameID);
+        input.submit();
     }
 
     /**
@@ -351,7 +420,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         validateResponse();
     }
-    
+
     /**
      * Test SAML 2 SSO ForceAuthn.
      * 
@@ -386,7 +455,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
         // twice
 
         driver.get(forceAuthnRequestURL);
-        
+
         waitForLoginPage();
 
         login();
@@ -460,4 +529,54 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         validateResponse();
     }
+
+    public void testSLO() throws Exception {
+
+        enableLogout();
+
+        startJettyServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        rememberConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // twice
+
+        startFlow();
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // logout
+
+        final String nameID = getNameIDValue();
+
+        getAndWaitForTestbedPage();
+
+        initLogout(logoutTransientIDInputID, nameID);
+
+        waitForLogoutPage();
+
+        validateLogoutResponse();
+    }
+
 }
