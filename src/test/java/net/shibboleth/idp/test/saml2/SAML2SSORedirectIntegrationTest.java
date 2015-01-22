@@ -74,7 +74,7 @@ public class SAML2SSORedirectIntegrationTest extends AbstractSAML2IntegrationTes
         super.testSSOPassiveWithSession();
     }
     
-    @Test public void testSLO() throws Exception {
+    @Test(enabled = false) public void testSLO() throws Exception {
         super.testSLO();
     }
 
