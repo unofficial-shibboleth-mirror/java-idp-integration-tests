@@ -46,7 +46,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-//import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -252,6 +252,9 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
         } finally {
             if (response instanceof CloseableHttpResponse) {
                 ((CloseableHttpResponse) response).close();
+            }
+            if (httpClient instanceof CloseableHttpClient) {
+                ((CloseableHttpClient) httpClient).close();
             }
         }
 

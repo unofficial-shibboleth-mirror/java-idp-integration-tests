@@ -439,6 +439,15 @@ public abstract class BaseIntegrationTest {
         driver.manage().window().setPosition(new Point(0, 0));
         driver.manage().window().setSize(new Dimension(1024, 768));
     }
+    
+    /**
+     * Quit the web driver.
+     */
+    @AfterMethod public void tearDownDriver() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
 
     /**
      * Start the flow by accessing the {@link #startFlowURL}.
