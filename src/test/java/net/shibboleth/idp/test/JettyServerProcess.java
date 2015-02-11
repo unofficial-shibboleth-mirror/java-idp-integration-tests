@@ -148,8 +148,8 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
             final Stopwatch stopwatch = Stopwatch.createStarted();
             log.debug("Starting the Jetty server process");
             process = processBuilder.start();
-            // waitForJettyLogFile();
-            waitForStatusPage();
+            waitForJettyLogFile();
+            // waitForStatusPage();
             stopwatch.stop();
             log.debug("Jetty server process started in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         } catch (Exception e) {
