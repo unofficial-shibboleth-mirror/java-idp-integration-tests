@@ -83,7 +83,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     @BeforeMethod public void setUpValidator() throws IOException {
         validator = new SAML2TestResponseValidator();
         validator.spCredential = getSPCredential();
-        validator.authnContextClassRef = AuthnContext.PASSWORD_AUTHN_CTX;
+        validator.authnContextClassRef = AuthnContext.PPT_AUTHN_CTX;
     }
 
     /**
