@@ -16,7 +16,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <idp.version>3.0-SNAPSHOT</idp.version>
+        <idp.version>3.1-SNAPSHOT</idp.version>
         <selenium.version>2.43.1</selenium.version>
         <testbed.version>0.1.0-SNAPSHOT</testbed.version>
         <test-distributions.directory>${basedir}/test-distributions</test-distributions.directory>
