@@ -237,6 +237,22 @@
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
+                    <!-- Copy jetty-base context deployment descriptor. -->
+                    <execution>
+                        <id>copy-testbed-jetty-base</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/embedded/jetty-base</directory>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/jetty-base/</outputDirectory>
+                        </configuration>
+                    </execution>
                     <!-- Copy idp-testbed context deployment descriptor. -->
                     <execution>
                         <id>copy-testbed-deployment-descriptor</id>
