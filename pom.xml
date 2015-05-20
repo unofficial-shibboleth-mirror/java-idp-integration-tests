@@ -18,7 +18,7 @@
     <properties>
         <opensaml.version>3.2.0-SNAPSHOT</opensaml.version>
         <idp.version>3.2.0-SNAPSHOT</idp.version>
-        <selenium.version>2.43.1</selenium.version>
+        <selenium.version>2.45.0</selenium.version>
         <testbed.version>0.1.0-SNAPSHOT</testbed.version>
         <test-distributions.directory>${basedir}/test-distributions</test-distributions.directory>
         <svn.relative.location>java-idp-integration-tests</svn.relative.location>
@@ -195,6 +195,46 @@
                                     <version>${idp.version}</version>
                                     <type>test-jar</type>
                                     <includes>**/credentials/*</includes>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <!-- Copy test views from idp-conf test jar. -->
+                    <execution>
+                        <id>unpack-idp-conf-views-test</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>net.shibboleth.idp</groupId>
+                                    <artifactId>idp-conf</artifactId>
+                                    <version>${idp.version}</version>
+                                    <type>test-jar</type>
+                                    <includes>views-test/**</includes>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <!-- Copy test flows from idp-conf test jar. -->
+                    <execution>
+                        <id>unpack-idp-conf-test-flows</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>net.shibboleth.idp</groupId>
+                                    <artifactId>idp-conf</artifactId>
+                                    <version>${idp.version}</version>
+                                    <type>test-jar</type>
+                                    <includes>flows/**</includes>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
