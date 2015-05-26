@@ -25,8 +25,6 @@ import net.shibboleth.idp.test.BaseIntegrationTest;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -92,37 +90,48 @@ public class LocalStorageTest extends BaseIntegrationTest {
         waitForLocalStorageTestViewPage();
 
         final String localStorageViaJavaScript = wrapper.getItem(key);
-        final String localStorageViaView = driver.findElement(By.id("localStorage")).getText();
-        final String localStorageSupportViaView = driver.findElement(By.id("localStorageSupport")).getText();
-
         Assert.assertNull(localStorageViaJavaScript);
-        if (driver instanceof FirefoxDriver) {
-            Assert.assertEquals(localStorageViaView, "");
-        } else if (driver instanceof HtmlUnitDriver) {
-            Assert.assertEquals(localStorageViaView, "null");
-        }
 
-        Assert.assertEquals(localStorageSupportViaView, "true");
+        final String localStorageValue = driver.findElement(By.id("localStorageValue")).getText();
+        Assert.assertEquals(localStorageValue, "");
+
+        final String localStorageSupport = driver.findElement(By.id("localStorageSupport")).getText();
+        Assert.assertEquals(localStorageSupport, "true");
+
+        // TODO more web flow attributes
     }
 
     @Test public void testWrite() throws Exception {
 
         startJettyServer();
 
-        driver.get(writeURL + "?localStorageValue=foo");
+        final String key = "key";
+        final String value = "value";
+
+        final String URL = writeURL + "?localStorageKey=" + key + "&localStorageValue=" + value;
+        driver.get(URL);
 
         waitForLocalStorageTestViewPage();
 
         final String localStorageViaJavaScript = wrapper.getItem(key);
-        final String localStorageViaView = driver.findElement(By.id("localStorage")).getText();
-        final String localStorageSupportViaView = driver.findElement(By.id("localStorageSupport")).getText();
+        Assert.assertEquals(localStorageViaJavaScript, value);
 
-        Assert.assertEquals(localStorageViaJavaScript, "foo");
-        // only set during read test flow
-        Assert.assertEquals(localStorageViaView, "");
-        Assert.assertEquals(localStorageSupportViaView, "");
+        final String localStorageKey = driver.findElement(By.id("localStorageKey")).getText();
+        Assert.assertEquals(localStorageKey, key);
+
+        final String localStorageValue = driver.findElement(By.id("localStorageValue")).getText();
+        Assert.assertEquals(localStorageValue, value);
+
+        final String localStorageSuccess = driver.findElement(By.id("localStorageSuccess")).getText();
+        Assert.assertEquals(localStorageSuccess, "true");
+
+        // TODO more web flow attributes
     }
 
     // TODO more tests
+
+    // TODO test read without key or version
+
+    // TODO test write without key or version or value
 
 }
