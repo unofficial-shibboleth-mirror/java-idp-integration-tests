@@ -1,5 +1,5 @@
 /*
- * Licensed to the University Corporation for Advanced Internet Development, 
+, "1" * Licensed to the University Corporation for Advanced Internet Development, 
  * Inc. (UCAID) under one or more contributor license agreements.  See the 
  * NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The UCAID licenses this file to You under the Apache 
@@ -19,6 +19,7 @@ package net.shibboleth.idp.test.localstorage;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -26,12 +27,11 @@ import javax.annotation.Nullable;
 
 import net.shibboleth.idp.test.BaseIntegrationTest;
 import net.shibboleth.utilities.java.support.collection.Pair;
+import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.net.URLBuilder;
-import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -185,17 +185,26 @@ public class LocalStorageTest extends BaseIntegrationTest {
     /**
      * Build the URL to read from local storage using the test flow.
      * 
-     * The read test flow expects a {@link #LOCAL_STORAGE_KEY_ID} query parameter.
+     * The read flow requires the following query parameters :
+     * <ul>
+     * <li>{@link #LOCAL_STORAGE_KEY_ID}</li>
+     * <li>{@link #LOCAL_STORAGE_VERSION_ID}</li>
+     * </ul>
      * 
      * @param localStorageKey the key of the item to read from local storage.
+     * @param localStorageVersion the version of the item to read from local storage.
      * @return the URL to read from local storage using the test flow
      * @throws MalformedURLException
      */
-    protected String buildReadURL(@Nullable final String localStorageKey) throws MalformedURLException {
+    protected String buildReadURL(@Nullable final String localStorageKey, @Nullable final String localStorageVersion)
+            throws MalformedURLException {
         final URLBuilder urlBuilder = new URLBuilder(readURL);
         final List<Pair<String, String>> queryParams = urlBuilder.getQueryParams();
         if (localStorageKey != null) {
             queryParams.add(new Pair<String, String>(LOCAL_STORAGE_KEY_ID, localStorageKey));
+        }
+        if (localStorageVersion != null) {
+            queryParams.add(new Pair<String, String>(LOCAL_STORAGE_VERSION_ID, localStorageVersion));
         }
         final String URL = urlBuilder.buildURL();
         log.debug("URL to read from local storage is '{}'", URL);
@@ -205,13 +214,20 @@ public class LocalStorageTest extends BaseIntegrationTest {
     /**
      * Build the URL to write to local storage using the test flow.
      * 
+     * The write flow requires the following query parameters :
+     * <ul>
+     * <li>{@link #LOCAL_STORAGE_KEY_ID}</li>
+     * <li>{@link #LOCAL_STORAGE_VALUE_ID}</li>
+     * <li>{@link #LOCAL_STORAGE_VERSION_ID}</li>
+     * </ul>
+     * 
      * @param localStorageKey the key of the item to be written to local storage.
      * @param localStorageValue the value of the item to be written to local storage.
      * @return the URL to write to local storage using the test flow
      * @throws MalformedURLException
      */
-    protected String buildWriteURL(@Nullable final String localStorageKey, @Nullable final String localStorageValue)
-            throws MalformedURLException {
+    protected String buildWriteURL(@Nullable final String localStorageKey, @Nullable final String localStorageValue,
+            @Nullable final String localStorageVersion) throws MalformedURLException {
         final URLBuilder urlBuilder = new URLBuilder(writeURL);
         final List<Pair<String, String>> queryParams = urlBuilder.getQueryParams();
         if (localStorageKey != null) {
@@ -220,38 +236,31 @@ public class LocalStorageTest extends BaseIntegrationTest {
         if (localStorageValue != null) {
             queryParams.add(new Pair<String, String>(LOCAL_STORAGE_VALUE_ID, localStorageValue));
         }
+        if (localStorageVersion != null) {
+            queryParams.add(new Pair<String, String>(LOCAL_STORAGE_VERSION_ID, localStorageVersion));
+        }
         final String URL = urlBuilder.buildURL();
         log.debug("URL to write to local storage is '{}'", URL);
         return URL;
     }
 
     /**
-     * Assert that reading from local storage was successful
+     * Assert that reading from local storage was successful.
      * 
      * Must be called after {@link #waitForLocalStorageTestViewPage()}.
      * 
      * @param itemKey the local storage item key
-     * @param itemValue the local storage item value
+     * @param itemValue the expected local storage item value
+     * @param version the expected local storage item version
      */
-    protected void assertSuccessfulRead(@Nullable final String itemKey, @Nullable final String itemValue) {
+    protected void assertSuccessfulRead(@Nullable final String itemKey, @Nullable final String itemValue,
+            @Nullable final String version) {
         Assert.assertEquals(getLocalStorageException(), "");
         Assert.assertEquals(getLocalStorageKey(), itemKey);
         Assert.assertEquals(getLocalStorageSuccess(), "true");
         Assert.assertEquals(getLocalStorageSupported(), "true");
-
-        // if the itemValue is empty
-        if (StringSupport.trimOrNull(itemValue) == null) {
-            // look for "null" when using HtmlUnit as the client
-            if (driver instanceof HtmlUnitDriver) {
-                Assert.assertEquals(getLocalStorageValue(), "null");
-            }
-            Assert.assertNull(getLocalStorageValueViaWrapper(testKey));
-        } else {
-            Assert.assertEquals(getLocalStorageValue(), itemValue);
-            Assert.assertEquals(getLocalStorageValueViaWrapper(itemKey), itemValue);
-        }
-
-        Assert.assertEquals(getLocalStorageVersion(), ""); // TODO
+        Assert.assertEquals(getLocalStorageVersion(), version);
+        Assert.assertEquals(getLocalStorageValue(), itemValue);
     }
 
     /**
@@ -261,8 +270,10 @@ public class LocalStorageTest extends BaseIntegrationTest {
      * 
      * @param itemKey the local storage item key
      * @param itemValue the expected local storage item value
+     * @param version the expected local storage item version
      */
-    protected void assertSuccessfulWrite(@Nullable final String itemKey, @Nullable final String itemValue) {
+    protected void assertSuccessfulWrite(@Nullable final String itemKey, @Nullable final String itemValue,
+            @Nullable final String version) {
         Assert.assertEquals(getLocalStorageException(), "");
         Assert.assertEquals(getLocalStorageKey(), itemKey);
         Assert.assertEquals(getLocalStorageSuccess(), "true");
@@ -270,60 +281,128 @@ public class LocalStorageTest extends BaseIntegrationTest {
         Assert.assertEquals(getLocalStorageValue(), itemValue);
         Assert.assertEquals(getLocalStorageValueViaGetItem(), itemValue);
         Assert.assertEquals(getLocalStorageValueViaWrapper(itemKey), itemValue);
-        Assert.assertEquals(getLocalStorageVersion(), ""); // TODO
+        Assert.assertEquals(getLocalStorageVersion(), version);
+    }
+
+    protected void writeAndAssert(@Nullable final String itemKey, @Nullable final String itemValue,
+            @Nullable final String version) throws MalformedURLException {
+
+        driver.get(buildWriteURL(itemKey, itemValue, version));
+
+        waitForLocalStorageTestViewPage();
+
+        assertSuccessfulWrite(itemKey, itemValue, version);
     }
 
     @Test public void testNothingToRead() throws Exception {
 
         startJettyServer();
 
-        driver.get(buildReadURL(testKey));
+        driver.get(buildReadURL(testKey, "0"));
 
         waitForLocalStorageTestViewPage();
 
-        assertSuccessfulRead(testKey, "");
+        assertSuccessfulRead(testKey, "", "");
+
+        Assert.assertEquals(getLocalStorageValueViaGetItem(), "null");
+        Assert.assertNull(getLocalStorageValueViaWrapper(testKey));
+        Assert.assertNull(getLocalStorageValueViaWrapper("shib_idp_ls_version"));
     }
 
-    @Test public void testRead() throws Exception {
+    @Test public void testReadEarlierVersion() throws Exception {
 
         startJettyServer();
 
-        driver.get(buildWriteURL(testKey, testValue));
+        writeAndAssert(testKey, testValue, "1");
+
+        driver.get(buildReadURL(testKey, "0"));
 
         waitForLocalStorageTestViewPage();
 
-        driver.get(buildReadURL(testKey));
-
-        waitForLocalStorageTestViewPage();
-
-        assertSuccessfulRead(testKey, testValue);
+        assertSuccessfulRead(testKey, testValue, "1");
     }
 
-    @Test public void testReadFromWrapper() throws Exception {
+    @Test public void testReadSameVersion() throws Exception {
 
         startJettyServer();
 
-        driver.get(buildReadURL(testKey));
+        writeAndAssert(testKey, testValue, "1");
+
+        driver.get(buildReadURL(testKey, "1"));
+
+        waitForLocalStorageTestViewPage();
+
+        assertSuccessfulRead(testKey, "", "1");
+    }
+
+    @Test public void testReadLaterVersion() throws Exception {
+
+        startJettyServer();
+
+        writeAndAssert(testKey, testValue, "1");
+
+        driver.get(buildReadURL(testKey, "2"));
+
+        waitForLocalStorageTestViewPage();
+
+        assertSuccessfulRead(testKey, "", "1");
+    }
+
+    @Test public void testReadWrapper() throws Exception {
+
+        startJettyServer();
+
+        // Wrapper needs a page to execute JavaScript.
+        driver.get(buildReadURL(testKey, "0"));
 
         // Set item directly, not using the write URL
         wrapper.setItem(testKey, testValue);
+        wrapper.setItem("shib_idp_ls_version", "1");
 
-        driver.get(buildReadURL(testKey));
+        driver.get(buildReadURL(testKey, "0"));
 
         waitForLocalStorageTestViewPage();
 
-        assertSuccessfulRead(testKey, testValue);
+        assertSuccessfulRead(testKey, testValue, "1");
     }
 
     @Test public void testWrite() throws Exception {
 
         startJettyServer();
 
-        driver.get(buildWriteURL(testKey, testValue));
+        writeAndAssert(testKey, testValue, "1");
+    }
+
+    /**
+     * Return a string of a given size.
+     * 
+     * @param c a character to compose the string with
+     * @param size the size of the string
+     * @return a string of the given size consisting of the given character
+     */
+    @Nonnull protected static String generateString(char c, int size) {
+        final char[] chars = new char[size];
+        Arrays.fill(chars, c);
+        return new String(chars);
+    }
+
+    @Test(enabled = false) public void testWriteQuotaExceeded() throws ComponentInitializationException,
+            MalformedURLException {
+
+        // Set Firefox's quota to 1 kilobyte.
+        // profile.setPreference("dom.storage.default_quota", "1");
+
+        startJettyServer();
+
+        final String value = LocalStorageTest.generateString('x', 2048);
+
+        driver.get(buildWriteURL(testKey, value, "1"));
 
         waitForLocalStorageTestViewPage();
 
-        assertSuccessfulWrite(testKey, testValue);
+        Assert.assertEquals(getLocalStorageKey(), testKey);
+        Assert.assertEquals(getLocalStorageSuccess(), "false");
+        Assert.assertFalse(getLocalStorageException().isEmpty());
     }
 
     // TODO more tests
