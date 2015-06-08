@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import net.shibboleth.idp.test.BaseIntegrationTest;
 import net.shibboleth.utilities.java.support.collection.Pair;
 import net.shibboleth.utilities.java.support.net.URLBuilder;
+import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -224,6 +225,54 @@ public class LocalStorageTest extends BaseIntegrationTest {
         return URL;
     }
 
+    /**
+     * Assert that reading from local storage was successful
+     * 
+     * Must be called after {@link #waitForLocalStorageTestViewPage()}.
+     * 
+     * @param itemKey the local storage item key
+     * @param itemValue the local storage item value
+     */
+    protected void assertSuccessfulRead(@Nullable final String itemKey, @Nullable final String itemValue) {
+        Assert.assertEquals(getLocalStorageException(), "");
+        Assert.assertEquals(getLocalStorageKey(), itemKey);
+        Assert.assertEquals(getLocalStorageSuccess(), "true");
+        Assert.assertEquals(getLocalStorageSupported(), "true");
+
+        // if the itemValue is empty
+        if (StringSupport.trimOrNull(itemValue) == null) {
+            // look for "null" when using HtmlUnit as the client
+            if (driver instanceof HtmlUnitDriver) {
+                Assert.assertEquals(getLocalStorageValue(), "null");
+            }
+            Assert.assertNull(getLocalStorageValueViaWrapper(testKey));
+        } else {
+            Assert.assertEquals(getLocalStorageValue(), itemValue);
+            Assert.assertEquals(getLocalStorageValueViaWrapper(itemKey), itemValue);
+        }
+
+        Assert.assertEquals(getLocalStorageVersion(), ""); // TODO
+    }
+
+    /**
+     * Assert that writing to local storage was successful.
+     * 
+     * Must be called after {@link #waitForLocalStorageTestViewPage()}.
+     * 
+     * @param itemKey the local storage item key
+     * @param itemValue the expected local storage item value
+     */
+    protected void assertSuccessfulWrite(@Nullable final String itemKey, @Nullable final String itemValue) {
+        Assert.assertEquals(getLocalStorageException(), "");
+        Assert.assertEquals(getLocalStorageKey(), itemKey);
+        Assert.assertEquals(getLocalStorageSuccess(), "true");
+        Assert.assertEquals(getLocalStorageSupported(), ""); // Not returned from write flow
+        Assert.assertEquals(getLocalStorageValue(), itemValue);
+        Assert.assertEquals(getLocalStorageValueViaGetItem(), itemValue);
+        Assert.assertEquals(getLocalStorageValueViaWrapper(itemKey), itemValue);
+        Assert.assertEquals(getLocalStorageVersion(), ""); // TODO
+    }
+
     @Test public void testNothingToRead() throws Exception {
 
         startJettyServer();
@@ -232,18 +281,38 @@ public class LocalStorageTest extends BaseIntegrationTest {
 
         waitForLocalStorageTestViewPage();
 
-        Assert.assertEquals(getLocalStorageException(), "");
-        Assert.assertEquals(getLocalStorageKey(), testKey);
-        Assert.assertEquals(getLocalStorageSuccess(), "true");
-        Assert.assertEquals(getLocalStorageSupported(), "true");
-        if (driver instanceof HtmlUnitDriver) {
-            Assert.assertEquals(getLocalStorageValue(), "null");
-        } else {
-            Assert.assertEquals(getLocalStorageValue(), "");
-        }
-        Assert.assertEquals(getLocalStorageValueViaGetItem(), "null");
-        Assert.assertNull(getLocalStorageValueViaWrapper(testKey));
-        Assert.assertEquals(getLocalStorageVersion(), ""); // TODO
+        assertSuccessfulRead(testKey, "");
+    }
+
+    @Test public void testRead() throws Exception {
+
+        startJettyServer();
+
+        driver.get(buildWriteURL(testKey, testValue));
+
+        waitForLocalStorageTestViewPage();
+
+        driver.get(buildReadURL(testKey));
+
+        waitForLocalStorageTestViewPage();
+
+        assertSuccessfulRead(testKey, testValue);
+    }
+
+    @Test public void testReadFromWrapper() throws Exception {
+
+        startJettyServer();
+
+        driver.get(buildReadURL(testKey));
+
+        // Set item directly, not using the write URL
+        wrapper.setItem(testKey, testValue);
+
+        driver.get(buildReadURL(testKey));
+
+        waitForLocalStorageTestViewPage();
+
+        assertSuccessfulRead(testKey, testValue);
     }
 
     @Test public void testWrite() throws Exception {
@@ -254,14 +323,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
 
         waitForLocalStorageTestViewPage();
 
-        Assert.assertEquals(getLocalStorageException(), "");
-        Assert.assertEquals(getLocalStorageKey(), testKey);
-        Assert.assertEquals(getLocalStorageSuccess(), "true");
-        Assert.assertEquals(getLocalStorageSupported(), ""); // Not returned from write flow
-        Assert.assertEquals(getLocalStorageValue(), testValue);
-        Assert.assertEquals(getLocalStorageValueViaGetItem(), testValue);
-        Assert.assertEquals(getLocalStorageValueViaWrapper(testKey), testValue);
-        Assert.assertEquals(getLocalStorageVersion(), ""); // TODO
+        assertSuccessfulWrite(testKey, testValue);
     }
 
     // TODO more tests
