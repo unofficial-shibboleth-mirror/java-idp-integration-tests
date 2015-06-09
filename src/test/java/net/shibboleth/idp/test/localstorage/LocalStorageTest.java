@@ -45,8 +45,8 @@ import org.testng.annotations.Test;
  */
 public class LocalStorageTest extends BaseIntegrationTest {
 
-    /** Title of local storage test view page. */
-    public final static String LOCAL_STORAGE_TEST_VIEW_PAGE_TITLE = "Local Storage Test View";
+    /** Title of local storage test view. */
+    public final static String LOCAL_STORAGE_TEST_VIEW_TITLE = "Local Storage Test View";
 
     /** Local storage exception identifier. */
     @Nonnull public final static String LOCAL_STORAGE_EXCEPTION_ID = "localStorageException";
@@ -65,6 +65,9 @@ public class LocalStorageTest extends BaseIntegrationTest {
 
     /** Local storage version identifier. */
     @Nonnull public final static String LOCAL_STORAGE_VERSION_ID = "localStorageVersion";
+
+    /** Delimiter used to separate the version and value of a versioned item. */
+    @Nonnull public final static String LOCAL_STORAGE_VALUE_DELIMITER = ":";
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(LocalStorageTest.class);
@@ -99,14 +102,15 @@ public class LocalStorageTest extends BaseIntegrationTest {
     }
 
     /**
-     * Wait for page with title {@link #LOCAL_STORAGE_TEST_VIEW_PAGE_TITLE}.
+     * Wait for page with title {@link #LOCAL_STORAGE_TEST_VIEW_TITLE}.
      */
-    protected void waitForLocalStorageTestViewPage() {
+    protected void waitForLocalStorageTestView() {
         (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
-                return d.getTitle().equals(LOCAL_STORAGE_TEST_VIEW_PAGE_TITLE);
+                return d.getTitle().equals(LOCAL_STORAGE_TEST_VIEW_TITLE);
             }
         });
+        log.debug("{} source:\n'{}'", LOCAL_STORAGE_TEST_VIEW_TITLE, driver.getPageSource());
     }
 
     /**
@@ -247,7 +251,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
     /**
      * Assert that reading from local storage was successful.
      * 
-     * Must be called after {@link #waitForLocalStorageTestViewPage()}.
+     * Must be called after {@link #waitForLocalStorageTestView()}.
      * 
      * @param itemKey the local storage item key
      * @param itemValue the expected local storage item value
@@ -266,7 +270,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
     /**
      * Assert that writing to local storage was successful.
      * 
-     * Must be called after {@link #waitForLocalStorageTestViewPage()}.
+     * Must be called after {@link #waitForLocalStorageTestView()}.
      * 
      * @param itemKey the local storage item key
      * @param itemValue the expected local storage item value
@@ -279,19 +283,40 @@ public class LocalStorageTest extends BaseIntegrationTest {
         Assert.assertEquals(getLocalStorageSuccess(), "true");
         Assert.assertEquals(getLocalStorageSupported(), ""); // Not returned from write flow
         Assert.assertEquals(getLocalStorageValue(), itemValue);
-        Assert.assertEquals(getLocalStorageValueViaGetItem(), itemValue);
-        Assert.assertEquals(getLocalStorageValueViaWrapper(itemKey), itemValue);
         Assert.assertEquals(getLocalStorageVersion(), version);
+
+        final String versionedValue = version + LOCAL_STORAGE_VALUE_DELIMITER + itemValue;
+        Assert.assertEquals(getLocalStorageValueViaGetItem(), versionedValue);
+        Assert.assertEquals(getLocalStorageValueViaWrapper(itemKey), versionedValue);
     }
 
+    /**
+     * Write to local storage and assert that the write was successful via the test view.
+     * 
+     * @param itemKey the local storage item key
+     * @param itemValue the local storage item value
+     * @param version the item version
+     * @throws MalformedURLException
+     */
     protected void writeAndAssert(@Nullable final String itemKey, @Nullable final String itemValue,
             @Nullable final String version) throws MalformedURLException {
 
         driver.get(buildWriteURL(itemKey, itemValue, version));
 
-        waitForLocalStorageTestViewPage();
+        waitForLocalStorageTestView();
 
         assertSuccessfulWrite(itemKey, itemValue, version);
+    }
+
+    /**
+     * Construct the versioned value written to local storage as a concatenation of the version, delimiter, and value.
+     * 
+     * @param value the local storage item value
+     * @param version the item version
+     * @return the versioned value as a concatenation of the version, delimiter, and value
+     */
+    @Nonnull protected String versionedValue(@Nullable final String value, @Nullable final String version) {
+        return version + LOCAL_STORAGE_VALUE_DELIMITER + value;
     }
 
     @Test public void testNothingToRead() throws Exception {
@@ -300,7 +325,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
 
         driver.get(buildReadURL(testKey, "0"));
 
-        waitForLocalStorageTestViewPage();
+        waitForLocalStorageTestView();
 
         assertSuccessfulRead(testKey, "", "");
 
@@ -317,7 +342,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
 
         driver.get(buildReadURL(testKey, "0"));
 
-        waitForLocalStorageTestViewPage();
+        waitForLocalStorageTestView();
 
         assertSuccessfulRead(testKey, testValue, "1");
     }
@@ -330,7 +355,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
 
         driver.get(buildReadURL(testKey, "1"));
 
-        waitForLocalStorageTestViewPage();
+        waitForLocalStorageTestView();
 
         assertSuccessfulRead(testKey, "", "1");
     }
@@ -343,7 +368,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
 
         driver.get(buildReadURL(testKey, "2"));
 
-        waitForLocalStorageTestViewPage();
+        waitForLocalStorageTestView();
 
         assertSuccessfulRead(testKey, "", "1");
     }
@@ -356,14 +381,29 @@ public class LocalStorageTest extends BaseIntegrationTest {
         driver.get(buildReadURL(testKey, "0"));
 
         // Set item directly, not using the write URL
-        wrapper.setItem(testKey, testValue);
-        wrapper.setItem("shib_idp_ls_version", "1");
+        wrapper.setItem(testKey, versionedValue(testValue, "1"));
 
         driver.get(buildReadURL(testKey, "0"));
 
-        waitForLocalStorageTestViewPage();
+        waitForLocalStorageTestView();
 
         assertSuccessfulRead(testKey, testValue, "1");
+    }
+
+    @Test public void testReadInvalidVersion() throws Exception {
+
+        startJettyServer();
+
+        driver.get(buildReadURL(testKey, "NaN"));
+
+        waitForLocalStorageTestView();
+
+        Assert.assertEquals(getLocalStorageException(), "Version [NaN] must be a number");
+        Assert.assertEquals(getLocalStorageKey(), testKey);
+        Assert.assertEquals(getLocalStorageSuccess(), "false");
+        Assert.assertEquals(getLocalStorageSupported(), "true");
+        Assert.assertEquals(getLocalStorageVersion(), "");
+        Assert.assertEquals(getLocalStorageValue(), "");
     }
 
     @Test public void testWrite() throws Exception {
@@ -371,6 +411,22 @@ public class LocalStorageTest extends BaseIntegrationTest {
         startJettyServer();
 
         writeAndAssert(testKey, testValue, "1");
+    }
+
+    @Test public void testWriteInvalidVersion() throws Exception {
+
+        startJettyServer();
+
+        driver.get(buildWriteURL(testKey, testValue, "NaN"));
+
+        waitForLocalStorageTestView();
+
+        Assert.assertEquals(getLocalStorageException(), "Version [NaN] must be a number");
+        Assert.assertEquals(getLocalStorageKey(), testKey);
+        Assert.assertEquals(getLocalStorageSuccess(), "false");
+        Assert.assertEquals(getLocalStorageSupported(), ""); // Not returned from write flow
+        Assert.assertEquals(getLocalStorageVersion(), "NaN");
+        Assert.assertEquals(getLocalStorageValue(), testValue);
     }
 
     /**
@@ -398,7 +454,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
 
         driver.get(buildWriteURL(testKey, value, "1"));
 
-        waitForLocalStorageTestViewPage();
+        waitForLocalStorageTestView();
 
         Assert.assertEquals(getLocalStorageKey(), testKey);
         Assert.assertEquals(getLocalStorageSuccess(), "false");
