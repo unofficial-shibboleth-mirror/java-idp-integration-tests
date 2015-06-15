@@ -129,7 +129,7 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
         }
 
         // Setup commands to start the Jetty process.
-        commands = new ArrayList<String>();
+        commands = new ArrayList<>();
         commands.add("java");
         commands.add("-Didp.home=" + idpHome);
         commands.add("-jar");

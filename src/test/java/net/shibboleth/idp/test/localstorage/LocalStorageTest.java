@@ -205,7 +205,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
         final URLBuilder urlBuilder = new URLBuilder(readURL);
         final List<Pair<String, String>> queryParams = urlBuilder.getQueryParams();
         if (localStorageKey != null) {
-            queryParams.add(new Pair<String, String>(LOCAL_STORAGE_KEY_ID, localStorageKey));
+            queryParams.add(new Pair<>(LOCAL_STORAGE_KEY_ID, localStorageKey));
         }
         if (localStorageVersion != null) {
             queryParams.add(new Pair<String, String>(LOCAL_STORAGE_VERSION_ID, localStorageVersion));
@@ -235,10 +235,10 @@ public class LocalStorageTest extends BaseIntegrationTest {
         final URLBuilder urlBuilder = new URLBuilder(writeURL);
         final List<Pair<String, String>> queryParams = urlBuilder.getQueryParams();
         if (localStorageKey != null) {
-            queryParams.add(new Pair<String, String>(LOCAL_STORAGE_KEY_ID, localStorageKey));
+            queryParams.add(new Pair<>(LOCAL_STORAGE_KEY_ID, localStorageKey));
         }
         if (localStorageValue != null) {
-            queryParams.add(new Pair<String, String>(LOCAL_STORAGE_VALUE_ID, localStorageValue));
+            queryParams.add(new Pair<>(LOCAL_STORAGE_VALUE_ID, localStorageValue));
         }
         if (localStorageVersion != null) {
             queryParams.add(new Pair<String, String>(LOCAL_STORAGE_VERSION_ID, localStorageVersion));
