@@ -185,7 +185,7 @@ public abstract class BaseIntegrationTest {
         // Path to the project build directory.
         final Path buildPath = Paths.get(TEST_DISTRIBUTIONS_DIRECTORY);
         log.debug("Path to build directory '{}'", buildPath.toAbsolutePath());
-        Assert.assertTrue(buildPath.toAbsolutePath().toFile().exists(), "Path to build directory '{}' not found");
+        Assert.assertTrue(buildPath.toAbsolutePath().toFile().exists(), "Path to build directory not found");
 
         // Path to Jetty distribution
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*jetty-distribution-*")) {
@@ -198,7 +198,7 @@ public abstract class BaseIntegrationTest {
         }
         log.debug("Path to jetty.home '{}'", pathToJettyHome.toAbsolutePath());
         Assert.assertNotNull(pathToJettyHome, "Path to jetty.home not found");
-        Assert.assertTrue(pathToJettyHome.toAbsolutePath().toFile().exists(), "Path to jetty.home '{}' not found");
+        Assert.assertTrue(pathToJettyHome.toAbsolutePath().toFile().exists(), "Path to jetty.home not found");
 
         // Path to idp.home
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*shibboleth-identity-provider-*")) {
@@ -211,7 +211,7 @@ public abstract class BaseIntegrationTest {
         }
         log.debug("Path to idp.home '{}'", pathToIdPHome.toAbsolutePath());
         Assert.assertNotNull(pathToIdPHome, "Path to idp.home not found");
-        Assert.assertTrue(pathToIdPHome.toAbsolutePath().toFile().exists(), "Path to idp.home '{}' not found");
+        Assert.assertTrue(pathToIdPHome.toAbsolutePath().toFile().exists(), "Path to idp.home not found");
 
         // Set idp.home system property
         System.setProperty("idp.home", pathToIdPHome.toAbsolutePath().toString());
@@ -220,7 +220,7 @@ public abstract class BaseIntegrationTest {
         pathToJettyBase = pathToIdPHome.resolve(Paths.get("jetty-base"));
         log.debug("Path to jetty.base '{}'", pathToJettyBase.toAbsolutePath());
         Assert.assertNotNull(pathToJettyBase, "Path to jetty.base not found");
-        Assert.assertTrue(pathToJettyBase.toAbsolutePath().toFile().exists(), "Path to jetty.base '{}' not found");
+        Assert.assertTrue(pathToJettyBase.toAbsolutePath().toFile().exists(), "Path to jetty.base not found");
 
         // Path to conf/idp.properties
         pathToIdPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "idp.properties");
