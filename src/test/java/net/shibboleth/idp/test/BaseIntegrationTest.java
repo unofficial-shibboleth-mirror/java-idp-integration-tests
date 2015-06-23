@@ -18,6 +18,8 @@
 package net.shibboleth.idp.test;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,6 +46,9 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.opensaml.core.config.InitializationException;
@@ -58,6 +63,8 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+
+import com.saucelabs.common.SauceOnDemandAuthentication;
 
 /**
  * Abstract integration test which starts a Jetty server and an in-memory directory server.
@@ -139,6 +146,9 @@ public abstract class BaseIntegrationTest {
     /** XMLObject unmarshaller factory */
     @NonnullAfterInit protected UnmarshallerFactory unmarshallerFactory;
 
+    /** Desired capabilities of the web driver. */
+    @Nullable protected DesiredCapabilities desiredCapabilities;
+
     /** Web driver. */
     @Nonnull protected WebDriver driver;
 
@@ -156,12 +166,15 @@ public abstract class BaseIntegrationTest {
 
     /** URL to start the force authn flow. */
     @Nullable protected String forceAuthnRequestURL;
-    
+
     /** IdP single logout service endpoint. */
     @Nullable protected String idpLogoutURL;
-    
+
     /** SP single logout service endpoint. */
     @Nullable protected String spLogoutURL;
+
+    /** Name of test class concatenated with the test method. **/
+    @Nullable protected String testName;
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(BaseIntegrationTest.class);
@@ -408,7 +421,7 @@ public abstract class BaseIntegrationTest {
 
         Files.copy(pathToRelyingPartyWithConsent, pathToRelyingParty, StandardCopyOption.REPLACE_EXISTING);
     }
-    
+
     public void enableLogout() throws Exception {
         // server-side storage of user sessions
         replaceIdPProperty("idp.session.StorageService", "shibboleth.StorageService");
@@ -421,29 +434,79 @@ public abstract class BaseIntegrationTest {
     }
 
     /**
-     * Setup HTML web driver.
+     * Populate the test name as the name of test class concatenated with the test method.
+     * 
+     * @param method the test method
      */
-    @BeforeMethod(enabled = true) public void setUpDriver() throws IOException {
+    @BeforeMethod public void setUpTestName(@Nonnull final Method method) {
+        testName = method.getDeclaringClass().getName() + "." + method.getName();
+    }
+
+    /**
+     * Set up HtmlUnitDriver web driver.
+     */
+    @BeforeMethod(enabled = false) public void setUpHtmlUnitDriver() throws IOException {
         driver = new HtmlUnitDriver();
         ((HtmlUnitDriver) driver).setJavascriptEnabled(true);
     }
 
     /**
-     * Setup Firefox web driver.
+     * Set up Firefox web driver.
      */
     @BeforeMethod(enabled = false) public void setUpFirefoxDriver() throws IOException {
         final ProfilesIni allProfiles = new ProfilesIni();
         final FirefoxProfile profile = allProfiles.getProfile("FirefoxShibtest");
         driver = new FirefoxDriver(profile);
-        
+
         driver.manage().window().setPosition(new Point(0, 0));
         driver.manage().window().setSize(new Dimension(1024, 768));
     }
-    
+
+    /**
+     * Set up remote web driver to Sauce Labs.
+     * 
+     * Prefers credentials from system properties/environment variables as provided by Jenkins over ~/.sauce-ondemand,
+     * see {@link SauceOnDemandAuthentication}.
+     * 
+     * @throws IOException
+     */
+    @BeforeMethod(enabled = true, dependsOnMethods = {"setUpTestName"}) public void setUpSauceDriver() throws IOException {
+        final SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication();
+        final String username = authentication.getUsername();
+        final String accesskey = authentication.getAccessKey();
+        final URL url = new URL("http://" + username + ":" + accesskey + "@ondemand.saucelabs.com:80/wd/hub");
+        if (desiredCapabilities == null) {
+            setUpDesiredCapabilities();
+        }
+        driver = new RemoteWebDriver(url, desiredCapabilities);
+    }
+
+    /**
+     * Set up the desired capabilities.
+     * 
+     * Prefer capabilities as provided by Jenkins, defaults to Firefox.
+     * 
+     * Sets the test name to be displayed by Sauce Labs at <a
+     * href="https://saucelabs.com/tests">https://saucelabs.com/tests</a>.
+     */
+    public void setUpDesiredCapabilities() {
+
+        if (System.getenv("SELENIUM_BROWSER") == null) {
+            desiredCapabilities = DesiredCapabilities.firefox();
+        } else {
+            desiredCapabilities = new DesiredCapabilities();
+            desiredCapabilities.setBrowserName(System.getenv("SELENIUM_BROWSER"));
+            desiredCapabilities.setVersion(System.getenv("SELENIUM_VERSION"));
+            desiredCapabilities.setCapability(CapabilityType.PLATFORM, System.getenv("SELENIUM_PLATFORM"));
+        }
+
+        desiredCapabilities.setCapability("name", testName);
+    }
+
     /**
      * Quit the web driver.
      */
-    @AfterMethod public void tearDownDriver() {
+    @AfterMethod(enabled = true) public void tearDownDriver() {
         if (driver != null) {
             driver.quit();
         }
@@ -541,7 +604,7 @@ public abstract class BaseIntegrationTest {
             }
         });
     }
-    
+
     /**
      * Get and wait for testbed page at {@link #BASE_URL}.
      */
@@ -553,7 +616,7 @@ public abstract class BaseIntegrationTest {
             }
         });
     }
-    
+
     /**
      * Wait for IdP logout page at {@link #idpLogoutURL}.
      */
