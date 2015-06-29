@@ -15,6 +15,7 @@
     <artifactId>idp-integration-tests</artifactId>
     <packaging>jar</packaging>
 
+
     <properties>
         <opensaml.version>3.2.0-SNAPSHOT</opensaml.version>
         <idp.version>3.2.0-SNAPSHOT</idp.version>
