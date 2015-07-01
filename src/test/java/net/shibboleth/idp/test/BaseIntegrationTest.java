@@ -671,7 +671,7 @@ public abstract class BaseIntegrationTest {
     
     @BeforeClass(enabled = true) public void setUpSauceLabsClientIPRange() {
         // Sauce Labs IP Range
-        clientIPRange = "162.222.73/24";
+        clientIPRange = "162.222.73.0/24";
     }
 
     /**
