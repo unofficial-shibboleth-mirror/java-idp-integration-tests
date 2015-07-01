@@ -122,7 +122,7 @@ public abstract class BaseIntegrationTest {
     public final static String SUBMIT_FORM_INPUT_NAME = "_eventId_proceed";
 
     /** IdP XML security manager value before and after this test. */
-    @NonnullAfterInit protected String idpXMLSecurityManager;
+    @NonnullAfterInit protected String defaultIdpXMLSecurityManager;
 
     /** Jetty server process. */
     @NonnullAfterInit protected JettyServerProcess server;
@@ -198,7 +198,7 @@ public abstract class BaseIntegrationTest {
     /**
      * Setup paths to the IdP and Jetty.
      */
-    @BeforeClass public void setupPaths() {
+    @BeforeClass public void setUpPaths() {
 
         // Path to the project build directory.
         final Path buildPath = Paths.get(TEST_DISTRIBUTIONS_DIRECTORY);
@@ -254,16 +254,16 @@ public abstract class BaseIntegrationTest {
      * Save the previous value.
      */
     @BeforeClass public void setIdPXMLSecurityManager() {
-        idpXMLSecurityManager = System.getProperty(IDP_XML_SECURITY_MANAGER_PROP_NAME);
+        defaultIdpXMLSecurityManager = System.getProperty(IDP_XML_SECURITY_MANAGER_PROP_NAME);
         System.setProperty(IDP_XML_SECURITY_MANAGER_PROP_NAME, IDP_XML_SECURITY_MANAGER_PROP_VALUE);
     }
 
     /**
      * Set the {@link #IDP_XML_SECURITY_MANAGER_PROP_NAME} property to the previous value.
      */
-    @AfterClass public void unsetIdPXMLSecurityManager() {
-        if (idpXMLSecurityManager != null) {
-            System.setProperty(IDP_XML_SECURITY_MANAGER_PROP_NAME, idpXMLSecurityManager);
+    @AfterClass public void restoreIdPXMLSecurityManager() {
+        if (defaultIdpXMLSecurityManager != null) {
+            System.setProperty(IDP_XML_SECURITY_MANAGER_PROP_NAME, defaultIdpXMLSecurityManager);
         }
     }
 
@@ -366,7 +366,7 @@ public abstract class BaseIntegrationTest {
      * 
      * @throws IOException if an I/O error occurs
      */
-    public void restoreIdPProperties() throws IOException {
+    @AfterMethod(alwaysRun = true) public void restoreIdPProperties() throws IOException {
         final Path pathToIdPPropertiesDist =
                 Paths.get(pathToIdPHome.toAbsolutePath().toString(), "dist", "conf", "idp.properties.dist");
         Assert.assertTrue(pathToIdPPropertiesDist.toFile().exists());
@@ -379,7 +379,7 @@ public abstract class BaseIntegrationTest {
      * 
      * @throws IOException if an I/O error occurs
      */
-    public void restoreRelyingPartyXML() throws IOException {
+    @AfterMethod(alwaysRun = true) public void restoreRelyingPartyXML() throws IOException {
         final Path pathToRelyingParty =
                 Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party.xml");
         Assert.assertTrue(pathToRelyingParty.toFile().exists());
@@ -389,16 +389,6 @@ public abstract class BaseIntegrationTest {
         Assert.assertTrue(pathToRelyingPartyDist.toFile().exists());
 
         Files.copy(pathToRelyingPartyDist, pathToRelyingParty, StandardCopyOption.REPLACE_EXISTING);
-    }
-
-    /**
-     * Restore idp.properties and relying-party.xml configuration files.
-     * 
-     * @throws Exception if an error occurs
-     */
-    @AfterMethod(alwaysRun = true) public void restoreConfiguration() throws IOException {
-        restoreIdPProperties();
-        restoreRelyingPartyXML();
     }
 
     /**
