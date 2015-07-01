@@ -77,15 +77,15 @@ public class LocalStorageTest extends BaseIntegrationTest {
 
     /** Test local storage item value. */
     @Nonnull protected String testValue = "shib_idp_ls_test_key_value";
+    
+    /** Path to test flow to read from local storage. */
+    @Nonnull protected String readPath = "/idp/profile/test/local-storage/read";
 
-    /** URL of test flow to read from local storage. */
-    @Nonnull protected String readURL = BASE_URL + "/idp/profile/test/local-storage/read";
+    /** Path to test flow to write to local storage. */
+    @Nonnull protected String writePath = "/idp/profile/test/local-storage/write";
 
     /** JavaScript capable web driver wrapper. */
     @Nonnull protected LocalStorageWebDriverWrapper wrapper;
-
-    /** URL of test flow to write to local storage. */
-    @Nonnull protected String writeURL = BASE_URL + "/idp/profile/test/local-storage/write";
 
     /**
      * Set up local storage web driver wrapper.
@@ -202,7 +202,8 @@ public class LocalStorageTest extends BaseIntegrationTest {
      */
     protected String buildReadURL(@Nullable final String localStorageKey, @Nullable final String localStorageVersion)
             throws MalformedURLException {
-        final URLBuilder urlBuilder = new URLBuilder(readURL);
+        final URLBuilder urlBuilder = new URLBuilder(getBaseURL());
+        urlBuilder.setPath(readPath);
         final List<Pair<String, String>> queryParams = urlBuilder.getQueryParams();
         if (localStorageKey != null) {
             queryParams.add(new Pair<>(LOCAL_STORAGE_KEY_ID, localStorageKey));
@@ -232,7 +233,8 @@ public class LocalStorageTest extends BaseIntegrationTest {
      */
     protected String buildWriteURL(@Nullable final String localStorageKey, @Nullable final String localStorageValue,
             @Nullable final String localStorageVersion) throws MalformedURLException {
-        final URLBuilder urlBuilder = new URLBuilder(writeURL);
+        final URLBuilder urlBuilder = new URLBuilder(getBaseURL());
+        urlBuilder.setPath(writePath);
         final List<Pair<String, String>> queryParams = urlBuilder.getQueryParams();
         if (localStorageKey != null) {
             queryParams.add(new Pair<>(LOCAL_STORAGE_KEY_ID, localStorageKey));

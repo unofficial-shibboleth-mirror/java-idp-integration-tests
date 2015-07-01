@@ -28,28 +28,26 @@ import org.testng.annotations.Test;
 public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1IntegrationTest {
 
     /** IdP endpoint. */
-    @Nonnull public final String idpEndpoint =  BASE_URL + "/idp/profile/Shibboleth/SSO";
+    @Nonnull public final String idpEndpointPath =  "/idp/profile/Shibboleth/SSO";
 
     /** Provider ID. */
     @Nonnull public final String providerID = "https://sp.example.org";
 
     /** SHIRE. */
-    @Nonnull public final String shire = BASE_URL + "/sp/SAML1/POST/ACS";
+    @Nonnull public final String shirePath = "/sp/SAML1/POST/ACS";
 
     /** Target. */
     @Nonnull public final String target = "MyRelayState";
 
-    /** URL. */
-    @Nonnull public final String url = idpEndpoint + "?providerId=" + providerID + "&shire=" + shire + "&target="
-            + target;
+    @BeforeClass(dependsOnMethods = {"setUpEndpoints"}) public void setUpURLs() throws Exception {
 
-    @BeforeClass public void setUpURLs() throws Exception {
+        final String shire = getBaseURL() + shirePath;
 
-        startFlowURL = url;
+        startFlowURLPath = idpEndpointPath + "?providerId=" + providerID + "&shire=" + shire + "&target=" + target;
 
-        loginPageURL = idpEndpoint;
+        loginPageURLPath = idpEndpointPath;
 
-        responsePageURL = shire;
+        responsePageURLPath = shirePath;
     }
 
     /**

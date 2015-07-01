@@ -25,19 +25,19 @@ public class SAML2SSORedirectIntegrationTest extends AbstractSAML2IntegrationTes
 
     @BeforeClass public void setUpURLs() throws Exception {
 
-        startFlowURL = BASE_URL + "/sp/SAML2/InitSSO/Redirect";
+        startFlowURLPath = "/sp/SAML2/InitSSO/Redirect";
 
-        loginPageURL = BASE_URL + "/idp/profile/SAML2/Redirect/SSO";
+        loginPageURLPath = "/idp/profile/SAML2/Redirect/SSO";
 
-        responsePageURL = BASE_URL + "/sp/SAML2/POST/ACS";
+        responsePageURLPath = "/sp/SAML2/POST/ACS";
 
-        isPassiveRequestURL = BASE_URL + "/sp/SAML2/InitSSO/Passive";
+        isPassiveRequestURLPath = "/sp/SAML2/InitSSO/Passive";
 
-        forceAuthnRequestURL = BASE_URL + "/sp/SAML2/InitSSO/ForceAuthn";
+        forceAuthnRequestURLPath = "/sp/SAML2/InitSSO/ForceAuthn";
         
-        idpLogoutURL = BASE_URL + "/idp/profile/SAML2/Redirect/SLO";
+        idpLogoutURLPath = "/idp/profile/SAML2/Redirect/SLO";
         
-        spLogoutURL = BASE_URL + "/sp/SAML2/Redirect/SLO";
+        spLogoutURLPath = "/sp/SAML2/Redirect/SLO";
         
         logoutTransientIDInputID = "InitSLO_Redirect";
     }

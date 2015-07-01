@@ -250,7 +250,8 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
         builder.setConnectionDisregardTLSCertificate(true);
         final HttpClient httpClient = builder.buildClient();
 
-        final HttpGet httpget = new HttpGet(StatusTest.STATUS_URL);
+        // TODO status page URL
+        final HttpGet httpget = new HttpGet("TODO");
         final HttpResponse response = httpClient.execute(httpget);
         log.trace("Status page response  '{}'", response);
 

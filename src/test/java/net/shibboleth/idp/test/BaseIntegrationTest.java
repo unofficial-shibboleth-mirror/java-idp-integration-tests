@@ -17,16 +17,21 @@
 
 package net.shibboleth.idp.test;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,9 +41,12 @@ import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterI
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.logic.Constraint;
+import net.shibboleth.utilities.java.support.net.URLBuilder;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
@@ -60,7 +68,10 @@ import org.opensaml.core.xml.io.UnmarshallerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.util.FileSystemUtils;
+import org.springframework.util.SocketUtils;
 import org.testng.Assert;
+import org.testng.ITestResult;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -73,12 +84,15 @@ import com.saucelabs.common.SauceOnDemandAuthentication;
  */
 public abstract class BaseIntegrationTest {
 
-    /** Base web server URL. */
-    @Nonnull public final static String BASE_URL = "https://localhost:8443";
+    /** Name of property defining the host that the web server listens on. */
+    @Nonnull public final static String SERVER_ADDRESS_PROPERTY = "server.address";
 
     /** Directory in which distributions will be unpackaged. */
     @Nonnull public final static String TEST_DISTRIBUTIONS_DIRECTORY = "test-distributions";
-
+    
+    /** Name of property defining the port that the test directory server listens on. */
+    @Nonnull public final static String TEST_LDAP_PORT_PROPERTY = "test.ldap.port";
+    
     /** IdP XML security manager property key. */
     @Nonnull public final static String IDP_XML_SECURITY_MANAGER_PROP_NAME = "idp.xml.securityManager";
 
@@ -129,6 +143,33 @@ public abstract class BaseIntegrationTest {
     
     /** Additional commands used to start the Jetty server process. */
     @NonnullAfterInit protected List<String> serverCommands = new ArrayList<>();
+    
+    /** Non-secure web server base URL. Defaults to http://localhost:8080. */
+    @NonnullAfterInit protected String baseURL;
+
+    /** Non-secure port that the web server listens on. Defaults to 8080. */
+    @Nonnull protected Integer port = 8080;
+
+    /** Non-secure address that the web server listens on. Defaults to "localhost". */
+    @Nonnull protected String address = "localhost";
+
+    /** Secure web server base URL. Defaults to https://localhost:8443. */
+    @NonnullAfterInit protected String secureBaseURL;
+
+    /** Secure address that the web server listens on. Defaults to "localhost". */
+    @Nonnull protected String secureAddress = "localhost";
+
+    /** Secure port that the web server listens on. Defaults to 8443. */
+    @Nonnull protected Integer securePort = 8443;
+
+    /** Backchannel port that the web server listens on. Defaults to 9443. */
+    @Nonnull protected Integer backchannelPort = 9443;
+
+    /** Port that the test LDAP server listens on. Defaults to 10389. */
+    @Nonnull protected Integer ldapPort = 10389;
+    
+    /** Whether to use the secure base URL by default. Defaults to false. */
+    @Nonnull protected boolean useSecureBaseURL = false; 
 
     /** Path to idp.home. */
     @NonnullAfterInit protected Path pathToIdPHome;
@@ -144,6 +185,9 @@ public abstract class BaseIntegrationTest {
 
     /** Path to jetty.home. */
     @NonnullAfterInit protected Path pathToJettyHome;
+    
+    /** Pattern used when creating per test idp.home directory. Defaults to yyyyMMdd-HHmmssSS. **/
+    @Nullable protected String idpHomePattern = "yyyyMMdd-HHmmssSS";
 
     /** Parser pool */
     @NonnullAfterInit protected ParserPool parserPool;
@@ -157,29 +201,32 @@ public abstract class BaseIntegrationTest {
     /** Web driver. */
     @Nonnull protected WebDriver driver;
 
-    /** URL to start the flow. */
-    @Nullable protected String startFlowURL;
+    /** URL path to start the flow. */
+    @Nullable protected String startFlowURLPath;
 
-    /** URL of login page. */
-    @Nullable protected String loginPageURL;
+    /** URL path of login page. */
+    @Nullable protected String loginPageURLPath;
 
-    /** URL of page containing the SAML response at the SP. */
-    @Nullable protected String responsePageURL;
+    /** URL path of page containing the SAML response at the SP. */
+    @Nullable protected String responsePageURLPath;
 
-    /** URL to start the passive flow. */
-    @Nullable protected String isPassiveRequestURL;
+    /** URL path to start the passive flow. */
+    @Nullable protected String isPassiveRequestURLPath;
 
-    /** URL to start the force authn flow. */
-    @Nullable protected String forceAuthnRequestURL;
+    /** URL path to start the force authn flow. */
+    @Nullable protected String forceAuthnRequestURLPath;
 
-    /** IdP single logout service endpoint. */
-    @Nullable protected String idpLogoutURL;
+    /** URL path of IdP single logout service endpoint. */
+    @Nullable protected String idpLogoutURLPath;
 
-    /** SP single logout service endpoint. */
-    @Nullable protected String spLogoutURL;
+    /** URL path of SP single logout service endpoint. */
+    @Nullable protected String spLogoutURLPath;
 
     /** Name of test class concatenated with the test method. **/
     @Nullable protected String testName;
+    
+    /** Whether any test method in a class failed. **/
+    @Nonnull protected boolean testClassFailed;
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(BaseIntegrationTest.class);
@@ -197,8 +244,10 @@ public abstract class BaseIntegrationTest {
 
     /**
      * Setup paths to the IdP and Jetty.
+     * 
+     * @throws Exception if an error occurs
      */
-    @BeforeClass public void setUpPaths() {
+    @BeforeClass public void setUpPaths() throws Exception {
 
         // Path to the project build directory.
         final Path buildPath = Paths.get(TEST_DISTRIBUTIONS_DIRECTORY);
@@ -218,18 +267,31 @@ public abstract class BaseIntegrationTest {
         Assert.assertNotNull(pathToJettyHome, "Path to jetty.home not found");
         Assert.assertTrue(pathToJettyHome.toAbsolutePath().toFile().exists(), "Path to jetty.home not found");
 
-        // Path to idp.home
+        // Path to idp.home from distribution.
+        Path pathToDistIdPHome = null;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*shibboleth-identity-provider-*")) {
             for (Path entry : stream) {
-                pathToIdPHome = entry;
+                pathToDistIdPHome = entry;
                 break;
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        log.debug("Path to distribution idp.home '{}'", pathToDistIdPHome.toAbsolutePath());
+        Assert.assertNotNull(pathToDistIdPHome, "Path to distribution idp.home not found");
+        Assert.assertTrue(pathToDistIdPHome.toAbsolutePath().toFile().exists(), "Path to dist idp.home not found");
+
+        // Path to per-test idp.home
+        final String timestamp = new DateTime().toString(DateTimeFormat.forPattern(idpHomePattern));
+        pathToIdPHome = pathToDistIdPHome.getParent().resolve(timestamp);
         log.debug("Path to idp.home '{}'", pathToIdPHome.toAbsolutePath());
-        Assert.assertNotNull(pathToIdPHome, "Path to idp.home not found");
-        Assert.assertTrue(pathToIdPHome.toAbsolutePath().toFile().exists(), "Path to idp.home not found");
+        Assert.assertFalse(pathToIdPHome.toAbsolutePath().toFile().exists(), "Path to idp.home already exists");
+        
+        // Copy idp.home directory from distribution to new per test directory
+        final File sourceDir = pathToDistIdPHome.toAbsolutePath().toFile();
+        final File destinationDir = pathToIdPHome.toAbsolutePath().toFile();
+        FileSystemUtils.copyRecursively(sourceDir, destinationDir);
+        Assert.assertTrue(destinationDir.exists(), "Path to idp.home not found");
 
         // Set idp.home system property
         System.setProperty("idp.home", pathToIdPHome.toAbsolutePath().toString());
@@ -247,6 +309,95 @@ public abstract class BaseIntegrationTest {
         // Path to conf/ldap.properties
         pathToLDAPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "ldap.properties");
         Assert.assertTrue(pathToLDAPProperties.toFile().exists(), "Path to conf/ldap.properties not found");
+    }
+    
+    /**
+     * Set up the address that the web server listens on, defaults to localhost. If a {@link #SERVER_ADDRESS_PROPERTY}
+     * system property exists, use that as the address.
+     * 
+     */
+    @BeforeClass public void setUpAddresses() {
+        final String serverAddress = System.getProperty(SERVER_ADDRESS_PROPERTY);
+        if (serverAddress != null) {
+            address = serverAddress;
+            secureAddress = serverAddress;
+        }
+    }
+
+    /**
+     * Set up available random ports between 20000 and 30000 for the web server to listen on as well as a port for the
+     * test LDAP server;
+     */
+    @BeforeClass(enabled = true) public void setUpRandomPorts() {
+        final SortedSet<Integer> ports = SocketUtils.findAvailableTcpPorts(4, 20000, 30000);
+        final Iterator<Integer> iterator = ports.iterator();
+
+        port = iterator.next();
+        log.info("Non-secure port '{}'", port);
+
+        securePort = iterator.next();
+        log.info("Secure port '{}'", securePort);
+
+        backchannelPort = iterator.next();
+        log.info("Backchannel port '{}'", backchannelPort);
+
+        ldapPort = iterator.next();
+        log.info("LDAP port '{}'", ldapPort);
+        serverCommands.add("-D" + TEST_LDAP_PORT_PROPERTY + "=" + Integer.toString(ldapPort));
+    }
+
+    /**
+     * Set up endpoint URLs.
+     */
+    @BeforeClass(dependsOnMethods = {"setUpAddresses", "setUpRandomPorts"}) public void setUpBaseURLs() {
+        final URLBuilder urlBuilder = new URLBuilder();
+        urlBuilder.setScheme("http");
+        urlBuilder.setHost(address);
+        urlBuilder.setPort(port);
+        baseURL = urlBuilder.buildURL();
+        log.info("Base URL '{}'", baseURL);
+
+        final URLBuilder secureUrlBuilder = new URLBuilder();
+        secureUrlBuilder.setScheme("https");
+        secureUrlBuilder.setHost(secureAddress);
+        secureUrlBuilder.setPort(securePort);
+        secureBaseURL = secureUrlBuilder.buildURL();
+        log.info("Secure base URL '{}'", secureBaseURL);
+    }
+
+    /**
+     * Set up endpoints by replacing "localhost" in configuration files.
+     * 
+     * <ul>
+     * <li>Configure access in conf/access-control.xml</li>
+     * <li>Configure LDAP port in conf/ldap.properties</li>
+     * <li>Configure Jetty endpoints in jetty-base/start.d/idp.ini</li>
+     * <li>Configure metadata endpoints in metadata/example-metadata.xml</li>
+     * </ul>
+     * 
+     * @throws Exception if an error occurs.
+     */
+    @BeforeClass(dependsOnMethods = {"setUpBaseURLs", "setUpPaths"}) public void setUpEndpoints() throws Exception {
+
+        // Access control from non-localhost.
+        if (!address.equalsIgnoreCase("localhost")) {
+            replaceConfFile(Paths.get("conf", "access-control.xml"), "127\\.0\\.0\\.1/32", address + "/32");
+        }
+
+        // LDAP port.
+        replaceLDAPProperty("idp.authn.LDAP.ldapURL", "ldap://localhost:" + ldapPort);
+
+        // Jetty endpoints.
+        final Path pathToJettyIdPIni = pathToJettyBase.resolve(Paths.get("start.d", "idp.ini"));
+        replaceProperty(pathToJettyIdPIni, "jetty.host", secureAddress);
+        replaceProperty(pathToJettyIdPIni, "jetty.https.port", Integer.toString(securePort));
+        replaceProperty(pathToJettyIdPIni, "jetty.backchannel.port", Integer.toString(backchannelPort));
+        replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.host", address);
+        replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.port", Integer.toString(port));
+
+        // Metadata.
+        replaceConfFile(Paths.get("metadata", "example-metadata.xml"), "http://localhost:8080", baseURL);
+        replaceConfFile(Paths.get("metadata", "example-metadata.xml"), "https://localhost:8443", secureBaseURL);
     }
 
     /**
@@ -272,21 +423,8 @@ public abstract class BaseIntegrationTest {
      *
      * @throws Exception
      */
-    @BeforeClass(dependsOnMethods = {"setupPaths"}) public void disableLDAPSTARTTLS() throws Exception {
+    @BeforeClass(dependsOnMethods = {"setUpPaths"}) public void disableLDAPSTARTTLS() throws Exception {
         replaceLDAPProperty("idp.authn.LDAP.useStartTLS", "false");
-    }
-
-    /**
-     * Restore conf/ldap.properties from dist/conf/ldap.properties.dist.
-     * 
-     * @throws IOException if an I/O error occurs
-     */
-    @AfterClass(alwaysRun = true) public void restoreLDAPProperties() throws IOException {
-        final Path pathToLDAPPropertiesDist =
-                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "dist", "conf", "ldap.properties.dist");
-        Assert.assertTrue(pathToLDAPPropertiesDist.toFile().exists());
-
-        Files.copy(pathToLDAPPropertiesDist, pathToLDAPProperties, StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**
@@ -359,6 +497,47 @@ public abstract class BaseIntegrationTest {
         pwc.load(propertyResource.getInputStream());
         pwc.replaceProperty(key, value);
         pwc.store(propertyResource.getOutputStream());
+    }
+    
+    /**
+     * Replace contents of a conf file, whose path is relative to idp.home.
+     * 
+     * The regular expression is replaced with the replacement string and the file is over-written.
+     * 
+     * @param relativePath path to file relative to idp.home
+     * @param regex regular expression to be replaced
+     * @param replacement string to be substituted for each match
+     * @throws IOException if the file cannot be overwritten
+     */
+    public void replaceConfFile(@Nonnull final Path relativePath, @Nonnull @NotEmpty final String regex,
+            @Nonnull @NotEmpty final String replacement) throws IOException {
+        replaceFile(pathToIdPHome.resolve(relativePath), regex, replacement);
+    }
+
+    /**
+     * Replace contents of a file.
+     * 
+     * The regular expression is replaced with the replacement string and the file is over-written.
+     * 
+     * See {@link String#replaceAll(String, String)} and {@link Files#write(Path, byte[], java.nio.file.OpenOption...).
+     * 
+     * @param pathToFile path to the file
+     * @param regex regular expression to be replaced
+     * @param replacement string to be substituted for each match
+     * @throws IOException if the file cannot be overwritten
+     */
+    public void replaceFile(@Nonnull final Path pathToFile, @Nonnull @NotEmpty final String regex,
+            @Nonnull @NotEmpty final String replacement) throws IOException {
+        log.debug("Replacing regex '{}' with '{}' in file '{}'", regex, replacement, pathToFile);
+
+        Assert.assertNotNull(pathToFile, "Path not found");
+        Assert.assertTrue(pathToFile.toAbsolutePath().toFile().exists(), "Path does not exist");
+
+        Charset charset = StandardCharsets.UTF_8;
+
+        String content = new String(Files.readAllBytes(pathToFile), charset);
+        content = content.replaceAll(regex, replacement);
+        Files.write(pathToFile, content.getBytes(charset));
     }
 
     /**
@@ -497,6 +676,37 @@ public abstract class BaseIntegrationTest {
     }
 
     /**
+     * Set {@link #testClassFailed} to false before running tests in a class.
+     */
+    @BeforeClass public void setUpTestClassFailed() {
+        testClassFailed = false;
+    }
+
+    /**
+     * Set {@link #testClassFailed} to true if any test method failed.
+     * 
+     * @param result the TestNG test result
+     */
+    @AfterMethod public void failTestClass(@Nonnull final ITestResult result) {
+        if (result.getStatus() == ITestResult.FAILURE) {
+            testClassFailed = true;
+        }
+    }
+
+    /**
+     * Delete the per-test idp.home directory if there were no failures in the test class.
+     */
+    @AfterClass(enabled = true) public void deletePerTestIdPHomeDirectory() {
+        if (testClassFailed) {
+            log.debug("There was a test class failure, not deleting per-test idp.home directory '{}'",
+                    pathToIdPHome.toAbsolutePath());
+        } else {
+            log.debug("Deleting per-test idp.home directory '{}'", pathToIdPHome.toAbsolutePath());
+            FileSystemUtils.deleteRecursively(pathToIdPHome.toAbsolutePath().toFile());
+        }
+    }
+
+    /**
      * Quit the web driver.
      */
     @AfterMethod(enabled = true) public void tearDownDriver() {
@@ -506,30 +716,51 @@ public abstract class BaseIntegrationTest {
     }
 
     /**
-     * Start the flow by accessing the {@link #startFlowURL}.
+     * Get the web server base URL. For example, "http://localhost:8080" or "https://localhost:8443" if secure.
+     * 
+     * Whether the URL returned is secure or not is determined by {@link #useSecureBaseURL}.
+     * 
+     * @return the web server base URL
      */
-    public void startFlow() {
-        driver.get(startFlowURL);
+    @NonnullAfterInit public String getBaseURL() {
+        return getBaseURL(useSecureBaseURL);
     }
 
     /**
-     * Wait for the login page at the {@link #loginPageURL}.
+     * Get the web server base URL. For example, "http://localhost:8080" or "https://localhost:8443" if secure.
+     * 
+     * @param secure whether the URL should be secure
+     * @return the web server base URL
+     */
+    @NonnullAfterInit public String getBaseURL(boolean secure) {
+        return (secure == false) ? baseURL : secureBaseURL;
+    }
+
+    /**
+     * Start the flow by accessing the URL composed of {@link #getBaseURL()} and {@link #startFlowURLPath}.
+     */
+    public void startFlow() {
+        driver.get(getBaseURL() + startFlowURLPath);
+    }
+
+    /**
+     * Wait for the login page at the URL composed of {@link #getBaseURL()} and {@link #loginPageURLPath}.
      */
     public void waitForLoginPage() {
         (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
-                return d.getCurrentUrl().startsWith(loginPageURL);
+                return d.getCurrentUrl().startsWith(getBaseURL() + loginPageURLPath);
             }
         });
     }
 
     /**
-     * Wait for page containing SAML response at {@link #responsePageURL}.
+     * Wait for page containing SAML response at URL composed of {@link #getBaseURL()} and {@link #responsePageURLPath}.
      */
     public void waitForResponsePage() {
         (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
-                return d.getCurrentUrl().equals(responsePageURL);
+                return d.getCurrentUrl().equals(getBaseURL() + responsePageURLPath);
             }
         });
     }
@@ -599,24 +830,24 @@ public abstract class BaseIntegrationTest {
     }
 
     /**
-     * Get and wait for testbed page at {@link #BASE_URL}.
+     * Get and wait for testbed page at {@link #getBaseURL()}.
      */
     public void getAndWaitForTestbedPage() {
-        driver.get(BASE_URL);
+        driver.get(getBaseURL());
         (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
-                return d.getCurrentUrl().equals(BASE_URL + "/");
+                return d.getCurrentUrl().equals(getBaseURL() + "/");
             }
         });
     }
 
     /**
-     * Wait for IdP logout page at {@link #idpLogoutURL}.
+     * Wait for IdP logout page at URL composed of {@link #getBaseURL()} and {@link #idpLogoutURLPath}.
      */
     public void waitForLogoutPage() {
         (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
-                return d.getCurrentUrl().startsWith(idpLogoutURL);
+                return d.getCurrentUrl().startsWith(getBaseURL() + idpLogoutURLPath);
             }
         });
     }

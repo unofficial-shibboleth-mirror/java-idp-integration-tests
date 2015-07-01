@@ -109,7 +109,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
         Assert.assertTrue(xmlObject instanceof LogoutResponse);
 
         final SAML2TestStatusResponseTypeValidator validator = new SAML2TestStatusResponseTypeValidator();
-        validator.destination = spLogoutURL;
+        validator.destination = getBaseURL() + spLogoutURLPath;
         validator.validateResponse((LogoutResponse) xmlObject);
     }
 
@@ -454,7 +454,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         // twice
 
-        driver.get(forceAuthnRequestURL);
+        driver.get(getBaseURL() + forceAuthnRequestURLPath);
 
         waitForLoginPage();
 
@@ -475,7 +475,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
         startJettyServer();
 
         // start flow
-        driver.get(isPassiveRequestURL);
+        driver.get(getBaseURL() +  isPassiveRequestURLPath);
 
         waitForResponsePage();
 
@@ -521,7 +521,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         // isPassive
 
-        driver.get(isPassiveRequestURL);
+        driver.get(getBaseURL() + isPassiveRequestURLPath);
 
         // response
 

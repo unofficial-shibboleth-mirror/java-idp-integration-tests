@@ -25,8 +25,8 @@ import org.testng.annotations.Test;
  */
 public class StatusTest extends BaseIntegrationTest {
 
-    /** IdP status URL. */
-    public final static String STATUS_URL = BASE_URL + "/idp/status";
+    /** Path to status page. */
+    public final static String statusPath = "/idp/status";
 
     /** Initial text of status page . */
     public final static String STARTS_WITH = "### Operating Environment Information";
@@ -35,7 +35,7 @@ public class StatusTest extends BaseIntegrationTest {
 
         startJettyServer();
 
-        driver.get(STATUS_URL);
+        driver.get(baseURL + statusPath);
 
         Assert.assertTrue(getPageSource().startsWith(STARTS_WITH));
     }
