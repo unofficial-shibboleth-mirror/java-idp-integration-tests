@@ -42,9 +42,11 @@ public class StatusTest extends BaseIntegrationTest {
 
         startJettyServer();
 
+        Reporter.log("URL " + baseURL + statusPath, true);
+        
         driver.get(baseURL + statusPath);
         
-        Reporter.log(getPageSource());
+        Reporter.log("source " + getPageSource(), true);
         
         log.info("source '{}'", getPageSource());
 
