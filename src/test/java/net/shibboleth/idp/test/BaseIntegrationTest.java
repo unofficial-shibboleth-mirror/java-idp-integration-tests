@@ -802,10 +802,10 @@ public abstract class BaseIntegrationTest {
     @Nullable public String getPageSource() {
         String pageSource = null;
 
-        if (driver instanceof FirefoxDriver) {
-            pageSource = driver.findElement(By.tagName("body")).getText();
-        } else {
+        if (driver instanceof HtmlUnitDriver) {
             pageSource = driver.getPageSource();
+        } else {
+            pageSource = driver.findElement(By.tagName("body")).getText();
         }
 
         return pageSource;
