@@ -44,6 +44,12 @@ public class StatusTest extends BaseIntegrationTest {
 
         getAndWaitForTestbedPage();
         
+        Thread.sleep(3 * 1000);
+        
+        getAndWaitForTestbedPage();
+        
+        Thread.sleep(3 * 1000);
+        
         Reporter.log("URL " + baseURL + statusPath, true);
         
         driver.get(baseURL + statusPath);
@@ -53,6 +59,12 @@ public class StatusTest extends BaseIntegrationTest {
         log.info("source '{}'", getPageSource());
 
         Assert.assertTrue(getPageSource().startsWith(STARTS_WITH));
+        
+        Thread.sleep(3 * 1000);
+        
+        getAndWaitForTestbedPage();
+        
+        Thread.sleep(3 * 1000);
     }
 
 }
