@@ -17,7 +17,12 @@
 
 package net.shibboleth.idp.test;
 
+import javax.annotation.Nonnull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
+import org.testng.Reporter;
 import org.testng.annotations.Test;
 
 /**
@@ -25,6 +30,8 @@ import org.testng.annotations.Test;
  */
 public class StatusTest extends BaseIntegrationTest {
 
+    @Nonnull private final Logger log = LoggerFactory.getLogger(StatusTest.class);
+    
     /** Path to status page. */
     public final static String statusPath = "/idp/status";
 
@@ -36,6 +43,10 @@ public class StatusTest extends BaseIntegrationTest {
         startJettyServer();
 
         driver.get(baseURL + statusPath);
+        
+        Reporter.log(getPageSource());
+        
+        log.info("source '{}'", getPageSource());
 
         Assert.assertTrue(getPageSource().startsWith(STARTS_WITH));
     }
