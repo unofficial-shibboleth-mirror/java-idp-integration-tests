@@ -381,10 +381,11 @@ public abstract class BaseIntegrationTest {
      * 
      * @throws Exception if an error occurs.
      */
-    @BeforeClass(dependsOnMethods = {"setUpBaseURLs", "setUpPaths"}) public void setUpEndpoints() throws Exception {
+    @BeforeClass(dependsOnMethods = {"setUpBaseURLs", "setUpPaths", "setUpSauceLabsClientIPRange"}) public void
+            setUpEndpoints() throws Exception {
 
         // Access control from non-localhost.
-        
+
         if (!clientIPRange.equalsIgnoreCase("127.0.0.1/32")) {
             replaceIdPHomeFile(Paths.get("conf", "access-control.xml"), "127\\.0\\.0\\.1/32", clientIPRange);
         }
@@ -404,7 +405,7 @@ public abstract class BaseIntegrationTest {
         replaceIdPHomeFile(Paths.get("metadata", "example-metadata.xml"), "http://localhost:8080", baseURL);
         replaceIdPHomeFile(Paths.get("metadata", "example-metadata.xml"), "https://localhost:8443", secureBaseURL);
     }
-    
+
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"}) public void setUpDebugLogging() throws Exception {
         final Path pathToLogbackXML = Paths.get("conf", "logback.xml");
 
@@ -665,6 +666,10 @@ public abstract class BaseIntegrationTest {
         setUpDesiredCapabilities();
         driver = new RemoteWebDriver(url, desiredCapabilities);
         
+        
+    }
+    
+    @BeforeClass(enabled = true) public void setUpSauceLabsClientIPRange() {
         // Sauce Labs IP Range
         clientIPRange = "162.222.73/24";
     }
