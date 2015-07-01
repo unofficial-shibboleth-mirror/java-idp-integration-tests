@@ -171,6 +171,9 @@ public abstract class BaseIntegrationTest {
     
     /** Whether to use the secure base URL by default. Defaults to false. */
     @Nonnull protected boolean useSecureBaseURL = false; 
+    
+    /** Client IP range to allow access from. Defaults to "127.0.0.1/32". */
+    @Nonnull protected String clientIPRange = "127.0.0.1/32";
 
     /** Path to idp.home. */
     @NonnullAfterInit protected Path pathToIdPHome;
@@ -381,8 +384,9 @@ public abstract class BaseIntegrationTest {
     @BeforeClass(dependsOnMethods = {"setUpBaseURLs", "setUpPaths"}) public void setUpEndpoints() throws Exception {
 
         // Access control from non-localhost.
-        if (!address.equalsIgnoreCase("localhost")) {
-            replaceIdPHomeFile(Paths.get("conf", "access-control.xml"), "127\\.0\\.0\\.1/32", address + "/32");
+        
+        if (!clientIPRange.equalsIgnoreCase("127.0.0.1/32")) {
+            replaceIdPHomeFile(Paths.get("conf", "access-control.xml"), "127\\.0\\.0\\.1/32", clientIPRange);
         }
 
         // LDAP port.
@@ -660,6 +664,9 @@ public abstract class BaseIntegrationTest {
         final URL url = new URL("http://" + username + ":" + accesskey + "@ondemand.saucelabs.com:80/wd/hub");
         setUpDesiredCapabilities();
         driver = new RemoteWebDriver(url, desiredCapabilities);
+        
+        // Sauce Labs IP Range
+        clientIPRange = "162.222.73/24";
     }
 
     /**
