@@ -72,6 +72,7 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.util.SocketUtils;
 import org.testng.Assert;
 import org.testng.ITestResult;
+import org.testng.Reporter;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -685,6 +686,10 @@ public abstract class BaseIntegrationTest {
         log.debug("Desired capabilities '{}'", desiredCapabilities);
         
         System.out.println("Desired capabilities " + desiredCapabilities);
+        System.out.println("SAUCE_ONDEMAND_HOST " + System.getenv("SAUCE_ONDEMAND_HOST"));
+        
+        Reporter.log("Desired capabilities " + desiredCapabilities, true);
+        Reporter.log("SAUCE_ONDEMAND_HOST " + System.getenv("SAUCE_ONDEMAND_HOST"), true);
     }
 
     /**
