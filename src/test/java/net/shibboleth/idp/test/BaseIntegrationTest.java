@@ -619,7 +619,7 @@ public abstract class BaseIntegrationTest {
     /**
      * Set up HtmlUnitDriver web driver.
      */
-    @BeforeMethod(enabled = true) public void setUpHtmlUnitDriver() throws IOException {
+    @BeforeMethod(enabled = false) public void setUpHtmlUnitDriver() throws IOException {
         driver = new HtmlUnitDriver();
         ((HtmlUnitDriver) driver).setJavascriptEnabled(true);
     }
@@ -644,7 +644,7 @@ public abstract class BaseIntegrationTest {
      * 
      * @throws IOException
      */
-    @BeforeMethod(enabled = false, dependsOnMethods = {"setUpTestName"}) public void setUpSauceDriver() throws IOException {
+    @BeforeMethod(enabled = true, dependsOnMethods = {"setUpTestName"}) public void setUpSauceDriver() throws IOException {
         final SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication();
         final String username = authentication.getUsername();
         final String accesskey = authentication.getAccessKey();
