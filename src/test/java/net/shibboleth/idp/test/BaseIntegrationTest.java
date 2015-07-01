@@ -381,7 +381,7 @@ public abstract class BaseIntegrationTest {
 
         // Access control from non-localhost.
         if (!address.equalsIgnoreCase("localhost")) {
-            replaceConfFile(Paths.get("conf", "access-control.xml"), "127\\.0\\.0\\.1/32", address + "/32");
+            replaceIdPHomeFile(Paths.get("conf", "access-control.xml"), "127\\.0\\.0\\.1/32", address + "/32");
         }
 
         // LDAP port.
@@ -396,8 +396,16 @@ public abstract class BaseIntegrationTest {
         replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.port", Integer.toString(port));
 
         // Metadata.
-        replaceConfFile(Paths.get("metadata", "example-metadata.xml"), "http://localhost:8080", baseURL);
-        replaceConfFile(Paths.get("metadata", "example-metadata.xml"), "https://localhost:8443", secureBaseURL);
+        replaceIdPHomeFile(Paths.get("metadata", "example-metadata.xml"), "http://localhost:8080", baseURL);
+        replaceIdPHomeFile(Paths.get("metadata", "example-metadata.xml"), "https://localhost:8443", secureBaseURL);
+    }
+    
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"}) public void setUpDebugLogging() throws Exception {
+        final Path pathToLogbackXML = Paths.get("conf", "logback.xml");
+
+        replaceIdPHomeFile(pathToLogbackXML, "<logger name=\"net.shibboleth.idp\" level=\"INFO\"/>",
+                "<logger name=\"net.shibboleth.idp\" level=\"DEBUG\"/>");
+        // TODO more
     }
 
     /**
@@ -509,7 +517,7 @@ public abstract class BaseIntegrationTest {
      * @param replacement string to be substituted for each match
      * @throws IOException if the file cannot be overwritten
      */
-    public void replaceConfFile(@Nonnull final Path relativePath, @Nonnull @NotEmpty final String regex,
+    public void replaceIdPHomeFile(@Nonnull final Path relativePath, @Nonnull @NotEmpty final String regex,
             @Nonnull @NotEmpty final String replacement) throws IOException {
         replaceFile(pathToIdPHome.resolve(relativePath), regex, replacement);
     }
@@ -673,6 +681,8 @@ public abstract class BaseIntegrationTest {
         }
 
         desiredCapabilities.setCapability("name", testName);
+        
+        log.debug("Desired capabilities '{}'", desiredCapabilities);
     }
 
     /**
