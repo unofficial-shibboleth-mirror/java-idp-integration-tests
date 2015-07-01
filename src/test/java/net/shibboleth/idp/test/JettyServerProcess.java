@@ -87,16 +87,24 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
 
     /** Whether the Jetty server process is running. */
     @Nonnull private boolean isRunning = false;
+    
+    /** Additional commands used to start the Jetty server process. */
+    @Nullable private List<String> additionalCommands;
 
     /**
      * Constructor.
      * 
      * @param jettyBasePath path to jetty.base
      * @param jettyHomePath path to jetty.home
+     * @param commands additional commands to start the Jetty server
      */
-    public JettyServerProcess(@Nonnull final Path jettyBasePath, @Nonnull final Path jettyHomePath) {
+    public JettyServerProcess(@Nonnull final Path jettyBasePath, @Nonnull final Path jettyHomePath,
+            @Nullable final List<String> commands) {
         pathToJettyBase = Constraint.isNotNull(jettyBasePath, "Path to jetty.base cannot be null");
         pathToJettyHome = Constraint.isNotNull(jettyHomePath, "Path to jetty.home cannot be null");
+        if (commands != null) {
+            additionalCommands = commands;
+        }
     }
 
     /** {@inheritDoc} */
@@ -134,11 +142,18 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
         commands.add("-Didp.home=" + idpHome);
         commands.add("-jar");
         commands.add(pathToJettyHome.toAbsolutePath().toString() + "/start.jar");
+        
+        if (additionalCommands != null && !additionalCommands.isEmpty()) {
+            log.debug("Additional commands '{}'", additionalCommands);
+            commands.addAll(additionalCommands);
+        }
 
         // Create the process builder.
         processBuilder = new ProcessBuilder(commands);
         processBuilder.redirectErrorStream(true);
         processBuilder.directory(pathToJettyBase.toAbsolutePath().toFile());
+        
+        log.debug("Will start Jetty using command '{}'", processBuilder.command());
     }
 
     /** {@inheritDoc} */

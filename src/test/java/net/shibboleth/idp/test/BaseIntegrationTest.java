@@ -25,6 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -124,6 +126,9 @@ public abstract class BaseIntegrationTest {
 
     /** Jetty server process. */
     @NonnullAfterInit protected JettyServerProcess server;
+    
+    /** Additional commands used to start the Jetty server process. */
+    @NonnullAfterInit protected List<String> serverCommands = new ArrayList<>();
 
     /** Path to idp.home. */
     @NonnullAfterInit protected Path pathToIdPHome;
@@ -293,7 +298,7 @@ public abstract class BaseIntegrationTest {
      * @throws ComponentInitializationException if the server cannot be initialized
      */
     public void startJettyServer() throws ComponentInitializationException {
-        server = new JettyServerProcess(pathToJettyBase, pathToJettyHome);
+        server = new JettyServerProcess(pathToJettyBase, pathToJettyHome, serverCommands);
         server.initialize();
         server.start();
     }
