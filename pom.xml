@@ -249,6 +249,26 @@
                             <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
                         </configuration>
                     </execution>
+                    <!-- Copy example metadata from idp-conf test jar. -->
+                    <execution>
+                        <id>unpack-idp-conf-example-metadata</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>net.shibboleth.idp</groupId>
+                                    <artifactId>idp-conf</artifactId>
+                                    <version>${idp.version}</version>
+                                    <type>test-jar</type>
+                                    <includes>metadata/**</includes>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                        </configuration>
+                    </execution>
                     <!-- Unpack jetty-distribution to test-distributions directory. -->
                     <execution>
                         <id>unpack-jetty-distribution</id>
@@ -340,22 +360,6 @@
                             </resources>
                             <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/conf/</outputDirectory>
                             <overwrite>true</overwrite>
-                        </configuration>
-                    </execution>
-                    <!-- Copy example-metadata.xml. -->
-                    <execution>
-                        <id>copy-example-metadata</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <resources>
-                                <resource>
-                                    <directory>src/test/metadata</directory>
-                                </resource>
-                            </resources>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/metadata/</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
