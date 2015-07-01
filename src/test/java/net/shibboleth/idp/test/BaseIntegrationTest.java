@@ -683,6 +683,8 @@ public abstract class BaseIntegrationTest {
         desiredCapabilities.setCapability("name", testName);
         
         log.debug("Desired capabilities '{}'", desiredCapabilities);
+        
+        System.out.println("Desired capabilities " + desiredCapabilities);
     }
 
     /**
