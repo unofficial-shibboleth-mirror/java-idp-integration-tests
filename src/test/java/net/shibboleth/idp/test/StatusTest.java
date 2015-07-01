@@ -42,6 +42,8 @@ public class StatusTest extends BaseIntegrationTest {
 
         startJettyServer();
 
+        getAndWaitForTestbedPage();
+        
         Reporter.log("URL " + baseURL + statusPath, true);
         
         driver.get(baseURL + statusPath);
