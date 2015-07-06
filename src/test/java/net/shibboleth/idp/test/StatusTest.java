@@ -25,6 +25,8 @@ import org.testng.Assert;
 import org.testng.Reporter;
 import org.testng.annotations.Test;
 
+import com.saucelabs.testng.SauceBrowserDataProvider;
+
 /**
  * Status test.
  */
@@ -38,8 +40,13 @@ public class StatusTest extends BaseIntegrationTest {
     /** Initial text of status page . */
     public final static String STARTS_WITH = "### Operating Environment Information";
 
-    @Test public void testStatus() throws Exception {
+    @Test(dataProvider = "sauceBrowserDataProvider", dataProviderClass = SauceBrowserDataProvider.class)
+    public void testStatus(String browser, String version, String os) throws Exception {
 
+        Reporter.log("browser [" + browser + "]");
+        Reporter.log("version [" + version + "]");
+        Reporter.log("os [" + os + "]");
+        
         startJettyServer();
 
         getAndWaitForTestbedPage();
@@ -47,11 +54,10 @@ public class StatusTest extends BaseIntegrationTest {
         driver.get(baseURL + statusPath);
 
         Reporter.log("URL " + baseURL + statusPath, true);
-        Reporter.log("Source " +  getPageSource(), true);
+        Reporter.log("Source " + getPageSource(), true);
 
         Assert.assertTrue(getPageSource().startsWith(STARTS_WITH));
 
         getAndWaitForTestbedPage();
     }
-
 }

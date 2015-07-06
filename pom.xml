@@ -159,6 +159,12 @@
             <version>${sauce.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.saucelabs</groupId>
+            <artifactId>sauce_testng</artifactId>
+            <version>${sauce.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Managed Dependencies -->
     </dependencies>
