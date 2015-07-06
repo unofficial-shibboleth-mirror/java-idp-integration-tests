@@ -23,13 +23,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.Reporter;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import com.saucelabs.testng.SauceBrowserDataProvider;
+import com.saucelabs.testng.SauceOnDemandTestListener;
 
 /**
  * Status test.
  */
+@Listeners({SauceOnDemandTestListener.class})
 public class StatusTest extends BaseIntegrationTest {
 
     @Nonnull private final Logger log = LoggerFactory.getLogger(StatusTest.class);
