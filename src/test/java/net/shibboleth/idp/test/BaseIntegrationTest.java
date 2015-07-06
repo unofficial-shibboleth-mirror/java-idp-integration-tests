@@ -207,6 +207,8 @@ public abstract class BaseIntegrationTest {
     @Nonnull protected WebDriver driver;
     
     @Nonnull protected ThreadLocal<WebDriver> threadLocalWebDriver = new ThreadLocal<WebDriver>();
+    
+    @Nonnull protected ThreadLocal<String> threadLocalSessionId = new ThreadLocal<String>();
 
     /** URL path to start the flow. */
     @Nullable protected String startFlowURLPath;
@@ -228,6 +230,8 @@ public abstract class BaseIntegrationTest {
 
     /** URL path of SP single logout service endpoint. */
     @Nullable protected String spLogoutURLPath;
+    
+    @Nullable protected SauceOnDemandAuthentication sauceOnDemandAuthentication;
 
     /** Name of test class concatenated with the test method. **/
     @Nullable protected String testName;
@@ -674,14 +678,18 @@ public abstract class BaseIntegrationTest {
     
     @BeforeMethod(enabled = false, dependsOnMethods = {"setUpTestName"})
     public void setUpSauceDriver(String browser, String version, String os) throws IOException {
-        final SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication();
-        final String username = authentication.getUsername();
-        final String accesskey = authentication.getAccessKey();
+        sauceOnDemandAuthentication = new SauceOnDemandAuthentication();
+        final String username = sauceOnDemandAuthentication.getUsername();
+        final String accesskey = sauceOnDemandAuthentication.getAccessKey();
         final URL url = new URL("http://" + username + ":" + accesskey + "@ondemand.saucelabs.com:80/wd/hub");
         setUpDesiredCapabilities(browser, version, os);
-        final WebDriver remoteWebDriver = new RemoteWebDriver(url, desiredCapabilities);
+        final RemoteWebDriver remoteWebDriver = new RemoteWebDriver(url, desiredCapabilities);
         threadLocalWebDriver.set(remoteWebDriver);
         driver = threadLocalWebDriver.get();
+        
+        remoteWebDriver.getSessionId();
+        
+        threadLocalSessionId.set(remoteWebDriver.getSessionId().toString());
     }
     
     public void setUpDesiredCapabilities(String browser, String version, String os) {

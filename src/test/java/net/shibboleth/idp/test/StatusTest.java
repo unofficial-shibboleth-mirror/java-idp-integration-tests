@@ -26,14 +26,17 @@ import org.testng.Reporter;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import com.saucelabs.common.SauceOnDemandAuthentication;
+import com.saucelabs.common.SauceOnDemandSessionIdProvider;
 import com.saucelabs.testng.SauceBrowserDataProvider;
+import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
 import com.saucelabs.testng.SauceOnDemandTestListener;
 
 /**
  * Status test.
  */
 @Listeners({SauceOnDemandTestListener.class})
-public class StatusTest extends BaseIntegrationTest {
+public class StatusTest extends BaseIntegrationTest  implements SauceOnDemandSessionIdProvider, SauceOnDemandAuthenticationProvider {
 
     @Nonnull private final Logger log = LoggerFactory.getLogger(StatusTest.class);
 
@@ -57,11 +60,9 @@ public class StatusTest extends BaseIntegrationTest {
         }
 
         setUpSauceDriver(browser, version, os);
-        
+
         startJettyServer();
 
-        
-        
         getAndWaitForTestbedPage();
 
         driver.get(baseURL + statusPath);
@@ -72,5 +73,15 @@ public class StatusTest extends BaseIntegrationTest {
         Assert.assertTrue(getPageSource().startsWith(STARTS_WITH));
 
         getAndWaitForTestbedPage();
+    }
+
+    /** {@inheritDoc} */
+    public SauceOnDemandAuthentication getAuthentication() {
+        return sauceOnDemandAuthentication;
+    }
+
+    /** {@inheritDoc} */
+    public String getSessionId() {
+        return threadLocalSessionId.get();
     }
 }
