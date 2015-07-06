@@ -231,7 +231,7 @@ public abstract class BaseIntegrationTest {
     /** URL path of SP single logout service endpoint. */
     @Nullable protected String spLogoutURLPath;
     
-    @Nullable protected SauceOnDemandAuthentication sauceOnDemandAuthentication;
+    @Nonnull protected SauceOnDemandAuthentication sauceOnDemandAuthentication = new SauceOnDemandAuthentication();
 
     /** Name of test class concatenated with the test method. **/
     @Nullable protected String testName;
@@ -678,7 +678,7 @@ public abstract class BaseIntegrationTest {
     
     @BeforeMethod(enabled = false, dependsOnMethods = {"setUpTestName"})
     public void setUpSauceDriver(String browser, String version, String os) throws IOException {
-        sauceOnDemandAuthentication = new SauceOnDemandAuthentication();
+        // sauceOnDemandAuthentication = new SauceOnDemandAuthentication();
         final String username = sauceOnDemandAuthentication.getUsername();
         final String accesskey = sauceOnDemandAuthentication.getAccessKey();
         final URL url = new URL("http://" + username + ":" + accesskey + "@ondemand.saucelabs.com:80/wd/hub");
