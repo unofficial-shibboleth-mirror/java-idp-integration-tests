@@ -50,14 +50,20 @@ public class StatusTest extends BaseIntegrationTest {
         Reporter.log("version [" + version + "]");
         Reporter.log("os [" + os + "]");
         
+        final String[] vars = {"SELENIUM_BROWSER", "SELENIUM_PLATFORM", "SELENIUM_VERSION"};
+        for(final String var : vars) {
+            Reporter.log("ENV  " + var + " [" + System.getenv(var) + "]", true);
+            Reporter.log("PROP " + var + " [" + System.getProperty(var) + "]", true);
+        }
+        
         startJettyServer();
 
         getAndWaitForTestbedPage();
 
         driver.get(baseURL + statusPath);
 
-        Reporter.log("URL " + baseURL + statusPath, true);
-        Reporter.log("Source " + getPageSource(), true);
+        Reporter.log("URL [" + baseURL + statusPath + "]", true);
+        Reporter.log("Source :\n" + getPageSource(), true);
 
         Assert.assertTrue(getPageSource().startsWith(STARTS_WITH));
 
