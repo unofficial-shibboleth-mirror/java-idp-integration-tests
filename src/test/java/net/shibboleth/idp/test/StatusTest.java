@@ -50,14 +50,18 @@ public class StatusTest extends BaseIntegrationTest {
         Reporter.log("version [" + version + "]");
         Reporter.log("os [" + os + "]");
         
-        final String[] vars = {"SELENIUM_BROWSER", "SELENIUM_PLATFORM", "SELENIUM_VERSION"};
+        final String[] vars = {"SELENIUM_BROWSER", "SELENIUM_PLATFORM", "SELENIUM_VERSION", "SAUCE_ONDEMAND_BROWSERS"};
         for(final String var : vars) {
             Reporter.log("ENV  " + var + " [" + System.getenv(var) + "]", true);
             Reporter.log("PROP " + var + " [" + System.getProperty(var) + "]", true);
         }
+
+        setUpSauceDriver(browser, version, os);
         
         startJettyServer();
 
+        
+        
         getAndWaitForTestbedPage();
 
         driver.get(baseURL + statusPath);

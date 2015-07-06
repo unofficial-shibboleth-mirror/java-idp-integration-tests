@@ -49,6 +49,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -204,6 +205,8 @@ public abstract class BaseIntegrationTest {
 
     /** Web driver. */
     @Nonnull protected WebDriver driver;
+    
+    @Nonnull protected ThreadLocal<WebDriver> threadLocalWebDriver = new ThreadLocal<WebDriver>();
 
     /** URL path to start the flow. */
     @Nullable protected String startFlowURLPath;
@@ -658,15 +661,37 @@ public abstract class BaseIntegrationTest {
      * 
      * @throws IOException
      */
-    @BeforeMethod(enabled = true, dependsOnMethods = {"setUpTestName"}) public void setUpSauceDriver() throws IOException {
+    @BeforeMethod(enabled = false, dependsOnMethods = {"setUpTestName"}) public void setUpSauceDriver() throws IOException {
         final SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication();
         final String username = authentication.getUsername();
         final String accesskey = authentication.getAccessKey();
         final URL url = new URL("http://" + username + ":" + accesskey + "@ondemand.saucelabs.com:80/wd/hub");
         setUpDesiredCapabilities();
-        driver = new RemoteWebDriver(url, desiredCapabilities);
+        final WebDriver remoteWebDriver = new RemoteWebDriver(url, desiredCapabilities);
+        threadLocalWebDriver.set(remoteWebDriver);
+        driver = threadLocalWebDriver.get();
+    }
+    
+    @BeforeMethod(enabled = false, dependsOnMethods = {"setUpTestName"})
+    public void setUpSauceDriver(String browser, String version, String os) throws IOException {
+        final SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication();
+        final String username = authentication.getUsername();
+        final String accesskey = authentication.getAccessKey();
+        final URL url = new URL("http://" + username + ":" + accesskey + "@ondemand.saucelabs.com:80/wd/hub");
+        setUpDesiredCapabilities(browser, version, os);
+        final WebDriver remoteWebDriver = new RemoteWebDriver(url, desiredCapabilities);
+        threadLocalWebDriver.set(remoteWebDriver);
+        driver = threadLocalWebDriver.get();
+    }
+    
+    public void setUpDesiredCapabilities(String browser, String version, String os) {
+        desiredCapabilities = new DesiredCapabilities();
+        desiredCapabilities.setBrowserName(browser);
+        desiredCapabilities.setCapability("version", version);
+        desiredCapabilities.setCapability(CapabilityType.PLATFORM, Platform.extractFromSysProperty(os));
         
-        
+        log.debug("Desired capabilities 2 '{}'", desiredCapabilities);
+        Reporter.log("Desired capabilities 2 " + desiredCapabilities, true);
     }
     
     @BeforeClass(enabled = true) public void setUpSauceLabsClientIPRange() {
