@@ -31,7 +31,7 @@ import org.testng.annotations.Test;
 public class StatusTest extends BaseIntegrationTest {
 
     @Nonnull private final Logger log = LoggerFactory.getLogger(StatusTest.class);
-    
+
     /** Path to status page. */
     public final static String statusPath = "/idp/status";
 
@@ -43,28 +43,15 @@ public class StatusTest extends BaseIntegrationTest {
         startJettyServer();
 
         getAndWaitForTestbedPage();
-        
-        Thread.sleep(3 * 1000);
-        
-        getAndWaitForTestbedPage();
-        
-        Thread.sleep(3 * 1000);
-        
-        Reporter.log("URL " + baseURL + statusPath, true);
-        
+
         driver.get(baseURL + statusPath);
-        
-        Reporter.log("source " + getPageSource(), true);
-        
-        log.info("source '{}'", getPageSource());
+
+        Reporter.log("URL " + baseURL + statusPath, true);
+        Reporter.log("Source " +  getPageSource(), true);
 
         Assert.assertTrue(getPageSource().startsWith(STARTS_WITH));
-        
-        Thread.sleep(3 * 1000);
-        
+
         getAndWaitForTestbedPage();
-        
-        Thread.sleep(3 * 1000);
     }
 
 }
