@@ -686,9 +686,6 @@ public abstract class BaseIntegrationTest {
         final RemoteWebDriver remoteWebDriver = new RemoteWebDriver(url, desiredCapabilities);
         threadLocalWebDriver.set(remoteWebDriver);
         driver = threadLocalWebDriver.get();
-        
-        remoteWebDriver.getSessionId();
-        
         threadLocalSessionId.set(remoteWebDriver.getSessionId().toString());
     }
     
@@ -697,9 +694,8 @@ public abstract class BaseIntegrationTest {
         desiredCapabilities.setBrowserName(browser);
         desiredCapabilities.setCapability("version", version);
         desiredCapabilities.setCapability(CapabilityType.PLATFORM, Platform.extractFromSysProperty(os));
-        
-        log.debug("Desired capabilities 2 '{}'", desiredCapabilities);
-        Reporter.log("Desired capabilities 2 " + desiredCapabilities, true);
+        desiredCapabilities.setCapability("name", testName);
+        Reporter.log("Desired capabilities [" + desiredCapabilities + "]", true);
     }
     
     @BeforeClass(enabled = true) public void setUpSauceLabsClientIPRange() {

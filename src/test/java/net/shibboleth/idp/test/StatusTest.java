@@ -22,7 +22,6 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
-import org.testng.Reporter;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
@@ -49,30 +48,13 @@ public class StatusTest extends BaseIntegrationTest  implements SauceOnDemandSes
     @Test(dataProvider = "sauceBrowserDataProvider", dataProviderClass = SauceBrowserDataProvider.class)
     public void testStatus(String browser, String version, String os) throws Exception {
 
-        Reporter.log("browser [" + browser + "]");
-        Reporter.log("version [" + version + "]");
-        Reporter.log("os [" + os + "]");
-        
-        final String[] vars = {"SELENIUM_BROWSER", "SELENIUM_PLATFORM", "SELENIUM_VERSION", "SAUCE_ONDEMAND_BROWSERS"};
-        for(final String var : vars) {
-            Reporter.log("ENV  " + var + " [" + System.getenv(var) + "]", true);
-            Reporter.log("PROP " + var + " [" + System.getProperty(var) + "]", true);
-        }
-
         setUpSauceDriver(browser, version, os);
 
         startJettyServer();
 
-        getAndWaitForTestbedPage();
-
         driver.get(baseURL + statusPath);
 
-        Reporter.log("URL [" + baseURL + statusPath + "]", true);
-        Reporter.log("Source :\n" + getPageSource(), true);
-
         Assert.assertTrue(getPageSource().startsWith(STARTS_WITH));
-
-        getAndWaitForTestbedPage();
     }
 
     /** {@inheritDoc} */
