@@ -778,7 +778,7 @@ public abstract class BaseIntegrationTest
      * @param testMethod the test method
      * @return data provider which supplies {@link BrowserData} to test methods
      */
-    @DataProvider(name = "browserDataProvider") public static Iterator<Object[]>
+    @DataProvider(name = "browserDataProvider", parallel = true) public static Iterator<Object[]>
             browserDataProvider(@Nonnull final Method testMethod) {
         final List<Object[]> data = new ArrayList<Object[]>();
 
