@@ -765,6 +765,7 @@ public abstract class BaseIntegrationTest
                         Platform.extractFromSysProperty(browserData.getOS()));
             }
         }
+        log.debug("Desired capabilities [{}]", desiredCapabilities);
         Reporter.log("Desired capabilities [" + desiredCapabilities + "]", true);
     }
 
@@ -801,6 +802,8 @@ public abstract class BaseIntegrationTest
         } catch (IllegalArgumentException e) {
             data.add(new Object[] {new BrowserData().setBrowser("firefox")});
         }
+        LoggerFactory.getLogger(BaseIntegrationTest.class).debug("Browser data provider [{}]", data);
+        Reporter.log("Browser data provider [" + data + "]", true);
 
         return data.iterator();
     }

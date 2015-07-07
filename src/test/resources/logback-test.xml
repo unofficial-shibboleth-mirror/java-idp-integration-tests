@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <logger name="net.shibboleth.idp.test" level="DEBUG" />
+    <logger name="net.shibboleth.idp.test" level="TRACE" />
+    
+    <logger name="org.openqa" level="DEBUG" />
+    <logger name="com.saucelabs" level="DEBUG" />
 
     <!-- Jetty logger must be INFO or finer to read its log file during startup.  -->
     <logger name="org.eclipse.jetty" level="INFO" />
