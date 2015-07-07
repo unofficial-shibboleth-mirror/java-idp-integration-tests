@@ -78,23 +78,34 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 
 import com.saucelabs.common.SauceOnDemandAuthentication;
+import com.saucelabs.common.SauceOnDemandSessionIdProvider;
+import com.saucelabs.testng.SauceBrowserDataProvider;
+import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
 
 /**
  * Abstract integration test which starts a Jetty server and an in-memory directory server.
  */
-public abstract class BaseIntegrationTest {
+public abstract class BaseIntegrationTest
+        implements SauceOnDemandSessionIdProvider, SauceOnDemandAuthenticationProvider {
 
     /** Name of property defining the host that the web server listens on. */
     @Nonnull public final static String SERVER_ADDRESS_PROPERTY = "server.address";
 
     /** Directory in which distributions will be unpackaged. */
     @Nonnull public final static String TEST_DISTRIBUTIONS_DIRECTORY = "test-distributions";
-    
+
+    /** System property whose presence determines if tests are local, see SauceOnDemandTestListener. */
+    @Nonnull public final static String SELENIUM_IS_LOCAL = "SELENIUM_IS_LOCAL";
+
+    /** IP range of Sauce Labs. */
+    @Nonnull public final static String SAUCE_LABS_IP_RANGE = "162.222.73.0/24";
+
     /** Name of property defining the port that the test directory server listens on. */
     @Nonnull public final static String TEST_LDAP_PORT_PROPERTY = "test.ldap.port";
-    
+
     /** IdP XML security manager property key. */
     @Nonnull public final static String IDP_XML_SECURITY_MANAGER_PROP_NAME = "idp.xml.securityManager";
 
@@ -142,10 +153,10 @@ public abstract class BaseIntegrationTest {
 
     /** Jetty server process. */
     @NonnullAfterInit protected JettyServerProcess server;
-    
+
     /** Additional commands used to start the Jetty server process. */
     @NonnullAfterInit protected List<String> serverCommands = new ArrayList<>();
-    
+
     /** Non-secure web server base URL. Defaults to http://localhost:8080. */
     @NonnullAfterInit protected String baseURL;
 
@@ -169,10 +180,10 @@ public abstract class BaseIntegrationTest {
 
     /** Port that the test LDAP server listens on. Defaults to 10389. */
     @Nonnull protected Integer ldapPort = 10389;
-    
+
     /** Whether to use the secure base URL by default. Defaults to false. */
-    @Nonnull protected boolean useSecureBaseURL = false; 
-    
+    @Nonnull protected boolean useSecureBaseURL = false;
+
     /** Client IP range to allow access from. Defaults to "127.0.0.1/32". */
     @Nonnull protected String clientIPRange = "127.0.0.1/32";
 
@@ -190,7 +201,7 @@ public abstract class BaseIntegrationTest {
 
     /** Path to jetty.home. */
     @NonnullAfterInit protected Path pathToJettyHome;
-    
+
     /** Pattern used when creating per test idp.home directory. Defaults to yyyyMMdd-HHmmssSS. **/
     @Nullable protected String idpHomePattern = "yyyyMMdd-HHmmssSS";
 
@@ -205,9 +216,11 @@ public abstract class BaseIntegrationTest {
 
     /** Web driver. */
     @Nonnull protected WebDriver driver;
-    
+
+    /** Thread local Web driver. */
     @Nonnull protected ThreadLocal<WebDriver> threadLocalWebDriver = new ThreadLocal<WebDriver>();
-    
+
+    /** Thread local Sauce On Demand session ID. */
     @Nonnull protected ThreadLocal<String> threadLocalSessionId = new ThreadLocal<String>();
 
     /** URL path to start the flow. */
@@ -230,28 +243,18 @@ public abstract class BaseIntegrationTest {
 
     /** URL path of SP single logout service endpoint. */
     @Nullable protected String spLogoutURLPath;
-    
+
+    /** Sauce Labs authentication. */
     @Nonnull protected SauceOnDemandAuthentication sauceOnDemandAuthentication = new SauceOnDemandAuthentication();
 
     /** Name of test class concatenated with the test method. **/
     @Nullable protected String testName;
-    
+
     /** Whether any test method in a class failed. **/
     @Nonnull protected boolean testClassFailed;
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(BaseIntegrationTest.class);
-
-    /**
-     * Initialize XMLObject support classes.
-     * 
-     * @throws InitializationException
-     */
-    @BeforeClass public void initializeXMLbjectSupport() throws InitializationException {
-        InitializationService.initialize();
-        parserPool = XMLObjectProviderRegistrySupport.getParserPool();
-        unmarshallerFactory = XMLObjectProviderRegistrySupport.getUnmarshallerFactory();
-    }
 
     /**
      * Setup paths to the IdP and Jetty.
@@ -297,7 +300,7 @@ public abstract class BaseIntegrationTest {
         pathToIdPHome = pathToDistIdPHome.getParent().resolve(timestamp);
         log.debug("Path to idp.home '{}'", pathToIdPHome.toAbsolutePath());
         Assert.assertFalse(pathToIdPHome.toAbsolutePath().toFile().exists(), "Path to idp.home already exists");
-        
+
         // Copy idp.home directory from distribution to new per test directory
         final File sourceDir = pathToDistIdPHome.toAbsolutePath().toFile();
         final File destinationDir = pathToIdPHome.toAbsolutePath().toFile();
@@ -321,7 +324,7 @@ public abstract class BaseIntegrationTest {
         pathToLDAPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "ldap.properties");
         Assert.assertTrue(pathToLDAPProperties.toFile().exists(), "Path to conf/ldap.properties not found");
     }
-    
+
     /**
      * Set up the address that the web server listens on, defaults to localhost. If a {@link #SERVER_ADDRESS_PROPERTY}
      * system property exists, use that as the address.
@@ -413,12 +416,18 @@ public abstract class BaseIntegrationTest {
         replaceIdPHomeFile(Paths.get("metadata", "example-metadata.xml"), "https://localhost:8443", secureBaseURL);
     }
 
+    /**
+     * Set up debug logging for the IdP.
+     * 
+     * @throws Exception
+     */
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"}) public void setUpDebugLogging() throws Exception {
         final Path pathToLogbackXML = Paths.get("conf", "logback.xml");
 
-        replaceIdPHomeFile(pathToLogbackXML, "<logger name=\"net.shibboleth.idp\" level=\"INFO\"/>",
-                "<logger name=\"net.shibboleth.idp\" level=\"DEBUG\"/>");
-        // TODO more
+        final String oldText = "<logger name=\"net.shibboleth.idp\" level=\"INFO\"/>";
+        final String newText = "<logger name=\"net.shibboleth.idp\" level=\"DEBUG\"/>";
+
+        replaceIdPHomeFile(pathToLogbackXML, oldText, newText);
     }
 
     /**
@@ -440,12 +449,55 @@ public abstract class BaseIntegrationTest {
     }
 
     /**
+     * Initialize XMLObject support classes.
+     * 
+     * @throws InitializationException
+     */
+    @BeforeClass(dependsOnMethods = {"setIdPXMLSecurityManager"}) public void initializeXMLbjectSupport()
+            throws InitializationException {
+        InitializationService.initialize();
+        parserPool = XMLObjectProviderRegistrySupport.getParserPool();
+        unmarshallerFactory = XMLObjectProviderRegistrySupport.getUnmarshallerFactory();
+    }
+
+    /**
      * Do not use STARTTLS for LDAP connection to test in-memory directory server.
      *
      * @throws Exception
      */
     @BeforeClass(dependsOnMethods = {"setUpPaths"}) public void disableLDAPSTARTTLS() throws Exception {
         replaceLDAPProperty("idp.authn.LDAP.useStartTLS", "false");
+    }
+
+    /**
+     * Start the web driver.
+     * 
+     * If the test is local, as defined by the presence of the {@link #SELENIUM_IS_LOCAL} property, then start a
+     * {@link HtmlUnitDriver}. Otherwise, start a {@link RemoteWebDriver} on Sauce Labs.
+     * 
+     * Note : this method must be called in each test.
+     * 
+     * @param browserData the browser data
+     * @throws Exception if an error occurs
+     */
+    public void startSeleniumClient(@Nullable final BrowserData browserData) throws Exception {
+        log.debug("Start Selenium client with browser data '{}'", browserData);
+        setUpDesiredCapabilities(browserData);
+        if (BaseIntegrationTest.isLocal()) {
+            setUpHtmlUnitDriver();
+            // setUpFirefoxDriver();
+        } else {
+            setUpSauceDriver();
+        }
+    }
+
+    /**
+     * Quit the web driver.
+     */
+    @AfterMethod(enabled = true) public void stopSeleniumClient() {
+        if (driver != null) {
+            driver.quit();
+        }
     }
 
     /**
@@ -519,7 +571,7 @@ public abstract class BaseIntegrationTest {
         pwc.replaceProperty(key, value);
         pwc.store(propertyResource.getOutputStream());
     }
-    
+
     /**
      * Replace contents of a conf file, whose path is relative to idp.home.
      * 
@@ -617,6 +669,11 @@ public abstract class BaseIntegrationTest {
         Files.copy(pathToRelyingPartyWithConsent, pathToRelyingParty, StandardCopyOption.REPLACE_EXISTING);
     }
 
+    /**
+     * Enable logout in conf/idp.properties.
+     * 
+     * @throws Exception
+     */
     public void enableLogout() throws Exception {
         // server-side storage of user sessions
         replaceIdPProperty("idp.session.StorageService", "shibboleth.StorageService");
@@ -665,42 +722,16 @@ public abstract class BaseIntegrationTest {
      * 
      * @throws IOException
      */
-    @BeforeMethod(enabled = false, dependsOnMethods = {"setUpTestName"}) public void setUpSauceDriver() throws IOException {
+    @BeforeMethod(enabled = false, dependsOnMethods = {"setUpTestName"}) public void setUpSauceDriver()
+            throws IOException {
         final SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication();
         final String username = authentication.getUsername();
         final String accesskey = authentication.getAccessKey();
         final URL url = new URL("http://" + username + ":" + accesskey + "@ondemand.saucelabs.com:80/wd/hub");
-        setUpDesiredCapabilities();
-        final WebDriver remoteWebDriver = new RemoteWebDriver(url, desiredCapabilities);
-        threadLocalWebDriver.set(remoteWebDriver);
-        driver = threadLocalWebDriver.get();
-    }
-    
-    @BeforeMethod(enabled = false, dependsOnMethods = {"setUpTestName"})
-    public void setUpSauceDriver(String browser, String version, String os) throws IOException {
-        // sauceOnDemandAuthentication = new SauceOnDemandAuthentication();
-        final String username = sauceOnDemandAuthentication.getUsername();
-        final String accesskey = sauceOnDemandAuthentication.getAccessKey();
-        final URL url = new URL("http://" + username + ":" + accesskey + "@ondemand.saucelabs.com:80/wd/hub");
-        setUpDesiredCapabilities(browser, version, os);
         final RemoteWebDriver remoteWebDriver = new RemoteWebDriver(url, desiredCapabilities);
         threadLocalWebDriver.set(remoteWebDriver);
         driver = threadLocalWebDriver.get();
         threadLocalSessionId.set(remoteWebDriver.getSessionId().toString());
-    }
-    
-    public void setUpDesiredCapabilities(String browser, String version, String os) {
-        desiredCapabilities = new DesiredCapabilities();
-        desiredCapabilities.setBrowserName(browser);
-        desiredCapabilities.setCapability("version", version);
-        desiredCapabilities.setCapability(CapabilityType.PLATFORM, Platform.extractFromSysProperty(os));
-        desiredCapabilities.setCapability("name", testName);
-        Reporter.log("Desired capabilities [" + desiredCapabilities + "]", true);
-    }
-    
-    @BeforeClass(enabled = true) public void setUpSauceLabsClientIPRange() {
-        // Sauce Labs IP Range
-        clientIPRange = "162.222.73.0/24";
     }
 
     /**
@@ -708,29 +739,90 @@ public abstract class BaseIntegrationTest {
      * 
      * Prefer capabilities as provided by Jenkins, defaults to Firefox.
      * 
-     * Sets the test name to be displayed by Sauce Labs at <a
-     * href="https://saucelabs.com/tests">https://saucelabs.com/tests</a>.
+     * Sets the test name to be displayed by Sauce Labs at
+     * <a href="https://saucelabs.com/tests">https://saucelabs.com/tests</a>.
+     * 
+     * @param browserData the browser data
      */
-    public void setUpDesiredCapabilities() {
+    public void setUpDesiredCapabilities(@Nullable final BrowserData browserData) {
+        desiredCapabilities = new DesiredCapabilities();
 
-        if (System.getenv("SELENIUM_BROWSER") == null) {
-            desiredCapabilities = DesiredCapabilities.firefox();
-        } else {
-            desiredCapabilities = new DesiredCapabilities();
-            desiredCapabilities.setBrowserName(System.getenv("SELENIUM_BROWSER"));
-            desiredCapabilities.setVersion(System.getenv("SELENIUM_VERSION"));
-            desiredCapabilities.setCapability(CapabilityType.PLATFORM, System.getenv("SELENIUM_PLATFORM"));
+        // name of test displayed on Sauce Labs
+        desiredCapabilities.setCapability("name", testName);
+
+        if (browserData != null) {
+            // browser name
+            if (browserData.getBrowser() != null) {
+                desiredCapabilities.setBrowserName(browserData.getBrowser());
+            }
+            // browser version
+            if (browserData.getVersion() != null) {
+                desiredCapabilities.setCapability("version", browserData.getVersion());
+            }
+            // browser OS
+            if (browserData.getOS() != null) {
+                desiredCapabilities.setCapability(CapabilityType.PLATFORM,
+                        Platform.extractFromSysProperty(browserData.getOS()));
+            }
+        }
+        Reporter.log("Desired capabilities [" + desiredCapabilities + "]", true);
+    }
+
+    /**
+     * A data provider which supplies {@link BrowserData} to test methods.
+     * 
+     * Prefer browser/OS/version triplets as provided by Jenkins, defaults to Firefox.
+     * 
+     * Wraps {@link SauceBrowserDataProvider#sauceBrowserDataProvider(Method)}.
+     * 
+     * @param testMethod the test method
+     * @return data provider which supplies {@link BrowserData} to test methods
+     */
+    @DataProvider(name = "browserDataProvider") public static Iterator<Object[]>
+            browserDataProvider(@Nonnull final Method testMethod) {
+        final List<Object[]> data = new ArrayList<Object[]>();
+
+        try {
+            final Iterator<Object[]> iterator = SauceBrowserDataProvider.sauceBrowserDataProvider(testMethod);
+            while (iterator.hasNext()) {
+                final BrowserData browserData = new BrowserData();
+                final Object[] array = iterator.next();
+                if (array[0] != null) {
+                    browserData.setBrowser(array[0].toString());
+                }
+                if (array[1] != null) {
+                    browserData.setVersion(array[1].toString());
+                }
+                if (array[2] != null) {
+                    browserData.setOS(array[2].toString());
+                }
+                data.add(new Object[] {browserData});
+            }
+        } catch (IllegalArgumentException e) {
+            data.add(new Object[] {new BrowserData().setBrowser("firefox")});
         }
 
-        desiredCapabilities.setCapability("name", testName);
-        
-        log.debug("Desired capabilities '{}'", desiredCapabilities);
-        
-        System.out.println("Desired capabilities " + desiredCapabilities);
-        System.out.println("SAUCE_ONDEMAND_HOST " + System.getenv("SAUCE_ONDEMAND_HOST"));
-        
-        Reporter.log("Desired capabilities " + desiredCapabilities, true);
-        Reporter.log("SAUCE_ONDEMAND_HOST " + System.getenv("SAUCE_ONDEMAND_HOST"), true);
+        return data.iterator();
+    }
+
+    /**
+     * Whether Selenium is local, as defined by the presence of the {@link #SELENIUM_IS_LOCAL} property.
+     * 
+     * @return whether Selenium is local
+     */
+    public static boolean isLocal() {
+        return (System.getProperty(SELENIUM_IS_LOCAL) == null) ? false : true;
+    }
+
+    /**
+     * Set up the client IP range used in conf/access-control.xml to Sauce Labs {@link #SAUCE_LABS_IP_RANGE} if Selenium
+     * is not local.
+     */
+    @BeforeClass(enabled = true) public void setUpSauceLabsClientIPRange() {
+        if (!BaseIntegrationTest.isLocal()) {
+            clientIPRange = SAUCE_LABS_IP_RANGE;
+            log.info("Setting client IP range to '{}'", clientIPRange);
+        }
     }
 
     /**
@@ -764,13 +856,14 @@ public abstract class BaseIntegrationTest {
         }
     }
 
-    /**
-     * Quit the web driver.
-     */
-    @AfterMethod(enabled = true) public void tearDownDriver() {
-        if (driver != null) {
-            driver.quit();
-        }
+    /** {@inheritDoc} */
+    public SauceOnDemandAuthentication getAuthentication() {
+        return sauceOnDemandAuthentication;
+    }
+
+    /** {@inheritDoc} */
+    public String getSessionId() {
+        return threadLocalSessionId.get();
     }
 
     /**

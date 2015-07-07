@@ -29,7 +29,7 @@
         <xerces.version>2.11.0</xerces.version>
         <xmlresolver.groupId>xml-resolver</xmlresolver.groupId>
         <xmlresolver.version>1.2</xmlresolver.version>
-        <sauce.version>2.1.19</sauce.version>
+        <sauce.version>2.1.20</sauce.version>
     </properties>
 
     <repositories>
@@ -152,7 +152,6 @@
             <version>${xalan.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- Sauce Labs SauceOnDemandAuthentication.class -->
         <dependency>
             <groupId>com.saucelabs</groupId>
             <artifactId>sauce_java_common</artifactId>

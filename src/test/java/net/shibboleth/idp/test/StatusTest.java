@@ -17,27 +17,19 @@
 
 package net.shibboleth.idp.test;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import com.saucelabs.common.SauceOnDemandAuthentication;
-import com.saucelabs.common.SauceOnDemandSessionIdProvider;
-import com.saucelabs.testng.SauceBrowserDataProvider;
-import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
 import com.saucelabs.testng.SauceOnDemandTestListener;
 
 /**
  * Status test.
  */
 @Listeners({SauceOnDemandTestListener.class})
-public class StatusTest extends BaseIntegrationTest  implements SauceOnDemandSessionIdProvider, SauceOnDemandAuthenticationProvider {
-
-    @Nonnull private final Logger log = LoggerFactory.getLogger(StatusTest.class);
+public class StatusTest extends BaseIntegrationTest {
 
     /** Path to status page. */
     public final static String statusPath = "/idp/status";
@@ -45,10 +37,10 @@ public class StatusTest extends BaseIntegrationTest  implements SauceOnDemandSes
     /** Initial text of status page . */
     public final static String STARTS_WITH = "### Operating Environment Information";
 
-    @Test(dataProvider = "sauceBrowserDataProvider", dataProviderClass = SauceBrowserDataProvider.class)
-    public void testStatus(String browser, String version, String os) throws Exception {
+    @Test(dataProvider = "browserDataProvider")
+    public void testStatus(@Nullable final BrowserData browserData) throws Exception {
 
-        setUpSauceDriver(browser, version, os);
+        startSeleniumClient(browserData);
 
         startJettyServer();
 
@@ -57,13 +49,4 @@ public class StatusTest extends BaseIntegrationTest  implements SauceOnDemandSes
         Assert.assertTrue(getPageSource().startsWith(STARTS_WITH));
     }
 
-    /** {@inheritDoc} */
-    public SauceOnDemandAuthentication getAuthentication() {
-        return sauceOnDemandAuthentication;
-    }
-
-    /** {@inheritDoc} */
-    public String getSessionId() {
-        return threadLocalSessionId.get();
-    }
 }
