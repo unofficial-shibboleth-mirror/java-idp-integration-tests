@@ -316,7 +316,8 @@ public abstract class BaseIntegrationTest
      * 
      * @throws Exception if an error occurs
      */
-    @BeforeClass public void setUpPaths() throws Exception {
+    @BeforeClass
+    public void setUpPaths() throws Exception {
 
         // Path to the project build directory.
         final Path buildPath = Paths.get(TEST_DISTRIBUTIONS_DIRECTORY);
@@ -393,7 +394,8 @@ public abstract class BaseIntegrationTest
      * the property as the non-secure and secure server address and client address.
      * 
      */
-    @BeforeClass public void setUpAddresses() {
+    @BeforeClass
+    public void setUpAddresses() {
         final String envClientAddress = System.getProperty(CLIENT_ADDRESS_PROPERTY);
         log.debug("System property '{}' is '{}'", CLIENT_ADDRESS_PROPERTY, envClientAddress);
 
@@ -419,7 +421,8 @@ public abstract class BaseIntegrationTest
      * Set up available ports between 20000 and 30000 for the web server to listen on as well as a port for the test
      * LDAP server;
      */
-    @BeforeClass(enabled = true) public void setUpAvailablePorts() {
+    @BeforeClass(enabled = true)
+    public void setUpAvailablePorts() {
         final SortedSet<Integer> ports = SocketUtils.findAvailableTcpPorts(4, 20000, 30000);
         final Iterator<Integer> iterator = ports.iterator();
 
@@ -440,7 +443,8 @@ public abstract class BaseIntegrationTest
     /**
      * Set up endpoint URLs using the {@link #clientAddress} and {@link #clientSecureAddress}.
      */
-    @BeforeClass(dependsOnMethods = {"setUpAddresses", "setUpAvailablePorts"}) public void setUpBaseURLs() {
+    @BeforeClass(dependsOnMethods = {"setUpAddresses", "setUpAvailablePorts"})
+    public void setUpBaseURLs() {
         final URLBuilder urlBuilder = new URLBuilder();
         urlBuilder.setScheme("http");
         urlBuilder.setHost(clientAddress);
@@ -468,8 +472,8 @@ public abstract class BaseIntegrationTest
      * 
      * @throws Exception if an error occurs.
      */
-    @BeforeClass(dependsOnMethods = {"setUpBaseURLs", "setUpPaths", "setUpSauceLabsClientIPRange"}) public void
-            setUpEndpoints() throws Exception {
+    @BeforeClass(dependsOnMethods = {"setUpBaseURLs", "setUpPaths", "setUpSauceLabsClientIPRange"})
+    public void setUpEndpoints() throws Exception {
 
         // Access control from non-localhost.
 
@@ -498,7 +502,8 @@ public abstract class BaseIntegrationTest
      * 
      * @throws Exception
      */
-    @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"}) public void setUpDebugLogging() throws Exception {
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"})
+    public void setUpDebugLogging() throws Exception {
         final Path pathToLogbackXML = Paths.get("conf", "logback.xml");
 
         final String oldText = "<logger name=\"net.shibboleth.idp\" level=\"INFO\"/>";
@@ -511,7 +516,8 @@ public abstract class BaseIntegrationTest
      * Set the {@link #IDP_XML_SECURITY_MANAGER_PROP_NAME} property to {@link #IDP_XML_SECURITY_MANAGER_PROP_VALUE}.
      * Save the previous value.
      */
-    @BeforeClass public void setIdPXMLSecurityManager() {
+    @BeforeClass
+    public void setIdPXMLSecurityManager() {
         defaultIdpXMLSecurityManager = System.getProperty(IDP_XML_SECURITY_MANAGER_PROP_NAME);
         System.setProperty(IDP_XML_SECURITY_MANAGER_PROP_NAME, IDP_XML_SECURITY_MANAGER_PROP_VALUE);
     }
@@ -519,7 +525,8 @@ public abstract class BaseIntegrationTest
     /**
      * Set the {@link #IDP_XML_SECURITY_MANAGER_PROP_NAME} property to the previous value.
      */
-    @AfterClass public void restoreIdPXMLSecurityManager() {
+    @AfterClass
+    public void restoreIdPXMLSecurityManager() {
         if (defaultIdpXMLSecurityManager != null) {
             System.setProperty(IDP_XML_SECURITY_MANAGER_PROP_NAME, defaultIdpXMLSecurityManager);
         }
@@ -530,8 +537,8 @@ public abstract class BaseIntegrationTest
      * 
      * @throws InitializationException
      */
-    @BeforeClass(dependsOnMethods = {"setIdPXMLSecurityManager"}) public void initializeXMLbjectSupport()
-            throws InitializationException {
+    @BeforeClass(dependsOnMethods = {"setIdPXMLSecurityManager"})
+    public void initializeXMLbjectSupport() throws InitializationException {
         InitializationService.initialize();
         parserPool = XMLObjectProviderRegistrySupport.getParserPool();
         unmarshallerFactory = XMLObjectProviderRegistrySupport.getUnmarshallerFactory();
@@ -542,7 +549,8 @@ public abstract class BaseIntegrationTest
      *
      * @throws Exception
      */
-    @BeforeClass(dependsOnMethods = {"setUpPaths"}) public void disableLDAPSTARTTLS() throws Exception {
+    @BeforeClass(dependsOnMethods = {"setUpPaths"})
+    public void disableLDAPSTARTTLS() throws Exception {
         replaceLDAPProperty("idp.authn.LDAP.useStartTLS", "false");
     }
 
@@ -571,7 +579,8 @@ public abstract class BaseIntegrationTest
     /**
      * Quit the web driver.
      */
-    @AfterMethod(enabled = true) public void stopSeleniumClient() {
+    @AfterMethod(enabled = true)
+    public void stopSeleniumClient() {
         if (driver != null) {
             driver.quit();
         }
@@ -594,7 +603,8 @@ public abstract class BaseIntegrationTest
     /**
      * Stop the Jetty server.
      */
-    @AfterMethod public void stopJettyServer() {
+    @AfterMethod
+    public void stopJettyServer() {
         if (server != null) {
             server.stop();
         }
@@ -695,7 +705,8 @@ public abstract class BaseIntegrationTest
      * 
      * @throws IOException if an I/O error occurs
      */
-    @AfterMethod(alwaysRun = true) public void restoreIdPProperties() throws IOException {
+    @AfterMethod(alwaysRun = true)
+    public void restoreIdPProperties() throws IOException {
         final Path pathToIdPPropertiesDist =
                 Paths.get(pathToIdPHome.toAbsolutePath().toString(), "dist", "conf", "idp.properties.dist");
         Assert.assertTrue(pathToIdPPropertiesDist.toFile().exists());
@@ -708,7 +719,8 @@ public abstract class BaseIntegrationTest
      * 
      * @throws IOException if an I/O error occurs
      */
-    @AfterMethod(alwaysRun = true) public void restoreRelyingPartyXML() throws IOException {
+    @AfterMethod(alwaysRun = true)
+    public void restoreRelyingPartyXML() throws IOException {
         final Path pathToRelyingParty =
                 Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party.xml");
         Assert.assertTrue(pathToRelyingParty.toFile().exists());
@@ -767,14 +779,16 @@ public abstract class BaseIntegrationTest
      * 
      * @param method the test method
      */
-    @BeforeMethod public void setUpTestName(@Nonnull final Method method) {
+    @BeforeMethod
+    public void setUpTestName(@Nonnull final Method method) {
         testName = method.getDeclaringClass().getName() + "." + method.getName();
     }
 
     /**
      * Set up HtmlUnitDriver web driver.
      */
-    @BeforeMethod(enabled = false) public void setUpHtmlUnitDriver() throws IOException {
+    @BeforeMethod(enabled = false)
+    public void setUpHtmlUnitDriver() throws IOException {
         driver = new HtmlUnitDriver();
         ((HtmlUnitDriver) driver).setJavascriptEnabled(true);
     }
@@ -782,7 +796,8 @@ public abstract class BaseIntegrationTest
     /**
      * Set up Firefox web driver.
      */
-    @BeforeMethod(enabled = false) public void setUpFirefoxDriver() throws IOException {
+    @BeforeMethod(enabled = false)
+    public void setUpFirefoxDriver() throws IOException {
         final ProfilesIni allProfiles = new ProfilesIni();
         final FirefoxProfile profile = allProfiles.getProfile("FirefoxShibtest");
         driver = new FirefoxDriver(profile);
@@ -799,8 +814,8 @@ public abstract class BaseIntegrationTest
      * 
      * @throws IOException
      */
-    @BeforeMethod(enabled = false, dependsOnMethods = {"setUpTestName"}) public void setUpSauceDriver()
-            throws IOException {
+    @BeforeMethod(enabled = false, dependsOnMethods = {"setUpTestName"})
+    public void setUpSauceDriver() throws IOException {
         final SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication();
         final String username = authentication.getUsername();
         final String accesskey = authentication.getAccessKey();
@@ -859,8 +874,8 @@ public abstract class BaseIntegrationTest
      * @param testMethod the test method
      * @return data provider which supplies {@link BrowserData} to test methods
      */
-    @DataProvider(name = "sauceOnDemandBrowserDataProvider", parallel = false) public static Iterator<Object[]>
-            sauceOnDemandBrowserDataProvider(@Nonnull final Method testMethod) {
+    @DataProvider(name = "sauceOnDemandBrowserDataProvider", parallel = false)
+    public static Iterator<Object[]> sauceOnDemandBrowserDataProvider(@Nonnull final Method testMethod) {
         final List<Object[]> data = new ArrayList<Object[]>();
 
         try {
@@ -906,7 +921,8 @@ public abstract class BaseIntegrationTest
      * Set up the client IP range used in conf/access-control.xml to Sauce Labs {@link #SAUCE_LABS_IP_RANGE} if Selenium
      * is not local.
      */
-    @BeforeClass(enabled = true) public void setUpSauceLabsClientIPRange() {
+    @BeforeClass(enabled = true)
+    public void setUpSauceLabsClientIPRange() {
         if (!BaseIntegrationTest.isLocal()) {
             clientIPRange = SAUCE_LABS_IP_RANGE;
             log.info("Setting client IP range to '{}'", clientIPRange);
@@ -916,7 +932,8 @@ public abstract class BaseIntegrationTest
     /**
      * Set {@link #testClassFailed} to false before running tests in a class.
      */
-    @BeforeClass public void setUpTestClassFailed() {
+    @BeforeClass
+    public void setUpTestClassFailed() {
         testClassFailed = false;
     }
 
@@ -925,7 +942,8 @@ public abstract class BaseIntegrationTest
      * 
      * @param result the TestNG test result
      */
-    @AfterMethod public void failTestClass(@Nonnull final ITestResult result) {
+    @AfterMethod
+    public void failTestClass(@Nonnull final ITestResult result) {
         if (result.getStatus() == ITestResult.FAILURE) {
             testClassFailed = true;
         }
@@ -934,7 +952,8 @@ public abstract class BaseIntegrationTest
     /**
      * Delete the per-test idp.home directory if there were no failures in the test class.
      */
-    @AfterClass(enabled = true) public void deletePerTestIdPHomeDirectory() {
+    @AfterClass(enabled = true)
+    public void deletePerTestIdPHomeDirectory() {
         if (testClassFailed) {
             log.debug("There was a test class failure, not deleting per-test idp.home directory '{}'",
                     pathToIdPHome.toAbsolutePath());
@@ -961,7 +980,8 @@ public abstract class BaseIntegrationTest
      * 
      * @return the web server base URL
      */
-    @NonnullAfterInit public String getBaseURL() {
+    @NonnullAfterInit
+    public String getBaseURL() {
         return getBaseURL(useSecureBaseURL);
     }
 
@@ -971,7 +991,8 @@ public abstract class BaseIntegrationTest
      * @param secure whether the URL should be secure
      * @return the web server base URL
      */
-    @NonnullAfterInit public String getBaseURL(boolean secure) {
+    @NonnullAfterInit
+    public String getBaseURL(boolean secure) {
         return (secure == false) ? baseURL : secureBaseURL;
     }
 
@@ -1009,7 +1030,8 @@ public abstract class BaseIntegrationTest
      * 
      * @return the source of the last page loaded or <code>null</code>
      */
-    @Nullable public String getPageSource() {
+    @Nullable
+    public String getPageSource() {
         String pageSource = null;
 
         if (driver instanceof HtmlUnitDriver) {

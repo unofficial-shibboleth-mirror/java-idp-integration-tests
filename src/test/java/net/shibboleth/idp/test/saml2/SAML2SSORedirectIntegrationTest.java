@@ -23,7 +23,8 @@ import org.testng.annotations.Test;
 /** SAML 2 HTTP Redirect binding test. */
 public class SAML2SSORedirectIntegrationTest extends AbstractSAML2IntegrationTest {
 
-    @BeforeClass public void setUpURLs() throws Exception {
+    @BeforeClass
+    public void setUpURLs() throws Exception {
 
         startFlowURLPath = "/sp/SAML2/InitSSO/Redirect";
 
@@ -34,47 +35,56 @@ public class SAML2SSORedirectIntegrationTest extends AbstractSAML2IntegrationTes
         isPassiveRequestURLPath = "/sp/SAML2/InitSSO/Passive";
 
         forceAuthnRequestURLPath = "/sp/SAML2/InitSSO/ForceAuthn";
-        
+
         idpLogoutURLPath = "/idp/profile/SAML2/Redirect/SLO";
-        
+
         spLogoutURLPath = "/sp/SAML2/Redirect/SLO";
-        
+
         logoutTransientIDInputID = "InitSLO_Redirect";
     }
 
-    @Test public void testSSOReleaseAllAttributes() throws Exception {
+    @Test
+    public void testSSOReleaseAllAttributes() throws Exception {
         super.testSSOReleaseAllAttributes();
     }
 
-    @Test public void testSSOReleaseOneAttribute() throws Exception {
+    @Test
+    public void testSSOReleaseOneAttribute() throws Exception {
         super.testSSOReleaseOneAttribute();
     }
 
-    @Test public void testSSODoNotRememberConsent() throws Exception {
+    @Test
+    public void testSSODoNotRememberConsent() throws Exception {
         super.testSSODoNotRememberConsent();
     }
 
-    @Test public void testSSOGlobalConsent() throws Exception {
+    @Test
+    public void testSSOGlobalConsent() throws Exception {
         super.testSSOGlobalConsent();
     }
 
-    @Test public void testSSOTermsOfUse() throws Exception {
+    @Test
+    public void testSSOTermsOfUse() throws Exception {
         super.testSSOTermsOfUse();
     }
 
-    @Test public void testSSOForceAuthn() throws Exception {
+    @Test
+    public void testSSOForceAuthn() throws Exception {
         super.testSSOForceAuthn();
     }
 
-    @Test public void testSSOPassiveWithoutSession() throws Exception {
+    @Test
+    public void testSSOPassiveWithoutSession() throws Exception {
         super.testSSOPassiveWithoutSession();
     }
 
-    @Test public void testSSOPassiveWithSession() throws Exception {
+    @Test
+    public void testSSOPassiveWithSession() throws Exception {
         super.testSSOPassiveWithSession();
     }
-    
-    @Test(enabled = false) public void testSLO() throws Exception {
+
+    @Test(enabled = false)
+    public void testSLO() throws Exception {
         super.testSLO();
     }
 

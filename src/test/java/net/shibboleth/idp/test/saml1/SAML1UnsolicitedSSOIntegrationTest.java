@@ -28,7 +28,7 @@ import org.testng.annotations.Test;
 public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1IntegrationTest {
 
     /** IdP endpoint. */
-    @Nonnull public final String idpEndpointPath =  "/idp/profile/Shibboleth/SSO";
+    @Nonnull public final String idpEndpointPath = "/idp/profile/Shibboleth/SSO";
 
     /** Provider ID. */
     @Nonnull public final String providerID = "https://sp.example.org";
@@ -39,7 +39,8 @@ public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1Integration
     /** Target. */
     @Nonnull public final String target = "MyRelayState";
 
-    @BeforeClass(dependsOnMethods = {"setUpEndpoints"}) public void setUpURLs() throws Exception {
+    @BeforeClass(dependsOnMethods = {"setUpEndpoints"})
+    public void setUpURLs() throws Exception {
 
         final String shire = getBaseURL() + shirePath;
 
@@ -55,7 +56,8 @@ public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1Integration
      * 
      * @throws Exception if an error occurs
      */
-    @Test public void testSAML1UnsolicitedSSO() throws Exception {
+    @Test
+    public void testSAML1UnsolicitedSSO() throws Exception {
         super.testSSO();
     }
 }

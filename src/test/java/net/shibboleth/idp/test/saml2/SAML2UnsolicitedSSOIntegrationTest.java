@@ -37,7 +37,8 @@ public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2Integration
     /** Target. */
     @Nonnull public final String target = "MyRelayState";
 
-    @BeforeClass(dependsOnMethods = {"setUpEndpoints"}) public void setUpURLs() throws Exception {
+    @BeforeClass(dependsOnMethods = {"setUpEndpoints"})
+    public void setUpURLs() throws Exception {
 
         final String shire = getBaseURL() + shirePath;
 
@@ -47,25 +48,29 @@ public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2Integration
 
         responsePageURLPath = shirePath;
     }
-    
 
-    @Test public void testSSOReleaseAllAttributes() throws Exception {
+    @Test
+    public void testSSOReleaseAllAttributes() throws Exception {
         super.testSSOReleaseAllAttributes();
     }
 
-    @Test public void testSSOReleaseOneAttribute() throws Exception {
+    @Test
+    public void testSSOReleaseOneAttribute() throws Exception {
         super.testSSOReleaseOneAttribute();
     }
 
-    @Test public void testSSODoNotRememberConsent() throws Exception {
+    @Test
+    public void testSSODoNotRememberConsent() throws Exception {
         super.testSSODoNotRememberConsent();
     }
 
-    @Test public void testSSOGlobalConsent() throws Exception {
+    @Test
+    public void testSSOGlobalConsent() throws Exception {
         super.testSSOGlobalConsent();
     }
 
-    @Test public void testSSOTermsOfUse() throws Exception {
+    @Test
+    public void testSSOTermsOfUse() throws Exception {
         super.testSSOTermsOfUse();
     }
 }
