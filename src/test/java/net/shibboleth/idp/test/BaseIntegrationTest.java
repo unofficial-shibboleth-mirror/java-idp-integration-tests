@@ -433,7 +433,7 @@ public abstract class BaseIntegrationTest
     /**
      * Set up endpoint URLs using the {@link #clientAddress} and {@link #clientSecureAddress}.
      */
-    @BeforeClass(dependsOnMethods = {"setUpAddresses", "setUpRandomPorts"}) public void setUpBaseURLs() {
+    @BeforeClass(dependsOnMethods = {"setUpAddresses", "setUpAvailablePorts"}) public void setUpBaseURLs() {
         final URLBuilder urlBuilder = new URLBuilder();
         urlBuilder.setScheme("http");
         urlBuilder.setHost(clientAddress);
