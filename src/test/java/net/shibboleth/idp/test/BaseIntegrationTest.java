@@ -79,6 +79,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
+import org.testng.annotations.Listeners;
 
 import com.saucelabs.common.SauceOnDemandAuthentication;
 import com.saucelabs.common.SauceOnDemandSessionIdProvider;
@@ -131,6 +132,7 @@ import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
  * </p>
  * See {@link org.openqa.selenium.Platform}. Or, configure a new TestNG data provider.
  */
+@Listeners({IsLocalTestListener.class})
 public abstract class BaseIntegrationTest
         implements SauceOnDemandSessionIdProvider, SauceOnDemandAuthenticationProvider {
 

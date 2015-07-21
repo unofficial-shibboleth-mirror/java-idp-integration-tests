@@ -30,7 +30,6 @@ import org.testng.annotations.Test;
 import com.saucelabs.testng.SauceOnDemandTestListener;
 
 /** SAML 2 unsolicited SSO test. */
-@Listeners({IsLocalTestListener.class, SauceOnDemandTestListener.class})
 public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2IntegrationTest {
 
     /** IdP endpoint. */

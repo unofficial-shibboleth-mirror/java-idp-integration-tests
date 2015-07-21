@@ -29,7 +29,6 @@ import org.testng.annotations.Test;
 import com.saucelabs.testng.SauceOnDemandTestListener;
 
 /** SAML 2 HTTP Redirect binding test. */
-@Listeners({IsLocalTestListener.class, SauceOnDemandTestListener.class})
 public class SAML2SSORedirectIntegrationTest extends AbstractSAML2IntegrationTest {
 
     @BeforeClass

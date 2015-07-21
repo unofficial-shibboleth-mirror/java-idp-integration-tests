@@ -32,7 +32,6 @@ import com.saucelabs.testng.SauceOnDemandTestListener;
 /**
  * SAML 1 unsolicited SSO test.
  */
-@Listeners({IsLocalTestListener.class, SauceOnDemandTestListener.class})
 public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1IntegrationTest {
 
     /** IdP endpoint. */

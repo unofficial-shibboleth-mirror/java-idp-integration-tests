@@ -47,7 +47,6 @@ import com.saucelabs.testng.SauceOnDemandTestListener;
 /**
  * Local storage tests.
  */
-@Listeners({IsLocalTestListener.class, SauceOnDemandTestListener.class})
 public class LocalStorageTest extends BaseIntegrationTest {
 
     /** Title of local storage test view. */

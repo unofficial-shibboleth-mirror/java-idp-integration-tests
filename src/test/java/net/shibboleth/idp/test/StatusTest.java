@@ -20,13 +20,11 @@ package net.shibboleth.idp.test;
 import javax.annotation.Nullable;
 
 import org.testng.Assert;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 /**
  * Status test.
  */
-@Listeners({IsLocalTestListener.class})
 public class StatusTest extends BaseIntegrationTest {
 
     /** Path to status page. */
