@@ -86,7 +86,50 @@ import com.saucelabs.testng.SauceBrowserDataProvider;
 import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
 
 /**
- * Abstract integration test which starts a Jetty server and an in-memory directory server.
+ * Abstract integration test which tests the IdP via the testbed using Selenium.
+ * <p/>
+ * The Maven POM unpacks the IdP and Jetty distributions, adds test views and flows from idp-conf, and adds deployment
+ * of the testbed. The testbed provides an in-memory directory server.
+ * <p/>
+ * The IdP and testbed webapps are run via Jetty's start.jar in a separate {@link Process}, see
+ * {@link JettyServerProcess}.
+ * <p/>
+ * Each concrete subclass is associated with an idp.home directory, which is created by copying the unpacked IdP
+ * distribution, see {@link #setUpPaths()}. Consequently, each test method in a class uses the same idp.home directory.
+ * This per-class idp.home directory is deleted only if all tests pass. The per-class idp.home directory name is a
+ * timestamp whose pattern is defined by {@link #idpHomePattern}.
+ * </p>
+ * Ports for Jetty and the in-memory directory server will be automatically selected between the range of 20000 - 30000,
+ * see {@link #setUpAvailablePorts()}.
+ * </p>
+ * Test methods should start clients via {@link #startSeleniumClient(BrowserData)} and start the server via
+ * {@link #startJettyServer()}.
+ * <p/>
+ * To run tests using a local browser, set the {@link #SELENIUM_IS_LOCAL} system property. By default the
+ * {@link HtmlUnitDriver} will be used. To override, set the {@link #driver} to the desired {@link WebDriver}. See
+ * {@link #startSeleniumClient(BrowserData)} for one way to override.
+ * <p/>
+ * To run tests using remote browsers provided by Sauce Labs, set the {@link #CLIENT_ADDRESS_PROPERTY} to the publicly
+ * accessible IP address of the server to which clients should connect to. You will also probably need to set the
+ * {@link #SERVER_ADDRESS_PROPERTY} to the IP address that the server should be run on, which might be the same as the
+ * {@link #CLIENT_ADDRESS_PROPERTY}.
+ * <p/>
+ * With Sauce Labs, the browsers tested are defined by {@link SauceBrowserDataProvider#SAUCE_ONDEMAND_BROWSERS} in the
+ * environment, which is a JSON string. See
+ * <a href="https://docs.saucelabs.com/ci-integrations/jenkins/">https://docs.saucelabs.com/ci-integrations/jenkins/</a>
+ * for details. This is populated by the Jenkins Sauce OnDemand Plugin. If this is not available via the environment,
+ * the 'firefox' browser is used by default, see {@link #sauceOnDemandBrowserDataProvider(Method)}. To override the
+ * 'firefox' browser, manipulate the {@link #desiredCapabilities} before calling
+ * {@link #startSeleniumClient(BrowserData)}, for example:
+ * </p>
+ * desiredCapabilities.setCapability("platform", "win8");
+ * </p>
+ * or
+ * </p>
+ * desiredCapabilities.setCapability(org.openqa.selenium.remote.CapabilityType.Platform,
+ * org.openqa.selenium.Platform.WIN8);
+ * </p>
+ * See {@link org.openqa.selenium.Platform}. Or, configure a new TestNG data provider.
  */
 public abstract class BaseIntegrationTest
         implements SauceOnDemandSessionIdProvider, SauceOnDemandAuthenticationProvider {
@@ -94,10 +137,16 @@ public abstract class BaseIntegrationTest
     /** Name of property defining the host that the web server listens on. */
     @Nonnull public final static String SERVER_ADDRESS_PROPERTY = "server.address";
 
+    /** Name of property defining the address that clients should connect to. */
+    @Nonnull public final static String CLIENT_ADDRESS_PROPERTY = "client.address";
+
     /** Directory in which distributions will be unpackaged. */
     @Nonnull public final static String TEST_DISTRIBUTIONS_DIRECTORY = "test-distributions";
 
-    /** System property whose presence determines if tests are local, see SauceOnDemandTestListener. */
+    /**
+     * System property whose presence determines if tests are local, see
+     * {@link com.saucelabs.testng.SauceOnDemandTestListener}.
+     */
     @Nonnull public final static String SELENIUM_IS_LOCAL = "SELENIUM_IS_LOCAL";
 
     /** IP range of Sauce Labs. */
@@ -157,17 +206,11 @@ public abstract class BaseIntegrationTest
     /** Additional commands used to start the Jetty server process. */
     @NonnullAfterInit protected List<String> serverCommands = new ArrayList<>();
 
-    /** Non-secure web server base URL. Defaults to http://localhost:8080. */
-    @NonnullAfterInit protected String baseURL;
-
-    /** Non-secure port that the web server listens on. Defaults to 8080. */
-    @Nonnull protected Integer port = 8080;
-
     /** Non-secure address that the web server listens on. Defaults to "localhost". */
     @Nonnull protected String address = "localhost";
 
-    /** Secure web server base URL. Defaults to https://localhost:8443. */
-    @NonnullAfterInit protected String secureBaseURL;
+    /** Non-secure port that the web server listens on. Defaults to 8080. */
+    @Nonnull protected Integer port = 8080;
 
     /** Secure address that the web server listens on. Defaults to "localhost". */
     @Nonnull protected String secureAddress = "localhost";
@@ -180,6 +223,18 @@ public abstract class BaseIntegrationTest
 
     /** Port that the test LDAP server listens on. Defaults to 10389. */
     @Nonnull protected Integer ldapPort = 10389;
+
+    /** Non-secure address that clients should connect to. Defaults to "localhost". */
+    @Nonnull protected String clientAddress = "localhost";
+
+    /** Secure address that clients should connect to. Defaults to "localhost". */
+    @Nonnull protected String clientSecureAddress = "localhost";
+
+    /** Non-secure web server base URL. Defaults to http://localhost:8080. */
+    @NonnullAfterInit protected String baseURL;
+
+    /** Secure web server base URL. Defaults to https://localhost:8443. */
+    @NonnullAfterInit protected String secureBaseURL;
 
     /** Whether to use the secure base URL by default. Defaults to false. */
     @Nonnull protected boolean useSecureBaseURL = false;
@@ -212,7 +267,7 @@ public abstract class BaseIntegrationTest
     @NonnullAfterInit protected UnmarshallerFactory unmarshallerFactory;
 
     /** Desired capabilities of the web driver. */
-    @Nullable protected DesiredCapabilities desiredCapabilities;
+    @Nullable protected DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
 
     /** Web driver. */
     @Nonnull protected WebDriver driver;
@@ -298,7 +353,7 @@ public abstract class BaseIntegrationTest
         // Path to per-test idp.home
         final String timestamp = new DateTime().toString(DateTimeFormat.forPattern(idpHomePattern));
         pathToIdPHome = pathToDistIdPHome.getParent().resolve(timestamp);
-        log.debug("Path to idp.home '{}'", pathToIdPHome.toAbsolutePath());
+        log.info("Path to idp.home '{}'", pathToIdPHome.toAbsolutePath());
         Assert.assertFalse(pathToIdPHome.toAbsolutePath().toFile().exists(), "Path to idp.home already exists");
 
         // Copy idp.home directory from distribution to new per test directory
@@ -326,57 +381,72 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Set up the address that the web server listens on, defaults to localhost. If a {@link #SERVER_ADDRESS_PROPERTY}
-     * system property exists, use that as the address.
+     * Set up the address that the web server listens on.
+     * <p/>
+     * If the {@link #CLIENT_ADDRESS_PROPERTY} system property exists, use that as the non-secure and secure client
+     * address.
+     * <p/>
+     * If the {@link #SERVER_ADDRESS_PROPERTY} system property exists, use that as the non-secure and secure server
+     * address.
      * 
      */
     @BeforeClass public void setUpAddresses() {
-        final String serverAddress = System.getProperty(SERVER_ADDRESS_PROPERTY);
-        if (serverAddress != null) {
-            address = serverAddress;
-            secureAddress = serverAddress;
+        final String envClientAddress = System.getProperty(CLIENT_ADDRESS_PROPERTY);
+        log.debug("System property '{}' is '{}'", CLIENT_ADDRESS_PROPERTY, envClientAddress);
+
+        if (envClientAddress != null) {
+            clientAddress = envClientAddress;
+            clientSecureAddress = envClientAddress;
+        }
+
+        final String envServerAddress = System.getProperty(SERVER_ADDRESS_PROPERTY);
+        log.debug("System property '{}' is '{}'", SERVER_ADDRESS_PROPERTY, envServerAddress);
+
+        if (envServerAddress != null) {
+            address = envServerAddress;
+            secureAddress = envServerAddress;
         }
     }
 
     /**
-     * Set up available random ports between 20000 and 30000 for the web server to listen on as well as a port for the
-     * test LDAP server;
+     * Set up available ports between 20000 and 30000 for the web server to listen on as well as a port for the test
+     * LDAP server;
      */
-    @BeforeClass(enabled = true) public void setUpRandomPorts() {
+    @BeforeClass(enabled = true) public void setUpAvailablePorts() {
         final SortedSet<Integer> ports = SocketUtils.findAvailableTcpPorts(4, 20000, 30000);
         final Iterator<Integer> iterator = ports.iterator();
 
         port = iterator.next();
-        log.info("Non-secure port '{}'", port);
+        log.info("Selecting port '{}' for non-secure endpoints", port);
 
         securePort = iterator.next();
-        log.info("Secure port '{}'", securePort);
+        log.info("Selecting port '{}' for secure endpoints", securePort);
 
         backchannelPort = iterator.next();
-        log.info("Backchannel port '{}'", backchannelPort);
+        log.info("Selecting port '{}' for backchannel endpoint", backchannelPort);
 
         ldapPort = iterator.next();
-        log.info("LDAP port '{}'", ldapPort);
+        log.info("Selecting port '{}' for LDAP", ldapPort);
         serverCommands.add("-D" + TEST_LDAP_PORT_PROPERTY + "=" + Integer.toString(ldapPort));
     }
 
     /**
-     * Set up endpoint URLs.
+     * Set up endpoint URLs using the {@link #clientAddress} and {@link #clientSecureAddress}.
      */
     @BeforeClass(dependsOnMethods = {"setUpAddresses", "setUpRandomPorts"}) public void setUpBaseURLs() {
         final URLBuilder urlBuilder = new URLBuilder();
         urlBuilder.setScheme("http");
-        urlBuilder.setHost(address);
+        urlBuilder.setHost(clientAddress);
         urlBuilder.setPort(port);
         baseURL = urlBuilder.buildURL();
-        log.info("Base URL '{}'", baseURL);
+        log.info("URL '{}' is the base URL which clients should connect to.", baseURL);
 
         final URLBuilder secureUrlBuilder = new URLBuilder();
         secureUrlBuilder.setScheme("https");
-        secureUrlBuilder.setHost(secureAddress);
+        secureUrlBuilder.setHost(clientSecureAddress);
         secureUrlBuilder.setPort(securePort);
         secureBaseURL = secureUrlBuilder.buildURL();
-        log.info("Secure base URL '{}'", secureBaseURL);
+        log.info("URL '{}' is the secure base URL which clients should connect to.", secureBaseURL);
     }
 
     /**
@@ -481,7 +551,7 @@ public abstract class BaseIntegrationTest
      * @throws Exception if an error occurs
      */
     public void startSeleniumClient(@Nullable final BrowserData browserData) throws Exception {
-        log.debug("Start Selenium client with browser data '{}'", browserData);
+        log.debug("Start Selenium client using browser data '{}'", browserData);
         setUpDesiredCapabilities(browserData);
         if (BaseIntegrationTest.isLocal()) {
             setUpHtmlUnitDriver();
@@ -745,7 +815,6 @@ public abstract class BaseIntegrationTest
      * @param browserData the browser data
      */
     public void setUpDesiredCapabilities(@Nullable final BrowserData browserData) {
-        desiredCapabilities = new DesiredCapabilities();
 
         // name of test displayed on Sauce Labs
         desiredCapabilities.setCapability("name", testName);
@@ -765,22 +834,26 @@ public abstract class BaseIntegrationTest
                         Platform.extractFromSysProperty(browserData.getOS()));
             }
         }
-        log.debug("Desired capabilities [{}]", desiredCapabilities);
-        Reporter.log("Desired capabilities [" + desiredCapabilities + "]", true);
+
+        log.debug("Desired capabilities '{}'", desiredCapabilities);
+        Reporter.log("Desired capabilities '" + desiredCapabilities + "'", true);
     }
 
     /**
      * A data provider which supplies {@link BrowserData} to test methods.
      * 
-     * Prefer browser/OS/version triplets as provided by Jenkins, defaults to Firefox.
+     * Prefer browser/OS/version triplets as provided by Jenkins via
+     * {@link SauceBrowserDataProvider#SAUCE_ONDEMAND_BROWSERS} in the environment, if not present, defaults to
+     * 'firefox'.
      * 
-     * Wraps {@link SauceBrowserDataProvider#sauceBrowserDataProvider(Method)}.
+     * Wraps {@link SauceBrowserDataProvider#sauceBrowserDataProvider(Method)} to avoid the IllegalArgumentException
+     * when the environment does not contain the desired property/variable.
      * 
      * @param testMethod the test method
      * @return data provider which supplies {@link BrowserData} to test methods
      */
-    @DataProvider(name = "browserDataProvider", parallel = true) public static Iterator<Object[]>
-            browserDataProvider(@Nonnull final Method testMethod) {
+    @DataProvider(name = "sauceOnDemandBrowserDataProvider", parallel = true) public static Iterator<Object[]>
+            sauceOnDemandBrowserDataProvider(@Nonnull final Method testMethod) {
         final List<Object[]> data = new ArrayList<Object[]>();
 
         try {
@@ -800,10 +873,15 @@ public abstract class BaseIntegrationTest
                 data.add(new Object[] {browserData});
             }
         } catch (IllegalArgumentException e) {
+            LoggerFactory.getLogger(BaseIntegrationTest.class).debug(
+                    "Browser data provider did not find '{}' in environment, defaulting to 'firefox'",
+                    SauceBrowserDataProvider.SAUCE_ONDEMAND_BROWSERS);
             data.add(new Object[] {new BrowserData().setBrowser("firefox")});
         }
-        LoggerFactory.getLogger(BaseIntegrationTest.class).debug("Browser data provider [{}]", data);
-        Reporter.log("Browser data provider [" + data + "]", true);
+        for (final Object[] array : data) {
+            LoggerFactory.getLogger(BaseIntegrationTest.class).debug("Browser data provider using '{}'", array);
+            Reporter.log("Browser data provider using '" + array + "'", true);
+        }
 
         return data.iterator();
     }

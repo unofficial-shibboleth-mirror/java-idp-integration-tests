@@ -37,7 +37,7 @@ public class StatusTest extends BaseIntegrationTest {
     /** Initial text of status page . */
     public final static String STARTS_WITH = "### Operating Environment Information";
 
-    @Test(dataProvider = "browserDataProvider", threadPoolSize = 5, invocationCount = 5, timeOut = 90000)
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testStatus(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);

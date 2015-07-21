@@ -23,7 +23,10 @@ import javax.annotation.Nullable;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
-/** Bean which represents browser/OS/version triplet. */
+/**
+ * Bean which represents browser/OS/version triplet as provided by
+ * {@link net.shibboleth.idp.test.BaseIntegrationTest#browserDataProvider}.
+ */
 public class BrowserData {
 
     /** Browser name. */
