@@ -388,6 +388,9 @@ public abstract class BaseIntegrationTest
      * <p/>
      * If the {@link #SERVER_ADDRESS_PROPERTY} system property exists, use that as the non-secure and secure server
      * address.
+     * <p/>
+     * If the {@link #SERVER_ADDRESS_PROPERTY} system property exists but {@link #CLIENT_ADDRESS_PROPERTY} does not, use
+     * the property as the non-secure and secure server address and client address.
      * 
      */
     @BeforeClass public void setUpAddresses() {
@@ -405,6 +408,10 @@ public abstract class BaseIntegrationTest
         if (envServerAddress != null) {
             address = envServerAddress;
             secureAddress = envServerAddress;
+            if (envClientAddress == null) {
+                clientAddress = address;
+                clientSecureAddress = secureAddress;
+            }
         }
     }
 
