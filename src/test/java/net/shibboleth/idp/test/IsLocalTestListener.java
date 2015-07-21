@@ -22,30 +22,31 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.ITestContext;
-import org.testng.TestListenerAdapter;
+
+import com.saucelabs.testng.SauceOnDemandTestListener;
 
 /**
- * Invert the logic of the {@link com.saucelabs.testng.SauceOnDemandTestListener}. Default to local, rather than remote,
- * tests.
- * 
- * Set the {@link BaseIntegrationTest#SELENIUM_IS_LOCAL} system property to 'true' if
- * {@link BaseIntegrationTest#isRemote()} is false. This will make the
- * {@link com.saucelabs.testng.SauceOnDemandTestListener} think that tests are local.
- * 
- * @see com.saucelabs.testng.SauceOnDemandTestListener
+ * Invert the logic of the {@link SauceOnDemandTestListener} by defaulting to local rather than remote tests.
  */
-public class IsLocalTestListener extends TestListenerAdapter {
+public class IsLocalTestListener extends SauceOnDemandTestListener {
 
     /** Class logger. */
     @Nonnull private final static Logger log = LoggerFactory.getLogger(IsLocalTestListener.class);
 
-    /** {@inheritDoc} */
+    /**
+     * Set the {@link BaseIntegrationTest#SELENIUM_IS_LOCAL} system property to 'true' if
+     * {@link BaseIntegrationTest#isRemote()} is false, which is the default. This will make the
+     * {@link com.saucelabs.testng.SauceOnDemandTestListener} think that tests are local.
+     * <p>
+     * {@inheritDoc}
+     */
+    @Override
     public void onStart(ITestContext testContext) {
-        super.onStart(testContext);
         if (!BaseIntegrationTest.isRemote()) {
             log.info("Setting system property '{}' to 'true'", BaseIntegrationTest.SELENIUM_IS_LOCAL);
             System.setProperty(BaseIntegrationTest.SELENIUM_IS_LOCAL, "true");
         }
+        super.onStart(testContext);
     }
 
 }

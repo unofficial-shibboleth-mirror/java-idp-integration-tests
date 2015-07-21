@@ -23,12 +23,10 @@ import org.testng.Assert;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import com.saucelabs.testng.SauceOnDemandTestListener;
-
 /**
  * Status test.
  */
-@Listeners({IsLocalTestListener.class, SauceOnDemandTestListener.class})
+@Listeners({IsLocalTestListener.class})
 public class StatusTest extends BaseIntegrationTest {
 
     /** Path to status page. */
