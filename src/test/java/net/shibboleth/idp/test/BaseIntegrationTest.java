@@ -105,14 +105,14 @@ import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
  * Test methods should start clients via {@link #startSeleniumClient(BrowserData)} and start the server via
  * {@link #startJettyServer()}.
  * <p/>
- * To run tests using a local browser, set the {@link #SELENIUM_IS_LOCAL} system property. By default the
- * {@link HtmlUnitDriver} will be used. To override, set the {@link #driver} to the desired {@link WebDriver}. See
- * {@link #startSeleniumClient(BrowserData)} for one way to override.
+ * By default, tests run using a local browser. By default the {@link HtmlUnitDriver} will be used. To override, set the
+ * {@link #driver} to the desired {@link WebDriver}. See {@link #startSeleniumClient(BrowserData)} for one way to
+ * override.
  * <p/>
- * To run tests using remote browsers provided by Sauce Labs, set the {@link #CLIENT_ADDRESS_PROPERTY} to the publicly
- * accessible IP address of the server to which clients should connect to. You will also probably need to set the
- * {@link #SERVER_ADDRESS_PROPERTY} to the IP address that the server should be run on, which might be the same as the
- * {@link #CLIENT_ADDRESS_PROPERTY}.
+ * To run tests using remote browsers provided by Sauce Labs, set the {@link #SELENIUM_IS_REMOTE} system property and
+ * set the {@link #CLIENT_ADDRESS_PROPERTY} to the publicly accessible IP address of the server to which clients should
+ * connect to. You will also probably need to set the {@link #SERVER_ADDRESS_PROPERTY} to the IP address that the server
+ * should be run on, which might be the same as the {@link #CLIENT_ADDRESS_PROPERTY}.
  * <p/>
  * With Sauce Labs, the browsers tested are defined by {@link SauceBrowserDataProvider#SAUCE_ONDEMAND_BROWSERS} in the
  * environment, which is a JSON string. See
