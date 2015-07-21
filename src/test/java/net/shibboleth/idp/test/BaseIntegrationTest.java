@@ -852,7 +852,7 @@ public abstract class BaseIntegrationTest
      * @param testMethod the test method
      * @return data provider which supplies {@link BrowserData} to test methods
      */
-    @DataProvider(name = "sauceOnDemandBrowserDataProvider", parallel = true) public static Iterator<Object[]>
+    @DataProvider(name = "sauceOnDemandBrowserDataProvider", parallel = false) public static Iterator<Object[]>
             sauceOnDemandBrowserDataProvider(@Nonnull final Method testMethod) {
         final List<Object[]> data = new ArrayList<Object[]>();
 
