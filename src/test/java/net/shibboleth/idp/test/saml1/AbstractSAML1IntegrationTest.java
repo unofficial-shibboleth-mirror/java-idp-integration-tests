@@ -25,6 +25,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.shibboleth.idp.test.BaseIntegrationTest;
+import net.shibboleth.idp.test.BrowserData;
 import net.shibboleth.idp.test.flows.saml1.SAML1TestResponseValidator;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
 
@@ -50,7 +51,8 @@ public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
      * 
      * @throws IOException if an I/O error occurs
      */
-    @BeforeMethod public void setUpValidator() throws IOException {
+    @BeforeMethod
+    public void setUpValidator() throws IOException {
         validator = new SAML1TestResponseValidator();
         validator.authenticationMethod = AuthenticationStatement.PASSWORD_AUTHN_METHOD;
     }
@@ -73,8 +75,9 @@ public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
      * @throws XMLParserException if an error occurs
      * @throws UnmarshallingException if an error occurs
      */
-    @Nonnull public Response unmarshallResponse(@Nullable final String response) throws UnsupportedEncodingException,
-            XMLParserException, UnmarshallingException {
+    @Nonnull
+    public Response unmarshallResponse(@Nullable final String response)
+            throws UnsupportedEncodingException, XMLParserException, UnmarshallingException {
         Assert.assertNotNull(response);
         final Document doc = parserPool.parse(new ByteArrayInputStream(response.getBytes("UTF-8")));
         final Element element = doc.getDocumentElement();
@@ -85,18 +88,21 @@ public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
         Assert.assertNotNull(object);
         return object;
     }
-    
+
     /**
      * Test SAML 1 SSO.
      * 
+     * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs
      */
-    public void testSSO() throws Exception {
+    public void testSSO(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
 
         enableCustomRelyingPartyConfiguration();
-        
+
         startJettyServer();
-        
+
         startFlow();
 
         login();

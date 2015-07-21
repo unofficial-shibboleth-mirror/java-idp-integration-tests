@@ -143,10 +143,7 @@ public abstract class BaseIntegrationTest
     /** Directory in which distributions will be unpackaged. */
     @Nonnull public final static String TEST_DISTRIBUTIONS_DIRECTORY = "test-distributions";
 
-    /**
-     * System property whose presence determines if tests are local, see
-     * {@link com.saucelabs.testng.SauceOnDemandTestListener}.
-     */
+    /** Name of system property which determines if tests are local. */
     @Nonnull public final static String SELENIUM_IS_LOCAL = "SELENIUM_IS_LOCAL";
 
     /** IP range of Sauce Labs. */
@@ -557,8 +554,8 @@ public abstract class BaseIntegrationTest
     /**
      * Start the web driver.
      * 
-     * If the test is local, as defined by the presence of the {@link #SELENIUM_IS_LOCAL} property, then start a
-     * {@link HtmlUnitDriver}. Otherwise, start a {@link RemoteWebDriver} on Sauce Labs.
+     * If the test is local, as defined by {@link #isLocal()}, then start a {@link HtmlUnitDriver}. Otherwise, start a
+     * {@link RemoteWebDriver} on Sauce Labs.
      * 
      * Note : this method must be called in each test.
      * 
@@ -569,6 +566,7 @@ public abstract class BaseIntegrationTest
         log.debug("Start Selenium client using browser data '{}'", browserData);
         setUpDesiredCapabilities(browserData);
         if (BaseIntegrationTest.isLocal()) {
+            log.info("Using local web driver");
             setUpHtmlUnitDriver();
             // setUpFirefoxDriver();
         } else {
@@ -909,12 +907,15 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Whether Selenium is local, as defined by the presence of the {@link #SELENIUM_IS_LOCAL} property.
+     * Whether Selenium is local, as defined by the value of the {@link #SELENIUM_IS_LOCAL} property, which should be
+     * either "true" or "false". Defaults to true.
+     * 
+     * @see com.saucelabs.testng.SauceOnDemandTestListener
      * 
      * @return whether Selenium is local
      */
     public static boolean isLocal() {
-        return (System.getProperty(SELENIUM_IS_LOCAL) == null) ? false : true;
+        return (System.getProperty(SELENIUM_IS_LOCAL, "true").equalsIgnoreCase("true")) ? true : false;
     }
 
     /**

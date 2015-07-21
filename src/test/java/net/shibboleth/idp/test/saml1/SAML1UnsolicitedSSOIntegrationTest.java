@@ -18,13 +18,20 @@
 package net.shibboleth.idp.test.saml1;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import net.shibboleth.idp.test.BrowserData;
 
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
+
+import com.saucelabs.testng.SauceOnDemandTestListener;
 
 /**
  * SAML 1 unsolicited SSO test.
  */
+@Listeners({SauceOnDemandTestListener.class})
 public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1IntegrationTest {
 
     /** IdP endpoint. */
@@ -54,10 +61,11 @@ public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1Integration
     /**
      * Test SAML 1 unsolicited SSO.
      * 
+     * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs
      */
-    @Test
-    public void testSAML1UnsolicitedSSO() throws Exception {
-        super.testSSO();
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testSAML1UnsolicitedSSO(@Nullable final BrowserData browserData) throws Exception {
+        super.testSSO(browserData);
     }
 }

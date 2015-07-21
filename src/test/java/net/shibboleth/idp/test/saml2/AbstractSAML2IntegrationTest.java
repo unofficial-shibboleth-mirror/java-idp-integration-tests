@@ -27,6 +27,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.shibboleth.idp.test.BaseIntegrationTest;
+import net.shibboleth.idp.test.BrowserData;
 import net.shibboleth.idp.test.flows.saml2.SAML2TestResponseValidator;
 import net.shibboleth.idp.test.flows.saml2.SAML2TestStatusResponseTypeValidator;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
@@ -80,7 +81,8 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
      * 
      * @throws IOException if an I/O error occurs
      */
-    @BeforeMethod public void setUpValidator() throws IOException {
+    @BeforeMethod
+    public void setUpValidator() throws IOException {
         validator = new SAML2TestResponseValidator();
         validator.spCredential = getSPCredential();
         validator.authnContextClassRef = AuthnContext.PPT_AUTHN_CTX;
@@ -122,8 +124,9 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
      * @throws XMLParserException
      * @throws UnmarshallingException
      */
-    @Nonnull public XMLObject unmarshallXMLObject(@Nullable final String response) throws UnsupportedEncodingException,
-            XMLParserException, UnmarshallingException {
+    @Nonnull
+    public XMLObject unmarshallXMLObject(@Nullable final String response)
+            throws UnsupportedEncodingException, XMLParserException, UnmarshallingException {
         Assert.assertNotNull(response);
         final Document doc = parserPool.parse(new ByteArrayInputStream(response.getBytes("UTF-8")));
         final Element element = doc.getDocumentElement();
@@ -142,8 +145,9 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
      * @throws XMLParserException if an error occurs
      * @throws UnmarshallingException if an error occurs
      */
-    @Nonnull public Response unmarshallResponse(@Nullable final String response) throws UnsupportedEncodingException,
-            XMLParserException, UnmarshallingException {
+    @Nonnull
+    public Response unmarshallResponse(@Nullable final String response)
+            throws UnsupportedEncodingException, XMLParserException, UnmarshallingException {
         final XMLObject xmlObject = unmarshallXMLObject(response);
         Assert.assertTrue(xmlObject instanceof Response);
         return (Response) xmlObject;
@@ -155,7 +159,8 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
      * @return the SP credential.
      * @throws IOException if an error occurs reading the credential
      */
-    @Nonnull public Credential getSPCredential() throws IOException {
+    @Nonnull
+    public Credential getSPCredential() throws IOException {
 
         final ClassPathResource spKeyResource = new ClassPathResource(SP_KEY);
         Assert.assertTrue(spKeyResource.exists());
@@ -177,7 +182,8 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
      * @return the value of the principal's name identifier
      * @throws Exception if an error occurs
      */
-    @Nullable public String getNameIDValue() throws Exception {
+    @Nullable
+    public String getNameIDValue() throws Exception {
         final Response response = unmarshallResponse(getPageSource());
         return response.getAssertions().get(0).getSubject().getNameID().getValue();
     }
@@ -197,9 +203,12 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     /**
      * Test SAML 2 SSO releasing all attributes.
      * 
+     * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs
      */
-    public void testSSOReleaseAllAttributes() throws Exception {
+    public void testSSOReleaseAllAttributes(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
 
         startJettyServer();
 
@@ -237,9 +246,12 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     /**
      * Test SAML 2 SSO releasing a single attribute.
      * 
+     * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs
      */
-    public void testSSOReleaseOneAttribute() throws Exception {
+    public void testSSOReleaseOneAttribute(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
 
         enablePerAttributeConsent();
 
@@ -282,9 +294,12 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     /**
      * Test SAML 2 SSO releasing all attributes and not remembering consent.
      * 
+     * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs
      */
-    public void testSSODoNotRememberConsent() throws Exception {
+    public void testSSODoNotRememberConsent(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
 
         startJettyServer();
 
@@ -332,9 +347,12 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     /**
      * Test SAML 2 SSO with global attribute consent.
      * 
+     * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs
      */
-    public void testSSOGlobalConsent() throws Exception {
+    public void testSSOGlobalConsent(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
 
         startJettyServer();
 
@@ -374,9 +392,12 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     /**
      * Test SAML 2 SSO terms of use flow.
      * 
+     * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs
      */
-    public void testSSOTermsOfUse() throws Exception {
+    public void testSSOTermsOfUse(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
 
         enableCustomRelyingPartyConfiguration();
 
@@ -424,9 +445,12 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     /**
      * Test SAML 2 SSO ForceAuthn.
      * 
+     * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs
      */
-    public void testSSOForceAuthn() throws Exception {
+    public void testSSOForceAuthn(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
 
         startJettyServer();
 
@@ -468,14 +492,17 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     /**
      * Test SSO isPasive without a session.
      * 
+     * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs
      */
-    public void testSSOPassiveWithoutSession() throws Exception {
+    public void testSSOPassiveWithoutSession(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
 
         startJettyServer();
 
         // start flow
-        driver.get(getBaseURL() +  isPassiveRequestURLPath);
+        driver.get(getBaseURL() + isPassiveRequestURLPath);
 
         waitForResponsePage();
 
@@ -491,9 +518,12 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     /**
      * Test SSO isPassive with a pre-existing session.
      * 
+     * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs
      */
-    public void testSSOPassiveWithSession() throws Exception {
+    public void testSSOPassiveWithSession(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
 
         startJettyServer();
 
@@ -530,7 +560,9 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
         validateResponse();
     }
 
-    public void testSLO() throws Exception {
+    public void testSLO(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
 
         enableLogout();
 

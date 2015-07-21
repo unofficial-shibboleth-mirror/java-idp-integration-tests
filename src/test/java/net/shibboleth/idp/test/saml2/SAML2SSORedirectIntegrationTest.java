@@ -17,10 +17,18 @@
 
 package net.shibboleth.idp.test.saml2;
 
+import javax.annotation.Nullable;
+
+import net.shibboleth.idp.test.BrowserData;
+
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import com.saucelabs.testng.SauceOnDemandTestListener;
+
 /** SAML 2 HTTP Redirect binding test. */
+@Listeners({SauceOnDemandTestListener.class})
 public class SAML2SSORedirectIntegrationTest extends AbstractSAML2IntegrationTest {
 
     @BeforeClass
@@ -43,49 +51,49 @@ public class SAML2SSORedirectIntegrationTest extends AbstractSAML2IntegrationTes
         logoutTransientIDInputID = "InitSLO_Redirect";
     }
 
-    @Test
-    public void testSSOReleaseAllAttributes() throws Exception {
-        super.testSSOReleaseAllAttributes();
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testSSOReleaseAllAttributes(@Nullable final BrowserData browserData) throws Exception {
+        super.testSSOReleaseAllAttributes(browserData);
     }
 
-    @Test
-    public void testSSOReleaseOneAttribute() throws Exception {
-        super.testSSOReleaseOneAttribute();
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testSSOReleaseOneAttribute(@Nullable final BrowserData browserData) throws Exception {
+        super.testSSOReleaseOneAttribute(browserData);
     }
 
-    @Test
-    public void testSSODoNotRememberConsent() throws Exception {
-        super.testSSODoNotRememberConsent();
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testSSODoNotRememberConsent(@Nullable final BrowserData browserData) throws Exception {
+        super.testSSODoNotRememberConsent(browserData);
     }
 
-    @Test
-    public void testSSOGlobalConsent() throws Exception {
-        super.testSSOGlobalConsent();
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testSSOGlobalConsent(@Nullable final BrowserData browserData) throws Exception {
+        super.testSSOGlobalConsent(browserData);
     }
 
-    @Test
-    public void testSSOTermsOfUse() throws Exception {
-        super.testSSOTermsOfUse();
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testSSOTermsOfUse(@Nullable final BrowserData browserData) throws Exception {
+        super.testSSOTermsOfUse(browserData);
     }
 
-    @Test
-    public void testSSOForceAuthn() throws Exception {
-        super.testSSOForceAuthn();
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testSSOForceAuthn(@Nullable final BrowserData browserData) throws Exception {
+        super.testSSOForceAuthn(browserData);
     }
 
-    @Test
-    public void testSSOPassiveWithoutSession() throws Exception {
-        super.testSSOPassiveWithoutSession();
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testSSOPassiveWithoutSession(@Nullable final BrowserData browserData) throws Exception {
+        super.testSSOPassiveWithoutSession(browserData);
     }
 
-    @Test
-    public void testSSOPassiveWithSession() throws Exception {
-        super.testSSOPassiveWithSession();
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testSSOPassiveWithSession(@Nullable final BrowserData browserData) throws Exception {
+        super.testSSOPassiveWithSession(browserData);
     }
 
-    @Test(enabled = false)
-    public void testSLO() throws Exception {
-        super.testSLO();
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider", enabled = false)
+    public void testSLO(@Nullable final BrowserData browserData) throws Exception {
+        super.testSLO(browserData);
     }
 
 }

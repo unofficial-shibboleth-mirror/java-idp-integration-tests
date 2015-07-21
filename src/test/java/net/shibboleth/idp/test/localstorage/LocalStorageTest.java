@@ -26,8 +26,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.shibboleth.idp.test.BaseIntegrationTest;
+import net.shibboleth.idp.test.BrowserData;
 import net.shibboleth.utilities.java.support.collection.Pair;
-import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.net.URLBuilder;
 
 import org.openqa.selenium.By;
@@ -38,11 +38,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
+
+import com.saucelabs.testng.SauceOnDemandTestListener;
 
 /**
  * Local storage tests.
  */
+@Listeners({SauceOnDemandTestListener.class})
 public class LocalStorageTest extends BaseIntegrationTest {
 
     /** Title of local storage test view. */
@@ -90,7 +94,6 @@ public class LocalStorageTest extends BaseIntegrationTest {
     /**
      * Set up local storage web driver wrapper.
      */
-    @BeforeMethod
     protected void setUpLocalStorageWrapper() throws IOException {
         wrapper = new LocalStorageWebDriverWrapper(driver);
     }
@@ -324,8 +327,12 @@ public class LocalStorageTest extends BaseIntegrationTest {
         return version + LOCAL_STORAGE_VALUE_DELIMITER + value;
     }
 
-    @Test
-    public void testNothingToRead() throws Exception {
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testNothingToRead(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        setUpLocalStorageWrapper();
 
         startJettyServer();
 
@@ -340,8 +347,12 @@ public class LocalStorageTest extends BaseIntegrationTest {
         Assert.assertNull(getLocalStorageValueViaWrapper("shib_idp_ls_version"));
     }
 
-    @Test
-    public void testReadEarlierVersion() throws Exception {
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testReadEarlierVersion(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        setUpLocalStorageWrapper();
 
         startJettyServer();
 
@@ -354,8 +365,12 @@ public class LocalStorageTest extends BaseIntegrationTest {
         assertSuccessfulRead(testKey, testValue, "1");
     }
 
-    @Test
-    public void testReadSameVersion() throws Exception {
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testReadSameVersion(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        setUpLocalStorageWrapper();
 
         startJettyServer();
 
@@ -368,8 +383,12 @@ public class LocalStorageTest extends BaseIntegrationTest {
         assertSuccessfulRead(testKey, "", "1");
     }
 
-    @Test
-    public void testReadLaterVersion() throws Exception {
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testReadLaterVersion(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        setUpLocalStorageWrapper();
 
         startJettyServer();
 
@@ -382,8 +401,12 @@ public class LocalStorageTest extends BaseIntegrationTest {
         assertSuccessfulRead(testKey, "", "1");
     }
 
-    @Test
-    public void testReadWrapper() throws Exception {
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testReadWrapper(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        setUpLocalStorageWrapper();
 
         startJettyServer();
 
@@ -400,8 +423,12 @@ public class LocalStorageTest extends BaseIntegrationTest {
         assertSuccessfulRead(testKey, testValue, "1");
     }
 
-    @Test
-    public void testReadInvalidVersion() throws Exception {
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testReadInvalidVersion(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        setUpLocalStorageWrapper();
 
         startJettyServer();
 
@@ -417,16 +444,24 @@ public class LocalStorageTest extends BaseIntegrationTest {
         Assert.assertEquals(getLocalStorageValue(), "");
     }
 
-    @Test
-    public void testWrite() throws Exception {
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testWrite(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        setUpLocalStorageWrapper();
 
         startJettyServer();
 
         writeAndAssert(testKey, testValue, "1");
     }
 
-    @Test
-    public void testWriteInvalidVersion() throws Exception {
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testWriteInvalidVersion(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        setUpLocalStorageWrapper();
 
         startJettyServer();
 
@@ -456,11 +491,15 @@ public class LocalStorageTest extends BaseIntegrationTest {
         return new String(chars);
     }
 
-    @Test(enabled = false)
-    public void testWriteQuotaExceeded() throws ComponentInitializationException, MalformedURLException {
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider", enabled = false)
+    public void testWriteQuotaExceeded(@Nullable final BrowserData browserData) throws Exception {
 
         // Set Firefox's quota to 1 kilobyte.
         // profile.setPreference("dom.storage.default_quota", "1");
+
+        startSeleniumClient(browserData);
+
+        setUpLocalStorageWrapper();
 
         startJettyServer();
 
