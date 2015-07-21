@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 
 import net.shibboleth.idp.test.BaseIntegrationTest;
 import net.shibboleth.idp.test.BrowserData;
+import net.shibboleth.idp.test.IsLocalTestListener;
 import net.shibboleth.utilities.java.support.collection.Pair;
 import net.shibboleth.utilities.java.support.net.URLBuilder;
 
@@ -46,7 +47,7 @@ import com.saucelabs.testng.SauceOnDemandTestListener;
 /**
  * Local storage tests.
  */
-@Listeners({SauceOnDemandTestListener.class})
+@Listeners({IsLocalTestListener.class, SauceOnDemandTestListener.class})
 public class LocalStorageTest extends BaseIntegrationTest {
 
     /** Title of local storage test view. */

@@ -146,6 +146,9 @@ public abstract class BaseIntegrationTest
     /** Name of system property which determines if tests are local. */
     @Nonnull public final static String SELENIUM_IS_LOCAL = "SELENIUM_IS_LOCAL";
 
+    /** Name of system property which determines if tests are remote. */
+    @Nonnull public final static String SELENIUM_IS_REMOTE = "SELENIUM_IS_REMOTE";
+
     /** IP range of Sauce Labs. */
     @Nonnull public final static String SAUCE_LABS_IP_RANGE = "162.222.73.0/24";
 
@@ -565,12 +568,13 @@ public abstract class BaseIntegrationTest
     public void startSeleniumClient(@Nullable final BrowserData browserData) throws Exception {
         log.debug("Start Selenium client using browser data '{}'", browserData);
         setUpDesiredCapabilities(browserData);
-        if (BaseIntegrationTest.isLocal()) {
+        if (BaseIntegrationTest.isRemote()) {
+            log.info("Using remote web driver");
+            setUpSauceDriver();
+        } else {
             log.info("Using local web driver");
             setUpHtmlUnitDriver();
             // setUpFirefoxDriver();
-        } else {
-            setUpSauceDriver();
         }
     }
 
@@ -907,15 +911,15 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Whether Selenium is local, as defined by the value of the {@link #SELENIUM_IS_LOCAL} property, which should be
-     * either "true" or "false". Defaults to true.
+     * Whether Selenium is remote, as defined by the value of the {@link #SELENIUM_IS_REMOTE} property, which should be
+     * either "true" or "false". Defaults to false.
      * 
      * @see com.saucelabs.testng.SauceOnDemandTestListener
      * 
-     * @return whether Selenium is local
+     * @return whether Selenium is remote
      */
-    public static boolean isLocal() {
-        return (System.getProperty(SELENIUM_IS_LOCAL, "true").equalsIgnoreCase("true")) ? true : false;
+    public static boolean isRemote() {
+        return (System.getProperty(SELENIUM_IS_REMOTE, "false").equalsIgnoreCase("true")) ? true : false;
     }
 
     /**
@@ -924,7 +928,7 @@ public abstract class BaseIntegrationTest
      */
     @BeforeClass(enabled = true)
     public void setUpSauceLabsClientIPRange() {
-        if (!BaseIntegrationTest.isLocal()) {
+        if (BaseIntegrationTest.isRemote()) {
             clientIPRange = SAUCE_LABS_IP_RANGE;
             log.info("Setting client IP range to '{}'", clientIPRange);
         }

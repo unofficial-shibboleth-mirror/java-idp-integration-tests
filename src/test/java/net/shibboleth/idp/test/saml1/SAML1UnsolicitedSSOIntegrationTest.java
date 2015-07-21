@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.shibboleth.idp.test.BrowserData;
+import net.shibboleth.idp.test.IsLocalTestListener;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Listeners;
@@ -31,7 +32,7 @@ import com.saucelabs.testng.SauceOnDemandTestListener;
 /**
  * SAML 1 unsolicited SSO test.
  */
-@Listeners({SauceOnDemandTestListener.class})
+@Listeners({IsLocalTestListener.class, SauceOnDemandTestListener.class})
 public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1IntegrationTest {
 
     /** IdP endpoint. */
