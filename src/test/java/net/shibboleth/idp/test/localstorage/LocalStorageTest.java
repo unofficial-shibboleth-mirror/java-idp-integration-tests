@@ -77,7 +77,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
 
     /** Test local storage item value. */
     @Nonnull protected String testValue = "shib_idp_ls_test_key_value";
-    
+
     /** Path to test flow to read from local storage. */
     @Nonnull protected String readPath = "/idp/profile/test/local-storage/read";
 
@@ -90,14 +90,16 @@ public class LocalStorageTest extends BaseIntegrationTest {
     /**
      * Set up local storage web driver wrapper.
      */
-    @BeforeMethod protected void setUpLocalStorageWrapper() throws IOException {
+    @BeforeMethod
+    protected void setUpLocalStorageWrapper() throws IOException {
         wrapper = new LocalStorageWebDriverWrapper(driver);
     }
 
     /**
      * Set up test views.
      */
-    @BeforeMethod protected void setUpTestViews() throws IOException {
+    @BeforeMethod
+    protected void setUpTestViews() throws IOException {
         replaceIdPProperty("idp.views", "%{idp.home}/views,%{idp.home}/views-test");
     }
 
@@ -317,11 +319,13 @@ public class LocalStorageTest extends BaseIntegrationTest {
      * @param version the item version
      * @return the versioned value as a concatenation of the version, delimiter, and value
      */
-    @Nonnull protected String versionedValue(@Nullable final String value, @Nullable final String version) {
+    @Nonnull
+    protected String versionedValue(@Nullable final String value, @Nullable final String version) {
         return version + LOCAL_STORAGE_VALUE_DELIMITER + value;
     }
 
-    @Test public void testNothingToRead() throws Exception {
+    @Test
+    public void testNothingToRead() throws Exception {
 
         startJettyServer();
 
@@ -336,7 +340,8 @@ public class LocalStorageTest extends BaseIntegrationTest {
         Assert.assertNull(getLocalStorageValueViaWrapper("shib_idp_ls_version"));
     }
 
-    @Test public void testReadEarlierVersion() throws Exception {
+    @Test
+    public void testReadEarlierVersion() throws Exception {
 
         startJettyServer();
 
@@ -349,7 +354,8 @@ public class LocalStorageTest extends BaseIntegrationTest {
         assertSuccessfulRead(testKey, testValue, "1");
     }
 
-    @Test public void testReadSameVersion() throws Exception {
+    @Test
+    public void testReadSameVersion() throws Exception {
 
         startJettyServer();
 
@@ -362,7 +368,8 @@ public class LocalStorageTest extends BaseIntegrationTest {
         assertSuccessfulRead(testKey, "", "1");
     }
 
-    @Test public void testReadLaterVersion() throws Exception {
+    @Test
+    public void testReadLaterVersion() throws Exception {
 
         startJettyServer();
 
@@ -375,7 +382,8 @@ public class LocalStorageTest extends BaseIntegrationTest {
         assertSuccessfulRead(testKey, "", "1");
     }
 
-    @Test public void testReadWrapper() throws Exception {
+    @Test
+    public void testReadWrapper() throws Exception {
 
         startJettyServer();
 
@@ -392,7 +400,8 @@ public class LocalStorageTest extends BaseIntegrationTest {
         assertSuccessfulRead(testKey, testValue, "1");
     }
 
-    @Test public void testReadInvalidVersion() throws Exception {
+    @Test
+    public void testReadInvalidVersion() throws Exception {
 
         startJettyServer();
 
@@ -408,14 +417,16 @@ public class LocalStorageTest extends BaseIntegrationTest {
         Assert.assertEquals(getLocalStorageValue(), "");
     }
 
-    @Test public void testWrite() throws Exception {
+    @Test
+    public void testWrite() throws Exception {
 
         startJettyServer();
 
         writeAndAssert(testKey, testValue, "1");
     }
 
-    @Test public void testWriteInvalidVersion() throws Exception {
+    @Test
+    public void testWriteInvalidVersion() throws Exception {
 
         startJettyServer();
 
@@ -438,14 +449,15 @@ public class LocalStorageTest extends BaseIntegrationTest {
      * @param size the size of the string
      * @return a string of the given size consisting of the given character
      */
-    @Nonnull protected static String generateString(char c, int size) {
+    @Nonnull
+    protected static String generateString(char c, int size) {
         final char[] chars = new char[size];
         Arrays.fill(chars, c);
         return new String(chars);
     }
 
-    @Test(enabled = false) public void testWriteQuotaExceeded() throws ComponentInitializationException,
-            MalformedURLException {
+    @Test(enabled = false)
+    public void testWriteQuotaExceeded() throws ComponentInitializationException, MalformedURLException {
 
         // Set Firefox's quota to 1 kilobyte.
         // profile.setPreference("dom.storage.default_quota", "1");

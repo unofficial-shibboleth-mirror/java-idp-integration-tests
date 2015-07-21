@@ -61,7 +61,8 @@ public class LocalStorageWebDriverWrapper {
      * @param key the key
      * @return the value, possibly <code>null</code>
      */
-    @Nullable public String getItem(@Nonnull final String key) {
+    @Nullable
+    public String getItem(@Nonnull final String key) {
         Assert.assertNotNull(key);
         final Object returned = executeScript(GET, key);
         return (returned == null) ? null : returned.toString();
@@ -88,7 +89,8 @@ public class LocalStorageWebDriverWrapper {
      * @param args script arguments
      * @return the result of executing the script
      */
-    @Nullable protected Object executeScript(@Nonnull final String script, @Nonnull final Object... args) {
+    @Nullable
+    protected Object executeScript(@Nonnull final String script, @Nonnull final Object... args) {
         Assert.assertNotNull(script);
         Assert.assertNotNull(args);
         log.trace("Executing script '{}' with args '{}'", script, args);
