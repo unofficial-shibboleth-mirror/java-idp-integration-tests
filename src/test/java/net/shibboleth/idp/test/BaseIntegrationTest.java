@@ -111,9 +111,9 @@ import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
  * override.
  * <p/>
  * To run tests using remote browsers provided by Sauce Labs, set the {@link #SELENIUM_IS_REMOTE} system property and
- * set the {@link #CLIENT_ADDRESS_PROPERTY} to the publicly accessible IP address of the server to which clients should
- * connect to. You will also probably need to set the {@link #SERVER_ADDRESS_PROPERTY} to the IP address that the server
- * should be run on, which might be the same as the {@link #CLIENT_ADDRESS_PROPERTY}.
+ * set the {@link #PUBLIC_SERVER_ADDRESS_PROPERTY} to the publicly accessible IP address of the server to which clients should
+ * connect to. You will also probably need to set the {@link #PRIVATE_SERVER_ADDRESS_PROPERTY} to the IP address that the server
+ * should be run on, which might be the same as the {@link #PUBLIC_SERVER_ADDRESS_PROPERTY}.
  * <p/>
  * With Sauce Labs, the browsers tested are defined by {@link SauceBrowserDataProvider#SAUCE_ONDEMAND_BROWSERS} in the
  * environment, which is a JSON string. See
@@ -136,11 +136,11 @@ import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
 public abstract class BaseIntegrationTest
         implements SauceOnDemandSessionIdProvider, SauceOnDemandAuthenticationProvider {
 
-    /** Name of property defining the host that the web server listens on. */
-    @Nonnull public final static String SERVER_ADDRESS_PROPERTY = "server.address";
+    /** Name of property defining the address that the web server listens on. */
+    @Nonnull public final static String PRIVATE_SERVER_ADDRESS_PROPERTY = "server.address.private";
 
     /** Name of property defining the address that clients should connect to. */
-    @Nonnull public final static String CLIENT_ADDRESS_PROPERTY = "client.address";
+    @Nonnull public final static String PUBLIC_SERVER_ADDRESS_PROPERTY = "server.address.public";
 
     /** Directory in which distributions will be unpackaged. */
     @Nonnull public final static String TEST_DISTRIBUTIONS_DIRECTORY = "test-distributions";
@@ -386,28 +386,28 @@ public abstract class BaseIntegrationTest
     /**
      * Set up the address that the web server listens on.
      * <p/>
-     * If the {@link #CLIENT_ADDRESS_PROPERTY} system property exists, use that as the non-secure and secure client
+     * If the {@link #PUBLIC_SERVER_ADDRESS_PROPERTY} system property exists, use that as the non-secure and secure client
      * address.
      * <p/>
-     * If the {@link #SERVER_ADDRESS_PROPERTY} system property exists, use that as the non-secure and secure server
+     * If the {@link #PRIVATE_SERVER_ADDRESS_PROPERTY} system property exists, use that as the non-secure and secure server
      * address.
      * <p/>
-     * If the {@link #SERVER_ADDRESS_PROPERTY} system property exists but {@link #CLIENT_ADDRESS_PROPERTY} does not, use
+     * If the {@link #PRIVATE_SERVER_ADDRESS_PROPERTY} system property exists but {@link #PUBLIC_SERVER_ADDRESS_PROPERTY} does not, use
      * the property as the non-secure and secure server address and client address.
      * 
      */
     @BeforeClass
     public void setUpAddresses() {
-        final String envClientAddress = System.getProperty(CLIENT_ADDRESS_PROPERTY);
-        log.debug("System property '{}' is '{}'", CLIENT_ADDRESS_PROPERTY, envClientAddress);
+        final String envClientAddress = System.getProperty(PUBLIC_SERVER_ADDRESS_PROPERTY);
+        log.debug("System property '{}' is '{}'", PUBLIC_SERVER_ADDRESS_PROPERTY, envClientAddress);
 
         if (envClientAddress != null) {
             clientAddress = envClientAddress;
             clientSecureAddress = envClientAddress;
         }
 
-        final String envServerAddress = System.getProperty(SERVER_ADDRESS_PROPERTY);
-        log.debug("System property '{}' is '{}'", SERVER_ADDRESS_PROPERTY, envServerAddress);
+        final String envServerAddress = System.getProperty(PRIVATE_SERVER_ADDRESS_PROPERTY);
+        log.debug("System property '{}' is '{}'", PRIVATE_SERVER_ADDRESS_PROPERTY, envServerAddress);
 
         if (envServerAddress != null) {
             address = envServerAddress;
