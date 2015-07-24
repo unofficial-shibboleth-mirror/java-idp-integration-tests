@@ -112,9 +112,9 @@ import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
  * override.
  * <p/>
  * To run tests using remote browsers provided by Sauce Labs, set the {@link #SELENIUM_IS_REMOTE} system property and
- * set the {@link #PUBLIC_SERVER_ADDRESS_PROPERTY} to the publicly accessible IP address of the server to which clients
- * should connect to. You will also probably need to set the {@link #PRIVATE_SERVER_ADDRESS_PROPERTY} to the IP address
- * that the server should be run on, which might be the same as the {@link #PUBLIC_SERVER_ADDRESS_PROPERTY}.
+ * set the {@link #SERVER_ADDRESS_PROPERTY} to the publicly accessible IP address of the server to which clients should
+ * connect to. You will also probably need to set the {@link #PRIVATE_SERVER_ADDRESS_PROPERTY} to the IP address that
+ * the server should be run on, which might be the same as the {@link #SERVER_ADDRESS_PROPERTY}.
  * <p/>
  * With Sauce Labs, the browsers tested are defined by {@link SauceBrowserDataProvider#SAUCE_ONDEMAND_BROWSERS} in the
  * environment, which is a JSON string. See
@@ -141,7 +141,7 @@ public abstract class BaseIntegrationTest
     @Nonnull public final static String PRIVATE_SERVER_ADDRESS_PROPERTY = "server.address.private";
 
     /** Name of property defining the address that clients should connect to. */
-    @Nonnull public final static String PUBLIC_SERVER_ADDRESS_PROPERTY = "server.address";
+    @Nonnull public final static String SERVER_ADDRESS_PROPERTY = "server.address";
 
     /** Directory in which distributions will be unpackaged. */
     @Nonnull public final static String TEST_DISTRIBUTIONS_DIRECTORY = "test-distributions";
@@ -228,10 +228,10 @@ public abstract class BaseIntegrationTest
     @Nonnull protected Integer ldapPort = 10389;
 
     /** Non-secure address that clients should connect to. Defaults to "localhost". */
-    @Nonnull protected String publicAddress = "localhost";
+    @Nonnull protected String address = "localhost";
 
     /** Secure address that clients should connect to. Defaults to "localhost". */
-    @Nonnull protected String publicSecureAddress = "localhost";
+    @Nonnull protected String secureAddress = "localhost";
 
     /** Non-secure web server base URL. Defaults to http://localhost:8080. */
     @NonnullAfterInit protected String baseURL;
@@ -390,30 +390,31 @@ public abstract class BaseIntegrationTest
     /**
      * Set up addresses the web server listens on and clients connect to.
      * <p/>
-     * If the {@link #PUBLIC_SERVER_ADDRESS_PROPERTY} system property exists, use it as the non-secure and secure public
-     * server address.
+     * If the {@link #SERVER_ADDRESS_PROPERTY} system property exists, use it as the non-secure and secure server
+     * address.
      * <p/>
      * If the {@link #PRIVATE_SERVER_ADDRESS_PROPERTY} system property exists, use it as the non-secure and secure
      * private server address.
+     * <p>
+     * The private server address may be different than the server address, for example, when the server is behind NAT.
      * <p/>
-     * If the {@link #PUBLIC_SERVER_ADDRESS_PROPERTY} system property exists but
-     * {@link #PRIVATE_SERVER_ADDRESS_PROPERTY} does not, use it as both the non-secure and secure public and private
-     * server address.
+     * If the {@link #SERVER_ADDRESS_PROPERTY} system property exists but {@link #PRIVATE_SERVER_ADDRESS_PROPERTY} does
+     * not, use it as both the non-secure and secure (1) server and (2) private server address.
      */
     @BeforeClass
     public void setUpAddresses() {
         final String envPrivateServerAddress = System.getProperty(PRIVATE_SERVER_ADDRESS_PROPERTY);
         log.debug("System property '{}' is '{}'", PRIVATE_SERVER_ADDRESS_PROPERTY, envPrivateServerAddress);
 
-        final String envPublicServerAddress = System.getProperty(PUBLIC_SERVER_ADDRESS_PROPERTY);
-        log.debug("System property '{}' is '{}'", PUBLIC_SERVER_ADDRESS_PROPERTY, envPublicServerAddress);
+        final String envPublicServerAddress = System.getProperty(SERVER_ADDRESS_PROPERTY);
+        log.debug("System property '{}' is '{}'", SERVER_ADDRESS_PROPERTY, envPublicServerAddress);
 
         if (envPublicServerAddress != null) {
-            publicAddress = envPublicServerAddress;
-            publicSecureAddress = envPublicServerAddress;
+            address = envPublicServerAddress;
+            secureAddress = envPublicServerAddress;
             if (envPrivateServerAddress == null) {
-                privateAddress = publicAddress;
-                privateSecureAddress = publicSecureAddress;
+                privateAddress = address;
+                privateSecureAddress = secureAddress;
             }
         }
 
@@ -447,20 +448,20 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Set up endpoint URLs using the {@link #publicAddress} and {@link #publicSecureAddress}.
+     * Set up endpoint URLs using the {@link #address} and {@link #secureAddress}.
      */
     @BeforeClass(dependsOnMethods = {"setUpAddresses", "setUpAvailablePorts"})
     public void setUpBaseURLs() {
         final URLBuilder urlBuilder = new URLBuilder();
         urlBuilder.setScheme("http");
-        urlBuilder.setHost(publicAddress);
+        urlBuilder.setHost(address);
         urlBuilder.setPort(port);
         baseURL = urlBuilder.buildURL();
         log.info("URL '{}' is the base URL which clients should connect to.", baseURL);
 
         final URLBuilder secureUrlBuilder = new URLBuilder();
         secureUrlBuilder.setScheme("https");
-        secureUrlBuilder.setHost(publicSecureAddress);
+        secureUrlBuilder.setHost(secureAddress);
         secureUrlBuilder.setPort(securePort);
         secureBaseURL = secureUrlBuilder.buildURL();
         log.info("URL '{}' is the secure base URL which clients should connect to.", secureBaseURL);
