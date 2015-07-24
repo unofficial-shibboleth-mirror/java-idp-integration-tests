@@ -141,7 +141,7 @@ public abstract class BaseIntegrationTest
     @Nonnull public final static String PRIVATE_SERVER_ADDRESS_PROPERTY = "server.address.private";
 
     /** Name of property defining the address that clients should connect to. */
-    @Nonnull public final static String PUBLIC_SERVER_ADDRESS_PROPERTY = "server.address.public";
+    @Nonnull public final static String PUBLIC_SERVER_ADDRESS_PROPERTY = "server.address";
 
     /** Directory in which distributions will be unpackaged. */
     @Nonnull public final static String TEST_DISTRIBUTIONS_DIRECTORY = "test-distributions";
