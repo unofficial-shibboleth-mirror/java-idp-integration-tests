@@ -27,7 +27,6 @@ import javax.annotation.Nullable;
 
 import net.shibboleth.idp.test.BaseIntegrationTest;
 import net.shibboleth.idp.test.BrowserData;
-import net.shibboleth.idp.test.IsLocalTestListener;
 import net.shibboleth.utilities.java.support.collection.Pair;
 import net.shibboleth.utilities.java.support.net.URLBuilder;
 
@@ -39,10 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
-
-import com.saucelabs.testng.SauceOnDemandTestListener;
 
 /**
  * Local storage tests.
