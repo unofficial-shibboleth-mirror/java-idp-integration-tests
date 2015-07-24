@@ -57,6 +57,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -269,7 +270,10 @@ public abstract class BaseIntegrationTest
     @NonnullAfterInit protected UnmarshallerFactory unmarshallerFactory;
 
     /** Desired capabilities of the web driver. */
-    @Nullable protected DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
+    @Nonnull protected DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
+
+    /** Override desired capabilities of the web driver. */
+    @Nullable protected DesiredCapabilities overrideCapabilities;
 
     /** Web driver. */
     @Nonnull protected WebDriver driver;
@@ -508,10 +512,12 @@ public abstract class BaseIntegrationTest
     public void setUpDebugLogging() throws Exception {
         final Path pathToLogbackXML = Paths.get("conf", "logback.xml");
 
+        // Set IdP logging to DEBUG from INFO.
         final String oldText = "<logger name=\"net.shibboleth.idp\" level=\"INFO\"/>";
         final String newText = "<logger name=\"net.shibboleth.idp\" level=\"DEBUG\"/>";
-
         replaceIdPHomeFile(pathToLogbackXML, oldText, newText);
+
+        logUnencryptedSAML();
     }
 
     /**
@@ -568,13 +574,12 @@ public abstract class BaseIntegrationTest
      * @throws Exception if an error occurs
      */
     public void startSeleniumClient(@Nullable final BrowserData browserData) throws Exception {
-        log.debug("Start Selenium client using browser data '{}'", browserData);
         setUpDesiredCapabilities(browserData);
         if (BaseIntegrationTest.isRemote()) {
-            log.info("Using remote web driver");
+            log.debug("Setting up remote web driver with desired capabilities '{}'", desiredCapabilities);
             setUpSauceDriver();
         } else {
-            log.info("Using local web driver");
+            log.debug("Setting up local web driver with desired capabilities '{}'", desiredCapabilities);
             setUpHtmlUnitDriver();
             // setUpFirefoxDriver();
         }
@@ -697,11 +702,24 @@ public abstract class BaseIntegrationTest
         Assert.assertNotNull(pathToFile, "Path not found");
         Assert.assertTrue(pathToFile.toAbsolutePath().toFile().exists(), "Path does not exist");
 
-        Charset charset = StandardCharsets.UTF_8;
+        final Charset charset = StandardCharsets.UTF_8;
 
         String content = new String(Files.readAllBytes(pathToFile), charset);
         content = content.replaceAll(regex, replacement);
         Files.write(pathToFile, content.getBytes(charset));
+    }
+
+    /**
+     * Uncomment a commented regex from a file.
+     * 
+     * @param pathToFile path to the file
+     * @param toUncomment regular expression to be uncommented
+     * @throws IOException if the file cannot be overwritten
+     */
+    public void uncommentFile(@Nonnull final Path pathToFile, @Nonnull @NotEmpty final String toUncomment)
+            throws IOException {
+        final String commented = "\\<\\!--\\s+" + toUncomment + "\\s+--\\>";
+        replaceFile(pathToFile, commented, toUncomment);
     }
 
     /**
@@ -779,6 +797,19 @@ public abstract class BaseIntegrationTest
     }
 
     /**
+     * Log unencrypted SAML.
+     */
+    public void logUnencryptedSAML() {
+        final Path pathToLogbackXML = Paths.get("conf", "logback.xml");
+        final String toUncomment = "<logger name=\"org.opensaml.saml.saml2.encryption.Encrypter\" level=\"DEBUG\" />";
+        try {
+            uncommentFile(pathToIdPHome.resolve(pathToLogbackXML), toUncomment);
+        } catch (IOException e) {
+            Assert.fail("Unable to log unencrypted SAML", e);
+        }
+    }
+
+    /**
      * Populate the test name as the name of test class concatenated with the test method.
      * 
      * @param method the test method
@@ -838,6 +869,8 @@ public abstract class BaseIntegrationTest
      * Sets the test name to be displayed by Sauce Labs at
      * <a href="https://saucelabs.com/tests">https://saucelabs.com/tests</a>.
      * 
+     * The desired capabilities will be overridden by the {@link #overrideCapabilities} if non-null.
+     * 
      * @param browserData the browser data
      */
     public void setUpDesiredCapabilities(@Nullable final BrowserData browserData) {
@@ -859,6 +892,12 @@ public abstract class BaseIntegrationTest
                 desiredCapabilities.setCapability(CapabilityType.PLATFORM,
                         Platform.extractFromSysProperty(browserData.getOS()));
             }
+        }
+
+        // Override desired capabilities.
+        if (overrideCapabilities != null) {
+            log.debug("Override desired capabilities with '{}'", overrideCapabilities);
+            desiredCapabilities.merge(overrideCapabilities);
         }
 
         log.debug("Desired capabilities '{}'", desiredCapabilities);
@@ -905,8 +944,7 @@ public abstract class BaseIntegrationTest
             data.add(new Object[] {new BrowserData().setBrowser("firefox")});
         }
         for (final Object[] array : data) {
-            LoggerFactory.getLogger(BaseIntegrationTest.class).debug("Browser data provider using '{}'", array);
-            Reporter.log("Browser data provider using '" + array + "'", true);
+            LoggerFactory.getLogger(BaseIntegrationTest.class).debug("Browser data provider '{}'", array);
         }
 
         return data.iterator();
@@ -922,6 +960,16 @@ public abstract class BaseIntegrationTest
      */
     public static boolean isRemote() {
         return (System.getProperty(SELENIUM_IS_REMOTE, "false").equalsIgnoreCase("true")) ? true : false;
+    }
+
+    /**
+     * Whether the driver is Internet Explorer. Looks for desired capabilities with browser name of
+     * {@link BrowserType#IE}.
+     * 
+     * @return whether the driver is Internet Explorer.
+     */
+    public boolean isInternetExplorer() {
+        return desiredCapabilities.getBrowserName().equals(BrowserType.IE);
     }
 
     /**
@@ -959,7 +1007,7 @@ public abstract class BaseIntegrationTest
     /**
      * Delete the per-test idp.home directory if there were no failures in the test class.
      */
-    @AfterClass(enabled = true)
+    @AfterClass(enabled = false)
     public void deletePerTestIdPHomeDirectory() {
         if (testClassFailed) {
             log.debug("There was a test class failure, not deleting per-test idp.home directory '{}'",
@@ -1004,6 +1052,52 @@ public abstract class BaseIntegrationTest
     }
 
     /**
+     * Get the source of the last page loaded.
+     * 
+     * Handle Internet Explorer via {@link #cleanupPageSourceIE(String)}.
+     * 
+     * @return the source of the last page loaded or <code>null</code>
+     */
+    @Nullable
+    public String getPageSource() {
+        String pageSource = null;
+
+        if (driver instanceof HtmlUnitDriver) {
+            pageSource = driver.getPageSource();
+        } else {
+            pageSource = driver.findElement(By.tagName("body")).getText();
+        }
+
+        if (isInternetExplorer()) {
+            pageSource = cleanupPageSourceIE(pageSource);
+        }
+
+        return pageSource;
+    }
+
+    /**
+     * Strip default stylesheet strings.
+     * 
+     * <a href="https://msdn.microsoft.com/en-us/library/ms754529%28v=VS.85%29.aspx">Displaying XML Files in a
+     * Browser</a>
+     * 
+     * @param pageSource page source with extraneous formatting
+     * @return pageSource page source without extraneous formatting
+     */
+    public String cleanupPageSourceIE(@Nonnull final String pageSource) {
+        log.trace("Page source:\n{}", pageSource);
+
+        // Strip leading whitespace.
+        String newPageSource = pageSource.replaceAll("^\\s+", "");
+
+        // Strip leading " -".
+        newPageSource = newPageSource.replaceAll("\n-\\s+", "\n");
+
+        log.trace("New page source:\n{}", newPageSource);
+        return newPageSource;
+    }
+
+    /**
      * Start the flow by accessing the URL composed of {@link #getBaseURL()} and {@link #startFlowURLPath}.
      */
     public void startFlow() {
@@ -1030,24 +1124,6 @@ public abstract class BaseIntegrationTest
                 return d.getCurrentUrl().equals(getBaseURL() + responsePageURLPath);
             }
         });
-    }
-
-    /**
-     * Get the source of the last page loaded.
-     * 
-     * @return the source of the last page loaded or <code>null</code>
-     */
-    @Nullable
-    public String getPageSource() {
-        String pageSource = null;
-
-        if (driver instanceof HtmlUnitDriver) {
-            pageSource = driver.getPageSource();
-        } else {
-            pageSource = driver.findElement(By.tagName("body")).getText();
-        }
-
-        return pageSource;
     }
 
     /**
