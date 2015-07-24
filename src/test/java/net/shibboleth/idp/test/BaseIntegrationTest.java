@@ -1007,7 +1007,7 @@ public abstract class BaseIntegrationTest
     /**
      * Delete the per-test idp.home directory if there were no failures in the test class.
      */
-    @AfterClass(enabled = false)
+    @AfterClass(enabled = true)
     public void deletePerTestIdPHomeDirectory() {
         if (testClassFailed) {
             log.debug("There was a test class failure, not deleting per-test idp.home directory '{}'",
