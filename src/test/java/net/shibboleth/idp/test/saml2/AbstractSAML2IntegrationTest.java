@@ -30,6 +30,7 @@ import net.shibboleth.idp.test.BaseIntegrationTest;
 import net.shibboleth.idp.test.BrowserData;
 import net.shibboleth.idp.test.flows.saml2.SAML2TestResponseValidator;
 import net.shibboleth.idp.test.flows.saml2.SAML2TestStatusResponseTypeValidator;
+import net.shibboleth.utilities.java.support.net.IPRange;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
 
 import org.cryptacular.util.CertUtil;
@@ -86,6 +87,9 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
         validator = new SAML2TestResponseValidator();
         validator.spCredential = getSPCredential();
         validator.authnContextClassRef = AuthnContext.PPT_AUTHN_CTX;
+        if (BaseIntegrationTest.isRemote()) {
+            validator.subjectConfirmationDataAddressRange = IPRange.parseCIDRBlock(SAUCE_LABS_IP_RANGE);
+        }
     }
 
     /**
