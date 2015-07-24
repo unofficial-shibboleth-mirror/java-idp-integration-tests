@@ -133,7 +133,7 @@ import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
  * </p>
  * See {@link org.openqa.selenium.Platform}. Or, configure a new TestNG data provider.
  */
-@Listeners({IsLocalTestListener.class})
+@Listeners({CustomSauceOnDemandTestListener.class})
 public abstract class BaseIntegrationTest
         implements SauceOnDemandSessionIdProvider, SauceOnDemandAuthenticationProvider {
 
