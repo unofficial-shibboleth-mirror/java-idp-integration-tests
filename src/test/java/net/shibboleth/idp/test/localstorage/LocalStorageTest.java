@@ -323,7 +323,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
         return version + LOCAL_STORAGE_VALUE_DELIMITER + value;
     }
 
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    @Test(enabled=false, dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testNothingToRead(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
@@ -343,7 +343,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
         Assert.assertNull(getLocalStorageValueViaWrapper("shib_idp_ls_version"));
     }
 
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    @Test(enabled=false, dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testReadEarlierVersion(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
@@ -361,7 +361,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
         assertSuccessfulRead(testKey, testValue, "1");
     }
 
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    @Test(enabled=false, dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testReadSameVersion(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
@@ -379,7 +379,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
         assertSuccessfulRead(testKey, "", "1");
     }
 
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    @Test(enabled=false, dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testReadLaterVersion(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
@@ -397,7 +397,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
         assertSuccessfulRead(testKey, "", "1");
     }
 
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    @Test(enabled=false, dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testReadWrapper(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
@@ -419,7 +419,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
         assertSuccessfulRead(testKey, testValue, "1");
     }
 
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    @Test(enabled=false, dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testReadInvalidVersion(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
@@ -440,7 +440,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
         Assert.assertEquals(getLocalStorageValue(), "");
     }
 
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    @Test(enabled=false, dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testWrite(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
@@ -452,7 +452,7 @@ public class LocalStorageTest extends BaseIntegrationTest {
         writeAndAssert(testKey, testValue, "1");
     }
 
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    @Test(enabled=false, dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testWriteInvalidVersion(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
