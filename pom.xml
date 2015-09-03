@@ -440,13 +440,15 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
                     <filesets>
                         <fileset>
                             <directory>${test-distributions.directory}</directory>
                         </fileset>
                         <fileset>
                             <directory>${project.build.directory}/dependency-maven-plugin-markers</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>test-output</directory>
                         </fileset>
                     </filesets>
                 </configuration>
