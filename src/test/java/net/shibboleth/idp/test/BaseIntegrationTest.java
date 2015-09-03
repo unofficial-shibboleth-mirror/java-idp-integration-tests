@@ -519,6 +519,25 @@ public abstract class BaseIntegrationTest
         replaceIdPHomeFile(pathToLogbackXML, oldText, newText);
 
         logUnencryptedSAML();
+        
+        // Add logging when starting Jetty.
+        serverCommands.add("-Dlogback.configurationFile=" + pathToIdPHome.resolve(pathToLogbackXML).toAbsolutePath());
+    }
+    
+    /**
+     * Set path to web.xml override descriptor for the IdP to ../conf/web-override.xml.
+     * 
+     * @throws Exception
+     */
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"})
+    public void setUpOverrideDescriptor() throws Exception {
+        
+        final Path pathToIdPXML = pathToJettyBase.resolve(Paths.get("webapps", "idp.xml"));
+        Assert.assertTrue(pathToIdPXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
+        
+        final String oldText = "</Configure>";
+        final String newText = "<Set name=\"overrideDescriptor\">../conf/web-override.xml</Set></Configure>";
+        replaceFile(pathToIdPXML, oldText, newText);
     }
 
     /**
@@ -584,6 +603,7 @@ public abstract class BaseIntegrationTest
             setUpHtmlUnitDriver();
             // setUpFirefoxDriver();
         }
+        log.debug("Started web driver '{}' with desired capabilities '{}'", driver, desiredCapabilities);
     }
 
     /**

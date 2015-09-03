@@ -20,7 +20,8 @@
         <opensaml.version>3.2.0-SNAPSHOT</opensaml.version>
         <idp.version>3.2.0-SNAPSHOT</idp.version>
         <selenium.version>2.45.0</selenium.version>
-        <testbed.version>0.2.0-SNAPSHOT</testbed.version>
+        <testbed.version>0.3.0-SNAPSHOT</testbed.version>
+        <testbed.classifier>classes</testbed.classifier>
         <test-distributions.directory>${basedir}/test-distributions</test-distributions.directory>
         <svn.relative.location>java-idp-integration-tests</svn.relative.location>
         <xalan.groupId>xalan</xalan.groupId>
@@ -82,6 +83,14 @@
             <version>${testbed.version}</version>
             <scope>test</scope>
             <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>net.shibboleth.idp</groupId>
+            <artifactId>idp-testbed</artifactId>
+            <version>${testbed.version}</version>
+            <scope>test</scope>
+            <type>jar</type>
+            <classifier>${testbed.classifier}</classifier>
         </dependency>
         <dependency>
             <groupId>org.opensaml</groupId>
@@ -313,6 +322,47 @@
                             <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/testbed-war/</outputDirectory>
                         </configuration>
                     </execution>
+                    <!-- Copy testbed jar to IdP webapp. -->
+                    <execution>
+                        <id>copy-testbed-jar</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>net.shibboleth.idp</groupId>
+                                    <artifactId>idp-testbed</artifactId>
+                                    <version>${testbed.version}</version>
+                                    <type>jar</type>
+                                    <classifier>${testbed.classifier}</classifier>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/webapp/WEB-INF/lib/</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <!-- Copy web-override.xml from testbed jar. -->
+                    <execution>
+                        <id>copy-testbed-web-override</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                   <groupId>net.shibboleth.idp</groupId>
+                                    <artifactId>idp-testbed</artifactId>
+                                    <version>${testbed.version}</version>
+                                    <type>jar</type>
+                                    <classifier>${testbed.classifier}</classifier>
+                                    <includes>conf/web-override.xml</includes>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -447,5 +497,23 @@
         </pluginManagement>
 
     </build>
+
+    <!--
+        Remove the testbed dependency classifier when using Eclipse, but not from the command line.
+        See https://wiki.eclipse.org/M2E-WTP_FAQ
+    -->
+    <profiles>
+        <profile>
+            <id>m2e</id>
+            <activation>
+                <property>
+                    <name>m2e.version</name>
+                </property>
+            </activation>
+            <properties>
+                <testbed.classifier></testbed.classifier>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
