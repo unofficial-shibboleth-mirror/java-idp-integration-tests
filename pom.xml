@@ -419,7 +419,8 @@
                     </execution>
                 </executions>
             </plugin>
-             <plugin>
+            <!-- Also delete the test-distributions directory during clean. -->
+            <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
                     <filesets>
