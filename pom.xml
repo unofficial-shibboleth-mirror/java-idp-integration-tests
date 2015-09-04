@@ -22,7 +22,7 @@
         <selenium.version>2.45.0</selenium.version>
         <testbed.version>0.3.0-SNAPSHOT</testbed.version>
         <testbed.classifier>classes</testbed.classifier>
-        <test-distributions.directory>${basedir}/test-distributions</test-distributions.directory>
+        <test-distributions.directory>${project.basedir}/test-distributions</test-distributions.directory>
         <svn.relative.location>java-idp-integration-tests</svn.relative.location>
         <xalan.groupId>xalan</xalan.groupId>
         <xalan.version>2.7.1</xalan.version>
@@ -419,36 +419,12 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
+             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
-                <executions>
-                    <!-- Delete test-distributions.directory during initialize. -->
-                    <execution>
-                        <id>clean-initialize</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                    <!-- Delete test-distributions.directory after tests. -->
-                    <execution>
-                        <id>clean-post-integration-test</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <configuration>
                     <filesets>
                         <fileset>
                             <directory>${test-distributions.directory}</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${project.build.directory}/dependency-maven-plugin-markers</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>test-output</directory>
                         </fileset>
                     </filesets>
                 </configuration>
