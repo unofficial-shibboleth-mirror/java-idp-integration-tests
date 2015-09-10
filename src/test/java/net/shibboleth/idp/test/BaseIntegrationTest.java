@@ -810,20 +810,24 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Activate terms-of-use flow.
+     * Activate terms-of-use flow and include attribute statement.
      *
      * @throws Exception
      */
     public void enableCustomRelyingPartyConfiguration() throws Exception {
-        final Path pathToRelyingParty =
-                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party.xml");
-        Assert.assertTrue(pathToRelyingParty.toFile().exists());
+        final Path pathToRelyingPartyXML = Paths.get("conf", "relying-party.xml");
 
-        final Path pathToRelyingPartyWithConsent =
-                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party-with-consent.xml");
-        Assert.assertTrue(pathToRelyingPartyWithConsent.toFile().exists());
-
-        Files.copy(pathToRelyingPartyWithConsent, pathToRelyingParty, StandardCopyOption.REPLACE_EXISTING);
+        final String oldIncludeAttributeStatementText =
+                "<bean parent=\"Shibboleth.SSO\" p:postAuthenticationFlows=\"attribute-release\" />";
+        final String newIncludeAttributeStatementText =
+                "<bean parent=\"Shibboleth.SSO\" p:includeAttributeStatement=\"true\" p:postAuthenticationFlows=\"attribute-release\" />";
+        replaceIdPHomeFile(pathToRelyingPartyXML, oldIncludeAttributeStatementText, newIncludeAttributeStatementText);
+        
+        final String oldPostAuthenticationFlowsText =
+                "<bean parent=\"SAML2.SSO\" p:postAuthenticationFlows=\"attribute-release\" />";
+        final String newPostAuthenticationFlowsText =
+                "<bean parent=\"SAML2.SSO\" p:postAuthenticationFlows=\"#{ {'terms-of-use', 'attribute-release'} }\" />";
+        replaceIdPHomeFile(pathToRelyingPartyXML, oldPostAuthenticationFlowsText, newPostAuthenticationFlowsText);
     }
 
     /**
