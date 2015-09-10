@@ -400,23 +400,6 @@
                             <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/jetty-base/webapps/</outputDirectory>
                         </configuration>
                     </execution>
-                    <!-- Copy example metadata-providers.xml. -->
-                    <execution>
-                        <id>copy-example-metadata-providers</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <resources>
-                                <resource>
-                                    <directory>src/test/conf</directory>
-                                </resource>
-                            </resources>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/conf/</outputDirectory>
-                            <overwrite>true</overwrite>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <!-- Also delete the test-distributions directory during clean. -->

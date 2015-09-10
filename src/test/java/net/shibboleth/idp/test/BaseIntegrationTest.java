@@ -525,6 +525,22 @@ public abstract class BaseIntegrationTest
     }
     
     /**
+     * Set up example metadata provider for the IdP.
+     * 
+     * @throws Exception
+     */
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"})
+    public void setUpExampleMetadataProvider() throws Exception {
+        final Path pathToMetadataProvidersXML = Paths.get("conf", "metadata-providers.xml");
+
+        final String oldText = "</MetadataProvider>";
+        final String newText =
+                "<MetadataProvider id=\"URLMD\" xsi:type=\"FilesystemMetadataProvider\" metadataFile=\"%{idp.home}/metadata/example-metadata.xml\" />"
+                        + System.lineSeparator() + "</MetadataProvider>";
+        replaceIdPHomeFile(pathToMetadataProvidersXML, oldText, newText);
+    }
+    
+    /**
      * Set path to web.xml override descriptor for the IdP to ../conf/web-override.xml.
      * 
      * @throws Exception
