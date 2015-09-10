@@ -363,41 +363,25 @@
                             <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <!-- Copy jetty-base context deployment descriptor. -->
-                    <execution>
-                        <id>copy-testbed-jetty-base</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <resources>
-                                <resource>
-                                    <directory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/embedded/jetty-base</directory>
-                                </resource>
-                            </resources>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/jetty-base/</outputDirectory>
-                        </configuration>
-                    </execution>
-                    <!-- Copy idp-testbed context deployment descriptor. -->
+                    <!-- Copy testbed deployment descriptor from testbed jar. -->
                     <execution>
                         <id>copy-testbed-deployment-descriptor</id>
                         <phase>compile</phase>
                         <goals>
-                            <goal>copy-resources</goal>
+                            <goal>unpack</goal>
                         </goals>
                         <configuration>
-                            <resources>
-                                <resource>
-                                    <directory>src/test/webapps</directory>
-                                </resource>
-                            </resources>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/jetty-base/webapps/</outputDirectory>
+                            <artifactItems>
+                                <artifactItem>
+                                   <groupId>net.shibboleth.idp</groupId>
+                                    <artifactId>idp-testbed</artifactId>
+                                    <version>${testbed.version}</version>
+                                    <type>jar</type>
+                                    <classifier>${testbed.classifier}</classifier>
+                                    <includes>webapps/0-idp-testbed.xml</includes>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/embedded/jetty-base/</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
