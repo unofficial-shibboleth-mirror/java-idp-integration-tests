@@ -651,7 +651,11 @@ public abstract class BaseIntegrationTest
      * @throws ComponentInitializationException if the server cannot be initialized
      */
     public void startJettyServer() throws ComponentInitializationException {
-        server = new JettyServerProcess(pathToJettyBase, pathToJettyHome, serverCommands);
+        server = new JettyServerProcess();
+        server.setJettyBasePath(pathToJettyBase);
+        server.setJettyHomePath(pathToJettyHome);
+        server.setAdditionalCommands(serverCommands);
+        server.setStatusPageURL(getBaseURL() + StatusTest.statusPath);
         server.initialize();
         server.start();
     }

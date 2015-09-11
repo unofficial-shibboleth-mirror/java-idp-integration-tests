@@ -35,10 +35,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
+import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.component.AbstractInitializableComponent;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
+import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.httpclient.HttpClientBuilder;
 import net.shibboleth.utilities.java.support.logic.Constraint;
+import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -66,10 +69,13 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
     @Nonnull private final Logger log = LoggerFactory.getLogger(JettyServerProcess.class);
 
     /** Path to jetty.base. */
-    @Nonnull private final Path pathToJettyBase;
+    @Nonnull private Path pathToJettyBase;
 
     /** Path to jetty.home. */
-    @Nonnull private final Path pathToJettyHome;
+    @Nonnull private Path pathToJettyHome;
+
+    /** URL of the IdP status page. */
+    @NonnullAfterInit private String statusPageURL;
 
     /** The string indicating that the Jetty server has finished starting. */
     @Nonnull public final String startedRegex = "Server:main: Started \\@";
@@ -93,24 +99,75 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
     @Nullable private List<String> additionalCommands;
 
     /**
-     * Constructor.
+     * Set path to jetty.base.
      * 
      * @param jettyBasePath path to jetty.base
-     * @param jettyHomePath path to jetty.home
-     * @param commands additional commands to start the Jetty server
+     * @return this Jetty server
      */
-    public JettyServerProcess(@Nonnull final Path jettyBasePath, @Nonnull final Path jettyHomePath,
-            @Nullable final List<String> commands) {
+    @Nonnull
+    public JettyServerProcess setJettyBasePath(@Nonnull final Path jettyBasePath) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         pathToJettyBase = Constraint.isNotNull(jettyBasePath, "Path to jetty.base cannot be null");
+        return this;
+    }
+
+    /**
+     * Set path to jetty.home.
+     * 
+     * @param jettyHomePath path to jetty.home
+     * @return this Jetty server
+     */
+    @Nonnull
+    public JettyServerProcess setJettyHomePath(@Nonnull final Path jettyHomePath) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         pathToJettyHome = Constraint.isNotNull(jettyHomePath, "Path to jetty.home cannot be null");
+        return this;
+    }
+
+    /**
+     * Set additional commands to start the Jetty server process.
+     * 
+     * @param commands additional commands
+     * @return this Jetty server
+     */
+    @Nonnull
+    public JettyServerProcess setAdditionalCommands(@Nullable final List<String> commands) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         if (commands != null) {
             additionalCommands = commands;
         }
+        return this;
+    }
+
+    /**
+     * Set status page URL.
+     * 
+     * @param URL status page URL
+     * @return this Jetty server
+     */
+    @Nonnull
+    public JettyServerProcess setStatusPageURL(@Nonnull @NotEmpty final String URL) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        statusPageURL = Constraint.isNotNull(StringSupport.trimOrNull(URL), "Status page URL cannot be null nor empty");
+        return this;
     }
 
     /** {@inheritDoc} */
     @Override
     protected void doInitialize() throws ComponentInitializationException {
+        super.doInitialize();
+
+        if (pathToJettyBase == null) {
+            throw new ComponentInitializationException("Path to jetty.base cannot be null");
+        }
+
+        if (pathToJettyHome == null) {
+            throw new ComponentInitializationException("Path to jetty.home cannot be null");
+        }
+
+        if (statusPageURL == null) {
+            throw new ComponentInitializationException("Status page URL cannot be null");
+        }
 
         // Throw exception if jetty.base does not exist.
         if (!pathToJettyBase.toAbsolutePath().toFile().exists()) {
@@ -164,8 +221,8 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
             final Stopwatch stopwatch = Stopwatch.createStarted();
             log.debug("Starting the Jetty server process");
             process = processBuilder.start();
-            waitForJettyLogFile();
-            // waitForStatusPage();
+            // waitForJettyLogFile();
+            waitForStatusPage();
             stopwatch.stop();
             log.debug("Jetty server process started in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         } catch (Exception e) {
@@ -253,8 +310,7 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
         builder.setConnectionDisregardTLSCertificate(true);
         final HttpClient httpClient = builder.buildClient();
 
-        // TODO status page URL
-        final HttpGet httpget = new HttpGet("TODO");
+        final HttpGet httpget = new HttpGet(statusPageURL);
         final HttpResponse response = httpClient.execute(httpget);
         log.trace("Status page response  '{}'", response);
 
