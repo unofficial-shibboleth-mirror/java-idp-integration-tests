@@ -45,8 +45,10 @@ import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -305,7 +307,8 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
     public String getStatusPageText(@Nullable final int retries, @Nonnull final int millis) throws Exception {
 
         final HttpClientBuilder builder = new HttpClientBuilder();
-        builder.setHttpRequestRetryHandler(new FiniteWaitHttpRequestRetryHandler(retries, millis));
+        builder.setHttpRequestRetryHandler(new FiniteWaitHttpRequestRetryHandler(retries / 2, millis));
+        builder.setServiceUnavailableRetryHandler(new FiniteWaitServiceUnavailableRetryStrategy(retries / 2, millis));
         builder.setConnectionCloseAfterResponse(false);
         builder.setConnectionDisregardTLSCertificate(true);
         final HttpClient httpClient = builder.buildClient();
@@ -337,8 +340,8 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
     }
 
     /**
-     * A handler which retries requests until a maximum number of attempts has been made and which sleeps between retry
-     * attempts.
+     * A {@link HttpRequestRetryHandler} which retries requests until a maximum number of attempts has been made and
+     * which sleeps between retry attempts.
      */
     public class FiniteWaitHttpRequestRetryHandler implements HttpRequestRetryHandler {
 
@@ -349,7 +352,6 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
         private final int sleepMillis;
 
         /**
-         * 
          * Constructor.
          *
          * @param retries maximum number of times to retry
@@ -362,7 +364,8 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
 
         /** {@inheritDoc} */
         public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
-            log.trace("Retry execution count '{}'", executionCount);
+            log.trace("Request retry handler exception msg '{}'", exception.getMessage());
+            log.trace("Request retry handler execution count '{}'", executionCount);
 
             if (sleepMillis > 0) {
                 try {
@@ -377,6 +380,45 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
             }
 
             return false;
+        }
+    }
+
+    /**
+     * A {@link ServiceUnavailableRetryStrategy} which retries requests until a maximum number of attempts has been made
+     * and which sleeps between retry attempts. This strategy retries response status codes of
+     * {@link HttpStatus#SC_SERVICE_UNAVAILABLE} and {@link HttpStatus#SC_NOT_FOUND}.
+     */
+    public class FiniteWaitServiceUnavailableRetryStrategy implements ServiceUnavailableRetryStrategy {
+
+        /** Maximum number of retry attempts. */
+        private final int maxRetries;
+
+        /** Length of time to sleep in milliseconds between retry attempts. */
+        private final int sleepMillis;
+
+        /**
+         * Constructor.
+         *
+         * @param retries maximum number of times to retry
+         * @param millis length of time to sleep in milliseconds between retry attempts
+         */
+        public FiniteWaitServiceUnavailableRetryStrategy(int retries, int retryInterval) {
+            maxRetries = retries;
+            sleepMillis = retryInterval;
+        }
+
+        @Override
+        public boolean retryRequest(final HttpResponse response, final int executionCount, final HttpContext context) {
+            log.trace("Service unavailable retry strategy response '{}'", response);
+            log.trace("Service unavailable retry strategy execution count '{}'", executionCount);
+            return executionCount <= maxRetries
+                    && (response.getStatusLine().getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE
+                            || response.getStatusLine().getStatusCode() == HttpStatus.SC_NOT_FOUND);
+        }
+
+        /** {@inheritDoc} */
+        public long getRetryInterval() {
+            return sleepMillis;
         }
     }
 

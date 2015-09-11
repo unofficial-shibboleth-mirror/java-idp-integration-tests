@@ -17,6 +17,7 @@
 
 
     <properties>
+        <java-support.version>7.2.0-SNAPSHOT</java-support.version>
         <opensaml.version>3.2.0-SNAPSHOT</opensaml.version>
         <idp.version>3.2.0-SNAPSHOT</idp.version>
         <selenium.version>2.45.0</selenium.version>
@@ -52,6 +53,11 @@
 
     <dependencies>
         <!-- Compile Dependencies -->
+        <dependency>
+            <groupId>net.shibboleth.utilities</groupId>
+            <artifactId>java-support</artifactId>
+            <version>${java-support.version}</version>
+        </dependency>
         <dependency>
             <groupId>net.shibboleth.idp</groupId>
             <artifactId>idp-conf</artifactId>
