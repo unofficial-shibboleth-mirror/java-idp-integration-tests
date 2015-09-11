@@ -20,6 +20,7 @@ package net.shibboleth.idp.test;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
@@ -70,7 +71,7 @@ public class BrowserData {
      * 
      * @param browser the browser name
      */
-    public BrowserData setBrowser(@Nonnull final String browser) {
+    public BrowserData setBrowser(@Nonnull @NotEmpty final String browser) {
         browserName = Constraint.isNotNull(StringSupport.trimOrNull(browser), "Browser cannot be null nor empty");
         return this;
     }
@@ -80,7 +81,7 @@ public class BrowserData {
      * 
      * @param version the browser version
      */
-    public BrowserData setVersion(@Nonnull final String version) {
+    public BrowserData setVersion(@Nonnull @NotEmpty final String version) {
         browserVersion = Constraint.isNotNull(StringSupport.trimOrNull(version), "Version cannot be null nor empty");
         return this;
     }
@@ -90,7 +91,7 @@ public class BrowserData {
      * 
      * @param os the browser OS
      */
-    public BrowserData setOS(@Nonnull final String os) {
+    public BrowserData setOS(@Nonnull @NotEmpty final String os) {
         browserOS = Constraint.isNotNull(StringSupport.trimOrNull(os), "OS cannot be null nor empty");
         return this;
     }
