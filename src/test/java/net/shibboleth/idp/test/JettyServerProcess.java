@@ -56,8 +56,9 @@ import org.springframework.context.Lifecycle;
 import com.google.common.base.Stopwatch;
 
 /**
- * Start Jetty server in a new process via start.jar. Waits for the Jetty server to start until the IdP status page
- * is available.
+ * Start Jetty server in a new {@link Process} via start.jar.
+ * <p>
+ * Waits for the IdP status page to be available.
  */
 public class JettyServerProcess extends AbstractInitializableComponent implements Lifecycle {
 
@@ -87,7 +88,7 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
 
     /** Whether the Jetty server process is running. */
     @Nonnull private boolean isRunning = false;
-    
+
     /** Additional commands used to start the Jetty server process. */
     @Nullable private List<String> additionalCommands;
 
@@ -142,7 +143,7 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
         commands.add("-Didp.home=" + idpHome);
         commands.add("-jar");
         commands.add(pathToJettyHome.toAbsolutePath().toString() + "/start.jar");
-        
+
         if (additionalCommands != null && !additionalCommands.isEmpty()) {
             log.debug("Additional commands '{}'", additionalCommands);
             commands.addAll(additionalCommands);
@@ -152,7 +153,7 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
         processBuilder = new ProcessBuilder(commands);
         processBuilder.redirectErrorStream(true);
         processBuilder.directory(pathToJettyBase.toAbsolutePath().toFile());
-        
+
         log.debug("Will start Jetty using command '{}'", processBuilder.command());
     }
 
@@ -194,7 +195,8 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
         while (true) {
             files = logsDir.listFiles(new FilenameFilter() {
 
-                @Override public boolean accept(File arg0, String arg1) {
+                @Override
+                public boolean accept(File arg0, String arg1) {
                     return arg1.endsWith("stderrout.log");
                 }
             });
@@ -242,7 +244,8 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
      * @return the text of the IdP status page or <code>null</code>
      * @throws Exception if an error occurs
      */
-    @Nullable public String getStatusPageText(@Nullable final int retries, @Nonnull final int millis) throws Exception {
+    @Nullable
+    public String getStatusPageText(@Nullable final int retries, @Nonnull final int millis) throws Exception {
 
         final HttpClientBuilder builder = new HttpClientBuilder();
         builder.setHttpRequestRetryHandler(new FiniteWaitHttpRequestRetryHandler(retries, millis));

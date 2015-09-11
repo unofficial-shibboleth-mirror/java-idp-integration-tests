@@ -376,7 +376,8 @@ public abstract class BaseIntegrationTest
         final Path pathToEmbeddedJettyBase = pathToIdPHome.resolve(Paths.get("embedded", "jetty-base"));
         log.debug("Path to embedded jetty.base '{}'", pathToEmbeddedJettyBase.toAbsolutePath());
         Assert.assertNotNull(pathToEmbeddedJettyBase, "Path to embedded jetty.base not found");
-        Assert.assertTrue(pathToEmbeddedJettyBase.toAbsolutePath().toFile().exists(), "Path to embedded jetty.base not found");
+        Assert.assertTrue(pathToEmbeddedJettyBase.toAbsolutePath().toFile().exists(),
+                "Path to embedded jetty.base not found");
 
         // Path to jetty.base
         pathToJettyBase = pathToIdPHome.resolve(Paths.get("jetty-base"));
@@ -386,7 +387,7 @@ public abstract class BaseIntegrationTest
         FileSystemUtils.copyRecursively(pathToEmbeddedJettyBase.toAbsolutePath().toFile(),
                 pathToJettyBase.toAbsolutePath().toFile());
         Assert.assertTrue(pathToJettyBase.toFile().exists(), "Path to jetty.base not found");
-        
+
         // Path to conf/idp.properties
         pathToIdPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "idp.properties");
         Assert.assertTrue(pathToIdPProperties.toFile().exists(), "Path to conf/idp.properties not found");
@@ -528,11 +529,11 @@ public abstract class BaseIntegrationTest
         replaceIdPHomeFile(pathToLogbackXML, oldText, newText);
 
         logUnencryptedSAML();
-        
+
         // Add logging when starting Jetty.
         serverCommands.add("-Dlogback.configurationFile=" + pathToIdPHome.resolve(pathToLogbackXML).toAbsolutePath());
     }
-    
+
     /**
      * Set up example metadata provider for the IdP.
      * 
@@ -548,7 +549,7 @@ public abstract class BaseIntegrationTest
                         + System.lineSeparator() + "</MetadataProvider>";
         replaceIdPHomeFile(pathToMetadataProvidersXML, oldText, newText);
     }
-    
+
     /**
      * Set path to web.xml override descriptor for the IdP to ../conf/web-override.xml.
      * 
@@ -556,10 +557,10 @@ public abstract class BaseIntegrationTest
      */
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"})
     public void setUpOverrideDescriptor() throws Exception {
-        
+
         final Path pathToIdPXML = pathToJettyBase.resolve(Paths.get("webapps", "idp.xml"));
         Assert.assertTrue(pathToIdPXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
-        
+
         final String oldText = "</Configure>";
         final String newText = "<Set name=\"overrideDescriptor\">../conf/web-override.xml</Set></Configure>";
         replaceFile(pathToIdPXML, oldText, newText);
@@ -697,7 +698,8 @@ public abstract class BaseIntegrationTest
      * @param value property value
      * @throws IOException if an I/O error occurs
      */
-    public void replaceProperty(@Nonnull final Path pathToPropertyFile, @Nonnull @NotEmpty final String key,
+    public void replaceProperty(@Nonnull final Path pathToPropertyFile,
+            @Nonnull @NotEmpty final String key,
             @Nonnull @NotEmpty final String value) throws IOException {
         Constraint.isNotNull(pathToPropertyFile, "Path to property file cannot be null nor empty");
         Constraint.isNotNull(StringSupport.trimOrNull(key), "Replacement property key cannot be null nor empty");
@@ -724,7 +726,8 @@ public abstract class BaseIntegrationTest
      * @param replacement string to be substituted for each match
      * @throws IOException if the file cannot be overwritten
      */
-    public void replaceIdPHomeFile(@Nonnull final Path relativePath, @Nonnull @NotEmpty final String regex,
+    public void replaceIdPHomeFile(@Nonnull final Path relativePath,
+            @Nonnull @NotEmpty final String regex,
             @Nonnull @NotEmpty final String replacement) throws IOException {
         replaceFile(pathToIdPHome.resolve(relativePath), regex, replacement);
     }
@@ -741,7 +744,8 @@ public abstract class BaseIntegrationTest
      * @param replacement string to be substituted for each match
      * @throws IOException if the file cannot be overwritten
      */
-    public void replaceFile(@Nonnull final Path pathToFile, @Nonnull @NotEmpty final String regex,
+    public void replaceFile(@Nonnull final Path pathToFile,
+            @Nonnull @NotEmpty final String regex,
             @Nonnull @NotEmpty final String replacement) throws IOException {
         log.debug("Replacing regex '{}' with '{}' in file '{}'", regex, replacement, pathToFile);
 
@@ -822,7 +826,7 @@ public abstract class BaseIntegrationTest
         final String newIncludeAttributeStatementText =
                 "<bean parent=\"Shibboleth.SSO\" p:includeAttributeStatement=\"true\" p:postAuthenticationFlows=\"attribute-release\" />";
         replaceIdPHomeFile(pathToRelyingPartyXML, oldIncludeAttributeStatementText, newIncludeAttributeStatementText);
-        
+
         final String oldPostAuthenticationFlowsText =
                 "<bean parent=\"SAML2.SSO\" p:postAuthenticationFlows=\"attribute-release\" />";
         final String newPostAuthenticationFlowsText =
