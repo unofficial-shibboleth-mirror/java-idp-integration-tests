@@ -34,7 +34,6 @@ import org.testng.annotations.Test;
 
 import net.shibboleth.idp.test.BaseIntegrationTest;
 import net.shibboleth.idp.test.BrowserData;
-import net.shibboleth.idp.test.localstorage.LocalStorageTest;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
 import storage.SimpleStorageRecordSerializer;
 
@@ -58,7 +57,7 @@ public class ClientStorageTest extends BaseIntegrationTest {
     @Nonnull public final static String TEST_WRITE_FLOW_PATH = "/idp/profile/test/client-storage/write";
 
     /** Class logger. */
-    @Nonnull private final Logger log = LoggerFactory.getLogger(LocalStorageTest.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(ClientStorageTest.class);
 
     /** Testbed storage serializer. */
     @NonnullAfterInit private SimpleStorageRecordSerializer serializer;
