@@ -846,7 +846,7 @@ public abstract class BaseIntegrationTest
         replaceIdPProperty("idp.session.StorageService", "shibboleth.StorageService");
 
         // track information about SPs logged into
-        replaceIdPProperty(" idp.session.trackSPSessions", "true");
+        replaceIdPProperty("idp.session.trackSPSessions", "true");
 
         // support lookup by SP for SAML logout
         replaceIdPProperty("idp.session.secondaryServiceIndex", "true");
