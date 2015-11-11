@@ -781,7 +781,6 @@ public abstract class BaseIntegrationTest
      * 
      * @throws IOException if an I/O error occurs
      */
-    @AfterMethod(alwaysRun = true)
     public void restoreIdPProperties() throws IOException {
         final Path pathToIdPPropertiesDist =
                 Paths.get(pathToIdPHome.toAbsolutePath().toString(), "dist", "conf", "idp.properties.dist");
@@ -795,7 +794,6 @@ public abstract class BaseIntegrationTest
      * 
      * @throws IOException if an I/O error occurs
      */
-    @AfterMethod(alwaysRun = true)
     public void restoreRelyingPartyXML() throws IOException {
         final Path pathToRelyingParty =
                 Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "relying-party.xml");
