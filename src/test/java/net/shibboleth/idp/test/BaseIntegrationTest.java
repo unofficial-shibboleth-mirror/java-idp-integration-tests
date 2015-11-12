@@ -853,6 +853,35 @@ public abstract class BaseIntegrationTest
     }
 
     /**
+     * Enable CAS protocol for the default relying party.
+     *
+     * @throws IOException
+     */
+    public void enableCASProtocol() throws IOException {
+        final Path pathToRelyingPartyXML = Paths.get("conf", "relying-party.xml");
+
+        final String regex = "<ref bean=\"Liberty.SSOS\" />";
+        final String replacement = regex + "\n" + "<ref bean=\"CAS.LoginConfiguration\" />\n"
+                + "<ref bean=\"CAS.ProxyConfiguration\" />\n" + "<ref bean=\"CAS.ValidateConfiguration\" />";
+        replaceIdPHomeFile(pathToRelyingPartyXML, regex, replacement);
+    }
+
+    /**
+     * Add localhost to CAS service definition.
+     * 
+     * @throws IOException
+     */
+    public void enableLocalhostCASServiceDefinition() throws IOException {
+        final Path pathToCASProtocolXML = Paths.get("conf", "cas-protocol.xml");
+
+        final String regex = "</list>";
+        final String replacement = "<bean class=\"net.shibboleth.idp.cas.service.ServiceDefinition\"\n"
+                + "c:regex=\"https?://localhost(:\\\\d+)?/.*\"\n" + "p:group=\"test-services\"\n"
+                + "p:authorizedToProxy=\"false\" />\n" + "</list>";
+        replaceIdPHomeFile(pathToCASProtocolXML, regex, replacement);
+    }
+
+    /**
      * Log unencrypted SAML.
      */
     public void logUnencryptedSAML() {
@@ -1248,6 +1277,20 @@ public abstract class BaseIntegrationTest
         (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.getCurrentUrl().startsWith(getBaseURL() + idpLogoutURLPath);
+            }
+        });
+    }
+
+    /**
+     * Wait for the page whose URL starts with the given prefix.
+     * 
+     * @param prefix the URL prefix
+     */
+    public void waitForPageWithURL(@Nonnull final String prefix) {
+        Assert.assertNotNull(prefix);
+        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            public Boolean apply(WebDriver d) {
+                return d.getCurrentUrl().startsWith(prefix);
             }
         });
     }
