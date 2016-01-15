@@ -20,7 +20,7 @@
         <java-support.version>7.3.0-SNAPSHOT</java-support.version>
         <opensaml.version>3.3.0-SNAPSHOT</opensaml.version>
         <idp.version>3.3.0-SNAPSHOT</idp.version>
-        <selenium.version>2.49.0</selenium.version>
+        <selenium.version>2.45.0</selenium.version>
         <testbed.version>0.4.0-SNAPSHOT</testbed.version>
         <testbed.classifier>classes</testbed.classifier>
         <test-distributions.directory>${project.basedir}/test-distributions</test-distributions.directory>
