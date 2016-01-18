@@ -369,8 +369,8 @@ public abstract class BaseIntegrationTest
         FileSystemUtils.copyRecursively(sourceDir, destinationDir);
         Assert.assertTrue(destinationDir.exists(), "Path to idp.home not found");
 
-        // Set idp.home system property
-        System.setProperty("idp.home", pathToIdPHome.toAbsolutePath().toString());
+        // Set idp.home system property, replace '\' with '/' for Windows
+        System.setProperty("idp.home", pathToIdPHome.toAbsolutePath().toString().replace('\\', '/'));
 
         // Path to embedded/jetty.base
         final Path pathToEmbeddedJettyBase = pathToIdPHome.resolve(Paths.get("embedded", "jetty-base"));
