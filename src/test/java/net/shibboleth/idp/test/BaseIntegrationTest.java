@@ -882,6 +882,19 @@ public abstract class BaseIntegrationTest
     }
 
     /**
+     * Release eduPersonAffiliation by adding a wildcard regex to attribute-filter.xml.
+     * 
+     * @throws IOException
+     */
+    public void enableLocalhostCASAttributes() throws IOException {
+        final Path pathToLogbackXML = Paths.get("conf", "attribute-filter.xml");
+
+        final String oldText = "<Rule xsi:type=\"Requester\" value=\"https://another.example.org/shibboleth\" />";
+        final String newText = "<Rule xsi:type=\"RequesterRegex\" regex=\"https?://localhost(:\\\\d+)?/.*\" />";
+        replaceIdPHomeFile(pathToLogbackXML, oldText, newText);
+    }
+
+    /**
      * Log unencrypted SAML.
      */
     public void logUnencryptedSAML() {

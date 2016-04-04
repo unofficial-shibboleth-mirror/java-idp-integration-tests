@@ -48,6 +48,13 @@ public class CASIntegrationTest extends BaseIntegrationTest {
     /** Expected CAS service response. */
     @Nonnull final String expectedCASServiceResponse = "<cas:serviceresponse xmlns:cas=\"http://www.yale.edu/tp/cas\">"
             + "<cas:authenticationsuccess><cas:user>jdoe</cas:user></cas:authenticationsuccess></cas:serviceresponse>";
+    
+    /** Expected CAS service response with attributes. */
+    @Nonnull final String expectedCASServiceResponseWithAttributes =
+            "<cas:serviceresponse xmlns:cas=\"http://www.yale.edu/tp/cas\"><cas:authenticationsuccess>"
+                    + "<cas:user>jdoe</cas:user><cas:attributes>"
+                    + "<cas:edupersonscopedaffiliation>member</cas:edupersonscopedaffiliation>"
+                    + "</cas:attributes></cas:authenticationsuccess></cas:serviceresponse>";
 
     @BeforeClass
     public void setUpURLs() throws Exception {
@@ -111,6 +118,38 @@ public class CASIntegrationTest extends BaseIntegrationTest {
         final String actualCASServiceResponse = getCASServiceResponse(driver.getPageSource());
 
         Assert.assertEquals(actualCASServiceResponse, expectedCASServiceResponse);
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testCASSSOWithAttributes(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        enableLogout();
+
+        enableCASProtocol();
+
+        enableLocalhostCASServiceDefinition();
+
+        enableLocalhostCASAttributes();
+
+        startJettyServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        waitForPageWithURL(getBaseURL() + spServicePageURLPath);
+
+        driver.findElement(By.id("cas-service-validate")).click();
+
+        waitForPageWithURL(getBaseURL() + idpServiceValidatePageURLPath);
+
+        final String actualCASServiceResponse = getCASServiceResponse(driver.getPageSource());
+
+        Assert.assertEquals(actualCASServiceResponse, expectedCASServiceResponseWithAttributes);
     }
 
 }
