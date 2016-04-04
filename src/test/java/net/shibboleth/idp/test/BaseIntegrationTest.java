@@ -524,8 +524,8 @@ public abstract class BaseIntegrationTest
         final Path pathToLogbackXML = Paths.get("conf", "logback.xml");
 
         // Set IdP logging to DEBUG from INFO.
-        final String oldText = "<logger name=\"net.shibboleth.idp\" level=\"INFO\"/>";
-        final String newText = "<logger name=\"net.shibboleth.idp\" level=\"DEBUG\"/>";
+        final String oldText = "<variable name=\"idp.loglevel.idp\" value=\"INFO\" />";
+        final String newText = "<variable name=\"idp.loglevel.idp\" value=\"DEBUG\" />";
         replaceIdPHomeFile(pathToLogbackXML, oldText, newText);
 
         logUnencryptedSAML();
