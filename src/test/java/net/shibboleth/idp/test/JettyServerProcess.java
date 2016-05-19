@@ -196,9 +196,16 @@ public class JettyServerProcess extends AbstractInitializableComponent implement
             throw new ComponentInitializationException("Path to idp.home '" + idpHome + "' not found.");
         }
 
+        // Throw exception if path to java does not exist.
+        final Path pathToJava = Paths.get(System.getProperty("java.home"), "bin", "java");
+        if (!pathToJava.toAbsolutePath().toFile().exists()) {
+            log.error("Path to java '{}' not found", pathToJava);
+            throw new ComponentInitializationException("Path to java '" + pathToJava + "' not found.");
+        }
+
         // Setup commands to start the Jetty process.
         commands = new ArrayList<>();
-        commands.add("java");
+        commands.add(pathToJava.toAbsolutePath().toString());
         commands.add("-Didp.home=" + idpHome);
         commands.add("-jar");
         commands.add(pathToJettyHome.toAbsolutePath().toString() + "/start.jar");
