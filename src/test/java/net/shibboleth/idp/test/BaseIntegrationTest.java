@@ -372,21 +372,11 @@ public abstract class BaseIntegrationTest
         // Set idp.home system property, replace '\' with '/' for Windows
         System.setProperty("idp.home", pathToIdPHome.toAbsolutePath().toString().replace('\\', '/'));
 
-        // Path to embedded/jetty.base
-        final Path pathToEmbeddedJettyBase = pathToIdPHome.resolve(Paths.get("embedded", "jetty-base"));
-        log.debug("Path to embedded jetty.base '{}'", pathToEmbeddedJettyBase.toAbsolutePath());
-        Assert.assertNotNull(pathToEmbeddedJettyBase, "Path to embedded jetty.base not found");
-        Assert.assertTrue(pathToEmbeddedJettyBase.toAbsolutePath().toFile().exists(),
-                "Path to embedded jetty.base not found");
-
         // Path to jetty.base
         pathToJettyBase = pathToIdPHome.resolve(Paths.get("jetty-base"));
         log.debug("Path to jetty.base '{}'", pathToJettyBase.toAbsolutePath());
-        Assert.assertFalse(pathToJettyBase.toAbsolutePath().toFile().exists(), "Path to jetty.base found");
-
-        FileSystemUtils.copyRecursively(pathToEmbeddedJettyBase.toAbsolutePath().toFile(),
-                pathToJettyBase.toAbsolutePath().toFile());
-        Assert.assertTrue(pathToJettyBase.toFile().exists(), "Path to jetty.base not found");
+        Assert.assertNotNull(pathToJettyBase, "Path to jetty.base not found");
+        Assert.assertTrue(pathToJettyBase.toAbsolutePath().toFile().exists(), "Path to jetty.base not found");
 
         // Path to conf/idp.properties
         pathToIdPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "idp.properties");

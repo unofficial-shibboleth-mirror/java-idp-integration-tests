@@ -20,8 +20,9 @@
         <java-support.version>7.3.0-SNAPSHOT</java-support.version>
         <opensaml.version>3.3.0-SNAPSHOT</opensaml.version>
         <idp.version>3.3.0-SNAPSHOT</idp.version>
+        <idp-example-jetty-base.version>9.2.0-SNAPSHOT</idp-example-jetty-base.version>
         <selenium.version>2.45.0</selenium.version>
-        <testbed.version>0.4.0-SNAPSHOT</testbed.version>
+        <testbed.version>0.5.0-SNAPSHOT</testbed.version>
         <testbed.classifier>classes</testbed.classifier>
         <test-distributions.directory>${project.basedir}/test-distributions</test-distributions.directory>
         <svn.relative.location>java-idp-integration-tests</svn.relative.location>
@@ -63,6 +64,11 @@
             <artifactId>idp-conf</artifactId>
             <version>${idp.version}</version>
             <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>net.shibboleth.idp.example</groupId>
+            <artifactId>idp-example-jetty-base</artifactId>
+            <version>${idp-example-jetty-base.version}</version>
         </dependency>
 
         <!-- Provided Dependencies -->
@@ -289,6 +295,24 @@
                             <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
                         </configuration>
                     </execution>
+                    <!-- Unpack idp-example-jetty-base. -->
+                    <execution>
+                        <id>unpack-idp-example-jetty-base</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>net.shibboleth.idp.example</groupId>
+                                    <artifactId>idp-example-jetty-base</artifactId>
+                                    <version>${idp-example-jetty-base}</version>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                        </configuration>
+                    </execution>
                     <!-- Unpack jetty-distribution to test-distributions directory. -->
                     <execution>
                         <id>unpack-jetty-distribution</id>
@@ -387,7 +411,7 @@
                                     <includes>webapps/0-idp-testbed.xml</includes>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/embedded/jetty-base/</outputDirectory>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/jetty-base/</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
