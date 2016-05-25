@@ -65,11 +65,6 @@
             <version>${idp.version}</version>
             <type>test-jar</type>
         </dependency>
-        <dependency>
-            <groupId>net.shibboleth.idp.example</groupId>
-            <artifactId>idp-example-jetty-base</artifactId>
-            <version>${idp-example-jetty-base.version}</version>
-        </dependency>
 
         <!-- Provided Dependencies -->
         <dependency>
@@ -88,6 +83,13 @@
             <version>${idp.version}</version>
             <scope>test</scope>
             <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>net.shibboleth.idp.example</groupId>
+            <artifactId>idp-example-jetty-base</artifactId>
+            <version>${idp-example-jetty-base.version}</version>
+            <scope>test</scope>
+            <type>tar.gz</type>
         </dependency>
         <dependency>
             <groupId>net.shibboleth.idp</groupId>
@@ -307,7 +309,8 @@
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp.example</groupId>
                                     <artifactId>idp-example-jetty-base</artifactId>
-                                    <version>${idp-example-jetty-base}</version>
+                                    <version>${idp-example-jetty-base.version}</version>
+                                    <type>tar.gz</type>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
