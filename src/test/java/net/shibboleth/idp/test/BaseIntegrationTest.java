@@ -260,6 +260,9 @@ public abstract class BaseIntegrationTest
     /** Path to jetty.home. */
     @NonnullAfterInit protected Path pathToJettyHome;
 
+    /** Path to tmp directory. */
+    @NonnullAfterInit protected Path pathToTmpDir;
+
     /** Pattern used when creating per test idp.home directory. Defaults to yyyyMMdd-HHmmssSS. **/
     @Nullable protected String idpHomePattern = "yyyyMMdd-HHmmssSS";
 
@@ -385,6 +388,10 @@ public abstract class BaseIntegrationTest
         // Path to conf/ldap.properties
         pathToLDAPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "ldap.properties");
         Assert.assertTrue(pathToLDAPProperties.toFile().exists(), "Path to conf/ldap.properties not found");
+
+        // Path to jetty.base/tmp
+        pathToTmpDir = pathToJettyBase.resolve("tmp");
+        Assert.assertTrue(pathToTmpDir.toFile().exists(), "Path to tmp/ not found");
     }
 
     /**
@@ -554,6 +561,16 @@ public abstract class BaseIntegrationTest
         final String oldText = "</Configure>";
         final String newText = "<Set name=\"overrideDescriptor\">../conf/web-override.xml</Set></Configure>";
         replaceFile(pathToIdPXML, oldText, newText);
+    }
+
+    /**
+     * Set default temp file path.
+     * 
+     * @throws Exception
+     */
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"})
+    public void setUpTmpDir() throws Exception {
+        serverCommands.add("-Djava.io.tmpdir=" + pathToTmpDir.toAbsolutePath().toFile());
     }
 
     /**
