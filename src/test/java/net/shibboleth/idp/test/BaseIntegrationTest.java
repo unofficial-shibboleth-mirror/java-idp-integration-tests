@@ -633,8 +633,11 @@ public abstract class BaseIntegrationTest
             setUpSauceDriver();
         } else {
             log.debug("Setting up local web driver with desired capabilities '{}'", desiredCapabilities);
-            setUpHtmlUnitDriver();
-            // setUpFirefoxDriver();
+            if (Boolean.getBoolean("firefox")) {
+                setUpFirefoxDriver();
+            } else {
+                setUpHtmlUnitDriver();
+            }
         }
         log.debug("Started web driver '{}' with desired capabilities '{}'", driver, desiredCapabilities);
     }
