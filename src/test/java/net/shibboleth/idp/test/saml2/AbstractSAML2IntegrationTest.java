@@ -88,7 +88,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
         validator.spCredential = getSPCredential();
         validator.authnContextClassRef = AuthnContext.PPT_AUTHN_CTX;
         if (BaseIntegrationTest.isRemote()) {
-            validator.subjectConfirmationDataAddressRangeV4 = IPRange.parseCIDRBlock(SAUCE_LABS_IP_RANGE);
+            validator.subjectConfirmationDataAddressRange = IPRange.parseCIDRBlock(SAUCE_LABS_IP_RANGE);
         }
     }
 
