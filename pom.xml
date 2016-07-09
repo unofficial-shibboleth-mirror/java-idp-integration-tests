@@ -74,6 +74,20 @@
         </dependency>
 
         <!-- Runtime Dependencies -->
+        <!-- Override httpclient version for HtmlUnit. -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.2</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <!-- Required if you're using anything in the httpclient package -->
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient-cache</artifactId>
+            <version>4.5.2</version>
+            <scope>runtime</scope>
+        </dependency>
 
 
         <!-- Test Dependencies -->
