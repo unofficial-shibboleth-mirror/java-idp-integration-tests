@@ -203,10 +203,10 @@ public abstract class BaseIntegrationTest
     /** IdP XML security manager value before and after this test. */
     @NonnullAfterInit protected String defaultIdpXMLSecurityManager;
 
-    /** Jetty server process. */
-    @NonnullAfterInit protected JettyServerProcess server;
+    /** Server process. */
+    @NonnullAfterInit protected AbstractServerProcess server;
 
-    /** Additional commands used to start the Jetty server process. */
+    /** Additional commands used to start the server process. */
     @NonnullAfterInit protected List<String> serverCommands = new ArrayList<>();
 
     /** Non-secure address that the web server listens on. Defaults to "localhost". */
@@ -527,7 +527,7 @@ public abstract class BaseIntegrationTest
 
         logUnencryptedSAML();
 
-        // Add logging when starting Jetty.
+        // Add logging when starting the server.
         serverCommands.add("-Dlogback.configurationFile=" + pathToIdPHome.resolve(pathToLogbackXML).toAbsolutePath());
     }
 
@@ -662,8 +662,8 @@ public abstract class BaseIntegrationTest
      */
     public void startJettyServer() throws ComponentInitializationException {
         server = new JettyServerProcess();
-        server.setJettyBasePath(pathToJettyBase);
-        server.setJettyHomePath(pathToJettyHome);
+        server.setServletContainerBasePath(pathToJettyBase);
+        server.setServletContainerHomePath(pathToJettyHome);
         server.setAdditionalCommands(serverCommands);
         server.setStatusPageURL(getBaseURL() + StatusTest.statusPath);
         server.initialize();
@@ -671,10 +671,10 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Stop the Jetty server.
+     * Stop the server.
      */
     @AfterMethod
-    public void stopJettyServer() {
+    public void stopServer() {
         if (server != null) {
             server.stop();
         }
