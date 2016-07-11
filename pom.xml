@@ -398,27 +398,6 @@
                             <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/webapp/WEB-INF/lib/</outputDirectory>
                         </configuration>
                     </execution>
-                    <!-- Copy web-override.xml from testbed jar. -->
-                    <execution>
-                        <id>copy-testbed-web-override</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                   <groupId>net.shibboleth.idp</groupId>
-                                    <artifactId>idp-testbed</artifactId>
-                                    <version>${testbed.version}</version>
-                                    <type>jar</type>
-                                    <classifier>${testbed.classifier}</classifier>
-                                    <includes>conf/web-override.xml</includes>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
-                        </configuration>
-                    </execution>
                     <!-- Copy testbed deployment descriptor from testbed jar. -->
                     <execution>
                         <id>copy-testbed-deployment-descriptor</id>

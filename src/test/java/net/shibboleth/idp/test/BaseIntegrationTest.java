@@ -548,19 +548,37 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Set path to web.xml override descriptor for the IdP to ../conf/web-override.xml.
+     * Add StorageServlet to IdP webapp.
      * 
      * @throws Exception
      */
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"})
-    public void setUpOverrideDescriptor() throws Exception {
+    public void setUpStorageServlet() throws Exception {
 
-        final Path pathToIdPXML = pathToJettyBase.resolve(Paths.get("webapps", "idp.xml"));
-        Assert.assertTrue(pathToIdPXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
+        final Path pathToIdPWebXML = pathToIdPHome.resolve(Paths.get("webapp", "WEB-INF", "web.xml"));
+        Assert.assertTrue(pathToIdPWebXML.toAbsolutePath().toFile().exists(), "Path to IdP web.xml not found");
 
-        final String oldText = "</Configure>";
-        final String newText = "<Set name=\"overrideDescriptor\">../conf/web-override.xml</Set></Configure>";
-        replaceFile(pathToIdPXML, oldText, newText);
+        final String oldText = "</web-app>";
+
+        final StringBuilder builder = new StringBuilder();
+        builder.append("\n");
+        builder.append("<!-- The /storage app space. Interact with storage services via HTTP. -->\n");
+        builder.append("<servlet>\n");
+        builder.append("    <servlet-name>storage</servlet-name>\n");
+        builder.append("    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>\n");
+        builder.append("    <init-param>\n");
+        builder.append("        <param-name>contextConfigLocation</param-name>\n");
+        builder.append("        <param-value>classpath:/system/conf/storage-context.xml</param-value>\n");
+        builder.append("     </init-param>\n");
+        builder.append("     <load-on-startup>1</load-on-startup>\n");
+        builder.append("</servlet>\n");
+        builder.append("<servlet-mapping>\n");
+        builder.append("    <servlet-name>storage</servlet-name>\n");
+        builder.append("    <url-pattern>/storage/*</url-pattern>\n");
+        builder.append("</servlet-mapping>\n");
+        builder.append("</web-app>\n");
+
+        replaceFile(pathToIdPWebXML, oldText, builder.toString());
     }
 
     /**
