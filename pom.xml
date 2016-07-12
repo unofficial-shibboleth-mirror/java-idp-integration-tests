@@ -330,7 +330,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>net.shibboleth.idp.example</groupId>
+                                    <groupId>net.shibboleth.idp</groupId>
                                     <artifactId>idp-jetty-base</artifactId>
                                     <version>${idp-jetty-base.version}</version>
                                     <type>tar.gz</type>
