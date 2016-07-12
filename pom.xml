@@ -20,7 +20,7 @@
         <java-support.version>7.3.0-SNAPSHOT</java-support.version>
         <opensaml.version>3.3.0-SNAPSHOT</opensaml.version>
         <idp.version>3.3.0-SNAPSHOT</idp.version>
-        <idp-example-jetty-base.version>9.2.0-SNAPSHOT</idp-example-jetty-base.version>
+        <idp-jetty-base.version>9.2.0-SNAPSHOT</idp-jetty-base.version>
         <selenium.version>2.53.1</selenium.version>
         <testbed.version>0.5.0-SNAPSHOT</testbed.version>
         <testbed.classifier>classes</testbed.classifier>
@@ -99,9 +99,9 @@
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>net.shibboleth.idp.example</groupId>
-            <artifactId>idp-example-jetty-base</artifactId>
-            <version>${idp-example-jetty-base.version}</version>
+            <groupId>net.shibboleth.idp</groupId>
+            <artifactId>idp-jetty-base</artifactId>
+            <version>${idp-jetty-base.version}</version>
             <scope>test</scope>
             <type>tar.gz</type>
         </dependency>
@@ -320,9 +320,9 @@
                             <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
                         </configuration>
                     </execution>
-                    <!-- Unpack idp-example-jetty-base. -->
+                    <!-- Unpack idp-jetty-base. -->
                     <execution>
-                        <id>unpack-idp-example-jetty-base</id>
+                        <id>unpack-idp-jetty-base</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>unpack</goal>
@@ -331,8 +331,8 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp.example</groupId>
-                                    <artifactId>idp-example-jetty-base</artifactId>
-                                    <version>${idp-example-jetty-base.version}</version>
+                                    <artifactId>idp-jetty-base</artifactId>
+                                    <version>${idp-jetty-base.version}</version>
                                     <type>tar.gz</type>
                                 </artifactItem>
                             </artifactItems>
