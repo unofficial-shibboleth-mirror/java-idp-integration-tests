@@ -101,7 +101,7 @@ public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
 
         enableCustomRelyingPartyConfiguration();
 
-        startJettyServer();
+        startServer();
 
         startFlow();
 

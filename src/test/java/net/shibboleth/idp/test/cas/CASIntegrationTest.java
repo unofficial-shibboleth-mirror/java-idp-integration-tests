@@ -101,7 +101,7 @@ public class CASIntegrationTest extends BaseIntegrationTest {
 
         enableLocalhostCASServiceDefinition();
 
-        startJettyServer();
+        startServer();
 
         startFlow();
 
@@ -133,7 +133,7 @@ public class CASIntegrationTest extends BaseIntegrationTest {
 
         enableLocalhostCASAttributes();
 
-        startJettyServer();
+        startServer();
 
         startFlow();
 

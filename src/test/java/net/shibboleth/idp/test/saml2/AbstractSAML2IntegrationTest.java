@@ -214,7 +214,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         startSeleniumClient(browserData);
 
-        startJettyServer();
+        startServer();
 
         startFlow();
 
@@ -259,7 +259,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         enablePerAttributeConsent();
 
-        startJettyServer();
+        startServer();
 
         startFlow();
 
@@ -305,7 +305,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         startSeleniumClient(browserData);
 
-        startJettyServer();
+        startServer();
 
         startFlow();
 
@@ -358,7 +358,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         startSeleniumClient(browserData);
 
-        startJettyServer();
+        startServer();
 
         startFlow();
 
@@ -405,7 +405,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         enableCustomRelyingPartyConfiguration();
 
-        startJettyServer();
+        startServer();
 
         startFlow();
 
@@ -456,7 +456,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         startSeleniumClient(browserData);
 
-        startJettyServer();
+        startServer();
 
         startFlow();
 
@@ -503,7 +503,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         startSeleniumClient(browserData);
 
-        startJettyServer();
+        startServer();
 
         // start flow
         driver.get(getBaseURL() + isPassiveRequestURLPath);
@@ -529,7 +529,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         startSeleniumClient(browserData);
 
-        startJettyServer();
+        startServer();
 
         startFlow();
 
@@ -570,7 +570,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         enableLogout();
 
-        startJettyServer();
+        startServer();
 
         startFlow();
 

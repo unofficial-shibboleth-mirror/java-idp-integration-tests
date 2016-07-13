@@ -38,7 +38,7 @@ public class StatusTest extends BaseIntegrationTest {
 
         startSeleniumClient(browserData);
 
-        startJettyServer();
+        startServer();
 
         driver.get(baseURL + statusPath);
 

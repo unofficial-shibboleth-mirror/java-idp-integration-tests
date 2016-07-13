@@ -132,7 +132,7 @@ public class ClientStorageTest extends BaseIntegrationTest {
 
         startSeleniumClient(browserData);
 
-        startJettyServer();
+        startServer();
 
         getAndWaitForTestbedPage();
 
@@ -148,7 +148,7 @@ public class ClientStorageTest extends BaseIntegrationTest {
 
         startSeleniumClient(browserData);
 
-        startJettyServer();
+        startServer();
 
         getAndWaitForTestbedPage();
 

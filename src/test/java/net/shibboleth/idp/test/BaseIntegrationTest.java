@@ -259,9 +259,12 @@ public abstract class BaseIntegrationTest
 
     /** Path to jetty.home. */
     @NonnullAfterInit protected Path pathToJettyHome;
+    
+    /** Path to tomcat.base. */
+    @NonnullAfterInit protected Path pathToTomcatBase;
 
-    /** Path to tmp directory. */
-    @NonnullAfterInit protected Path pathToTmpDir;
+    /** Path to tomcat.home. */
+    @NonnullAfterInit protected Path pathToTomcatHome;
 
     /** Pattern used when creating per test idp.home directory. Defaults to yyyyMMdd-HHmmssSS. **/
     @Nullable protected String idpHomePattern = "yyyyMMdd-HHmmssSS";
@@ -345,6 +348,19 @@ public abstract class BaseIntegrationTest
         log.debug("Path to jetty.home '{}'", pathToJettyHome.toAbsolutePath());
         Assert.assertNotNull(pathToJettyHome, "Path to jetty.home not found");
         Assert.assertTrue(pathToJettyHome.toAbsolutePath().toFile().exists(), "Path to jetty.home not found");
+        
+        // Path to Tomcat distribution
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*apache-tomcat-*")) {
+            for (Path entry : stream) {
+                pathToTomcatHome = entry;
+                break;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        log.debug("Path to tomcat.home '{}'", pathToTomcatHome.toAbsolutePath());
+        Assert.assertNotNull(pathToTomcatHome, "Path to tomcat.home not found");
+        Assert.assertTrue(pathToTomcatHome.toAbsolutePath().toFile().exists(), "Path to tomcat.home not found");
 
         // Path to idp.home from distribution.
         Path pathToDistIdPHome = null;
@@ -381,6 +397,12 @@ public abstract class BaseIntegrationTest
         Assert.assertNotNull(pathToJettyBase, "Path to jetty.base not found");
         Assert.assertTrue(pathToJettyBase.toAbsolutePath().toFile().exists(), "Path to jetty.base not found");
 
+        // Path to tomcat.base
+        pathToTomcatBase = pathToIdPHome.resolve(Paths.get("tomcat-base"));
+        log.debug("Path to tomcat.base '{}'", pathToTomcatBase.toAbsolutePath());
+        Assert.assertNotNull(pathToTomcatBase, "Path to tomcat.base not found");
+        Assert.assertTrue(pathToTomcatBase.toAbsolutePath().toFile().exists(), "Path to tomcat.base not found");
+        
         // Path to conf/idp.properties
         pathToIdPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "idp.properties");
         Assert.assertTrue(pathToIdPProperties.toFile().exists(), "Path to conf/idp.properties not found");
@@ -389,9 +411,9 @@ public abstract class BaseIntegrationTest
         pathToLDAPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "ldap.properties");
         Assert.assertTrue(pathToLDAPProperties.toFile().exists(), "Path to conf/ldap.properties not found");
 
-        // Path to jetty.base/tmp
-        pathToTmpDir = pathToJettyBase.resolve("tmp");
-        Assert.assertTrue(pathToTmpDir.toFile().exists(), "Path to tmp/ not found");
+        // Make tmp directories exist
+        Assert.assertTrue(pathToJettyBase.resolve("tmp").toFile().exists(), "Path to jetty.base/tmp/ not found");
+        Assert.assertTrue(pathToTomcatBase.resolve("temp").toFile().exists(), "Path to tomcat.base/temp/ not found");
     }
 
     /**
@@ -505,6 +527,14 @@ public abstract class BaseIntegrationTest
         replaceProperty(pathToJettyIdPIni, "jetty.backchannel.port", Integer.toString(backchannelPort));
         replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.host", privateAddress);
         replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.port", Integer.toString(port));
+        
+        // Tomcat endpoints.
+        final Path pathToCatalinaProperties = pathToTomcatBase.resolve(Paths.get("conf", "catalina.properties"));
+        replaceFile(pathToCatalinaProperties, "tomcat.host=.*", "tomcat.host=" + privateSecureAddress);
+        replaceFile(pathToCatalinaProperties, "tomcat.https.port=.*", "tomcat.https.port=" + Integer.toString(securePort));
+        replaceFile(pathToCatalinaProperties, "tomcat.backchannel.port=.*", "tomcat.backchannel.port=" + Integer.toString(backchannelPort));
+        replaceFile(pathToCatalinaProperties, "tomcat.nonhttps.host=.*", "tomcat.nonhttps.host=" + privateAddress);
+        replaceFile(pathToCatalinaProperties, "tomcat.nonhttps.port=.*", "tomcat.nonhttps.port=" + Integer.toString(port));
 
         // Metadata.
         replaceIdPHomeFile(Paths.get("metadata", "example-metadata.xml"), "http://localhost:8080", baseURL);
@@ -582,13 +612,39 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Set default temp file path.
+     * Set per-test idp.home in setenv.sh. Use expanded IdP webapp.
      * 
-     * @throws Exception
+     * @throws IOException
      */
-    @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"})
-    public void setUpTmpDir() throws Exception {
-        serverCommands.add("-Djava.io.tmpdir=" + pathToTmpDir.toAbsolutePath().toFile());
+    @BeforeClass(dependsOnMethods = {"setUpAddresses", "setUpAvailablePorts"})
+    public void setUpTomcatIdPHome() throws IOException {
+        final Path pathToSetenvSh = pathToTomcatBase.resolve(Paths.get("bin", "setenv.sh"));
+        Assert.assertTrue(pathToSetenvSh.toAbsolutePath().toFile().exists(), "Path to setenv.sh not found");
+
+        final String oldTextSetenvSh = "-Didp.home=/opt/shibboleth-idp";
+        final String newTextSetenvSh = "-Didp.home=" + pathToIdPHome.toAbsolutePath().toString();
+        replaceFile(pathToSetenvSh, oldTextSetenvSh, newTextSetenvSh);
+
+        final Path pathToIdpXML = pathToTomcatBase.resolve(Paths.get("conf", "Catalina", "localhost", "idp.xml"));
+        Assert.assertTrue(pathToIdpXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
+
+        replaceFile(pathToIdpXML, "/war/idp.war\"", "/webapp/\"");
+    }
+
+    /**
+     * Append additional server commands to Tomcat setenv.sh.
+     * 
+     * @throws IOException
+     */
+    public void setUpTomcatServerCommands() throws IOException {
+        final Path pathToSetenvSh = pathToTomcatBase.resolve(Paths.get("bin", "setenv.sh"));
+        Assert.assertTrue(pathToSetenvSh.toAbsolutePath().toFile().exists(), "Path to setenv.sh not found");
+
+        for (final String serverCommand : serverCommands) {
+            if (serverCommand.startsWith("-D")) {
+                replaceFile(pathToSetenvSh, "\"$", " " + serverCommand + "\"");
+            }
+        }
     }
 
     /**
@@ -671,18 +727,53 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Start the Jetty server.
+     * Start the IdP server. Uses Jetty by default, and Tomcat if the system property 'tomcat' is true.
      * 
      * Note : this method must be called in each test to allow for customization of the IdP configuration before the
      * server is started.
      * 
+     * @throws ComponentInitializationException
+     */
+    public void startServer() throws ComponentInitializationException {
+        if (Boolean.valueOf(System.getProperty("tomcat"))) {
+            startTomcatServer();
+        } else {
+            startJettyServer();
+        }
+    }
+
+    /**
+     * Start the Jetty server.
+     * 
      * @throws ComponentInitializationException if the server cannot be initialized
      */
     public void startJettyServer() throws ComponentInitializationException {
+
+        serverCommands.add("-Djava.io.tmpdir=" + pathToJettyBase.resolve("tmp").toAbsolutePath());
+
         server = new JettyServerProcess();
         server.setServletContainerBasePath(pathToJettyBase);
         server.setServletContainerHomePath(pathToJettyHome);
         server.setAdditionalCommands(serverCommands);
+        server.setStatusPageURL(getBaseURL() + StatusTest.statusPath);
+        server.initialize();
+        server.start();
+    }
+
+    /**
+     * Start the Tomcat server.
+     * 
+     * @throws ComponentInitializationException if the server cannot be initialized
+     */
+    public void startTomcatServer() throws ComponentInitializationException {
+        server = new TomcatServerProcess();
+        server.setServletContainerBasePath(pathToTomcatBase);
+        server.setServletContainerHomePath(pathToTomcatHome);
+        try {
+            setUpTomcatServerCommands();
+        } catch (IOException e) {
+            throw new ComponentInitializationException(e);
+        }
         server.setStatusPageURL(getBaseURL() + StatusTest.statusPath);
         server.initialize();
         server.start();
