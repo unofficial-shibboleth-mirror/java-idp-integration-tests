@@ -255,16 +255,16 @@ public abstract class BaseIntegrationTest
     @NonnullAfterInit protected Path pathToLDAPProperties;
 
     /** Path to jetty.base. */
-    @NonnullAfterInit protected Path pathToJettyBase;
+    @Nullable protected Path pathToJettyBase;
 
     /** Path to jetty.home. */
-    @NonnullAfterInit protected Path pathToJettyHome;
+    @Nullable protected Path pathToJettyHome;
     
     /** Path to tomcat.base. */
-    @NonnullAfterInit protected Path pathToTomcatBase;
+    @Nullable protected Path pathToTomcatBase;
 
     /** Path to tomcat.home. */
-    @NonnullAfterInit protected Path pathToTomcatHome;
+    @Nullable protected Path pathToTomcatHome;
 
     /** Pattern used when creating per test idp.home directory. Defaults to yyyyMMdd-HHmmssSS. **/
     @Nullable protected String idpHomePattern = "yyyyMMdd-HHmmssSS";
@@ -324,43 +324,17 @@ public abstract class BaseIntegrationTest
     @Nonnull private final Logger log = LoggerFactory.getLogger(BaseIntegrationTest.class);
 
     /**
-     * Setup paths to the IdP and Jetty.
+     * Set up paths to the IdP.
      * 
      * @throws Exception if an error occurs
      */
     @BeforeClass
-    public void setUpPaths() throws Exception {
+    public void setUpIdPPaths() throws Exception {
 
         // Path to the project build directory.
         final Path buildPath = Paths.get(TEST_DISTRIBUTIONS_DIRECTORY);
         log.debug("Path to build directory '{}'", buildPath.toAbsolutePath());
         Assert.assertTrue(buildPath.toAbsolutePath().toFile().exists(), "Path to build directory not found");
-
-        // Path to Jetty distribution
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*jetty-distribution-*")) {
-            for (Path entry : stream) {
-                pathToJettyHome = entry;
-                break;
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        log.debug("Path to jetty.home '{}'", pathToJettyHome.toAbsolutePath());
-        Assert.assertNotNull(pathToJettyHome, "Path to jetty.home not found");
-        Assert.assertTrue(pathToJettyHome.toAbsolutePath().toFile().exists(), "Path to jetty.home not found");
-        
-        // Path to Tomcat distribution
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*apache-tomcat-*")) {
-            for (Path entry : stream) {
-                pathToTomcatHome = entry;
-                break;
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        log.debug("Path to tomcat.home '{}'", pathToTomcatHome.toAbsolutePath());
-        Assert.assertNotNull(pathToTomcatHome, "Path to tomcat.home not found");
-        Assert.assertTrue(pathToTomcatHome.toAbsolutePath().toFile().exists(), "Path to tomcat.home not found");
 
         // Path to idp.home from distribution.
         Path pathToDistIdPHome = null;
@@ -391,18 +365,6 @@ public abstract class BaseIntegrationTest
         // Set idp.home system property, replace '\' with '/' for Windows
         System.setProperty("idp.home", pathToIdPHome.toAbsolutePath().toString().replace('\\', '/'));
 
-        // Path to jetty.base
-        pathToJettyBase = pathToIdPHome.resolve(Paths.get("jetty-base"));
-        log.debug("Path to jetty.base '{}'", pathToJettyBase.toAbsolutePath());
-        Assert.assertNotNull(pathToJettyBase, "Path to jetty.base not found");
-        Assert.assertTrue(pathToJettyBase.toAbsolutePath().toFile().exists(), "Path to jetty.base not found");
-
-        // Path to tomcat.base
-        pathToTomcatBase = pathToIdPHome.resolve(Paths.get("tomcat-base"));
-        log.debug("Path to tomcat.base '{}'", pathToTomcatBase.toAbsolutePath());
-        Assert.assertNotNull(pathToTomcatBase, "Path to tomcat.base not found");
-        Assert.assertTrue(pathToTomcatBase.toAbsolutePath().toFile().exists(), "Path to tomcat.base not found");
-        
         // Path to conf/idp.properties
         pathToIdPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "idp.properties");
         Assert.assertTrue(pathToIdPProperties.toFile().exists(), "Path to conf/idp.properties not found");
@@ -410,10 +372,96 @@ public abstract class BaseIntegrationTest
         // Path to conf/ldap.properties
         pathToLDAPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "ldap.properties");
         Assert.assertTrue(pathToLDAPProperties.toFile().exists(), "Path to conf/ldap.properties not found");
+    }
 
-        // Make tmp directories exist
-        Assert.assertTrue(pathToJettyBase.resolve("tmp").toFile().exists(), "Path to jetty.base/tmp/ not found");
-        Assert.assertTrue(pathToTomcatBase.resolve("temp").toFile().exists(), "Path to tomcat.base/temp/ not found");
+    /**
+     * Set up paths to Tomcat if they exist.
+     * 
+     * @throws Exception if an error occurs
+     */
+    @BeforeClass
+    public void setUpTomcatPaths() throws Exception {
+
+        // Path to the project build directory.
+        final Path buildPath = Paths.get(TEST_DISTRIBUTIONS_DIRECTORY);
+        log.debug("Path to build directory '{}'", buildPath.toAbsolutePath());
+        Assert.assertTrue(buildPath.toAbsolutePath().toFile().exists(), "Path to build directory not found");
+
+        // Path to Tomcat distribution
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*apache-tomcat-*")) {
+            for (Path entry : stream) {
+                pathToTomcatHome = entry;
+                break;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        log.debug("Path to tomcat.home '{}'", pathToTomcatHome);
+
+        if (pathToTomcatHome != null) {
+            log.debug("Path to tomcat.home '{}'", pathToTomcatHome.toAbsolutePath());
+            Assert.assertTrue(pathToTomcatHome.toAbsolutePath().toFile().exists(), "Path to tomcat.home not found");
+
+            // Path to tomcat.base
+            pathToTomcatBase = pathToIdPHome.resolve(Paths.get("tomcat-base"));
+            log.debug("Path to tomcat.base '{}'", pathToTomcatBase.toAbsolutePath());
+            Assert.assertNotNull(pathToTomcatBase, "Path to tomcat.base not found");
+            Assert.assertTrue(pathToTomcatBase.toAbsolutePath().toFile().exists(), "Path to tomcat.base not found");
+
+            // Make tmp directories exist
+            Assert.assertTrue(pathToTomcatBase.resolve("temp").toFile().exists(), "Path to temp/ not found");
+            
+            // Modify setenv.sh with per-test idp.home directory
+            final Path pathToSetenvSh = pathToTomcatBase.resolve(Paths.get("bin", "setenv.sh"));
+            Assert.assertTrue(pathToSetenvSh.toAbsolutePath().toFile().exists(), "Path to setenv.sh not found");
+            final String oldTextSetenvSh = "-Didp.home=/opt/shibboleth-idp";
+            final String newTextSetenvSh = "-Didp.home=" + pathToIdPHome.toAbsolutePath().toString();
+            replaceFile(pathToSetenvSh, oldTextSetenvSh, newTextSetenvSh);
+
+            // Modify context descriptor with per-test idp.home directory
+            final Path pathToIdpXML = pathToTomcatBase.resolve(Paths.get("conf", "Catalina", "localhost", "idp.xml"));
+            Assert.assertTrue(pathToIdpXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
+            replaceFile(pathToIdpXML, "/war/idp.war\"", "/webapp/\"");
+        }
+    }
+
+    /**
+     * Set up paths to Jetty if they exist.
+     * 
+     * @throws Exception if an error occurs
+     */
+    @BeforeClass
+    public void setUpJettyPaths() throws Exception {
+
+        // Path to the project build directory.
+        final Path buildPath = Paths.get(TEST_DISTRIBUTIONS_DIRECTORY);
+        log.debug("Path to build directory '{}'", buildPath.toAbsolutePath());
+        Assert.assertTrue(buildPath.toAbsolutePath().toFile().exists(), "Path to build directory not found");
+
+        // Path to Jetty distribution
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*jetty-distribution-*")) {
+            for (Path entry : stream) {
+                pathToJettyHome = entry;
+                break;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        log.debug("Path to jetty.home '{}'", pathToJettyHome);
+
+        if (pathToJettyHome != null) {
+            log.debug("Path to jetty.home '{}'", pathToJettyHome.toAbsolutePath());
+            Assert.assertTrue(pathToJettyHome.toAbsolutePath().toFile().exists(), "Path to jetty.home not found");
+
+            // Path to jetty.base
+            pathToJettyBase = pathToIdPHome.resolve(Paths.get("jetty-base"));
+            log.debug("Path to jetty.base '{}'", pathToJettyBase.toAbsolutePath());
+            Assert.assertNotNull(pathToJettyBase, "Path to jetty.base not found");
+            Assert.assertTrue(pathToJettyBase.toAbsolutePath().toFile().exists(), "Path to jetty.base not found");
+
+            // Make tmp directories exist
+            Assert.assertTrue(pathToJettyBase.resolve("tmp").toFile().exists(), "Path to jetty.base/tmp/ not found");
+        }
     }
 
     /**
@@ -508,7 +556,7 @@ public abstract class BaseIntegrationTest
      * 
      * @throws Exception if an error occurs.
      */
-    @BeforeClass(dependsOnMethods = {"setUpBaseURLs", "setUpPaths", "setUpSauceLabsClientIPRange"})
+    @BeforeClass(dependsOnMethods = {"setUpBaseURLs", "setUpIdPPaths", "setUpJettyPaths", "setUpTomcatPaths", "setUpSauceLabsClientIPRange"})
     public void setUpEndpoints() throws Exception {
 
         // Access control from non-localhost.
@@ -521,20 +569,24 @@ public abstract class BaseIntegrationTest
         replaceLDAPProperty("idp.authn.LDAP.ldapURL", "ldap://localhost:" + ldapPort);
 
         // Jetty endpoints.
-        final Path pathToJettyIdPIni = pathToJettyBase.resolve(Paths.get("start.d", "idp.ini"));
-        replaceProperty(pathToJettyIdPIni, "jetty.host", privateSecureAddress);
-        replaceProperty(pathToJettyIdPIni, "jetty.https.port", Integer.toString(securePort));
-        replaceProperty(pathToJettyIdPIni, "jetty.backchannel.port", Integer.toString(backchannelPort));
-        replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.host", privateAddress);
-        replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.port", Integer.toString(port));
+        if (pathToJettyBase != null) {
+            final Path pathToJettyIdPIni = pathToJettyBase.resolve(Paths.get("start.d", "idp.ini"));
+            replaceProperty(pathToJettyIdPIni, "jetty.host", privateSecureAddress);
+            replaceProperty(pathToJettyIdPIni, "jetty.https.port", Integer.toString(securePort));
+            replaceProperty(pathToJettyIdPIni, "jetty.backchannel.port", Integer.toString(backchannelPort));
+            replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.host", privateAddress);
+            replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.port", Integer.toString(port));
+        }
         
         // Tomcat endpoints.
-        final Path pathToCatalinaProperties = pathToTomcatBase.resolve(Paths.get("conf", "catalina.properties"));
-        replaceFile(pathToCatalinaProperties, "tomcat.host=.*", "tomcat.host=" + privateSecureAddress);
-        replaceFile(pathToCatalinaProperties, "tomcat.https.port=.*", "tomcat.https.port=" + Integer.toString(securePort));
-        replaceFile(pathToCatalinaProperties, "tomcat.backchannel.port=.*", "tomcat.backchannel.port=" + Integer.toString(backchannelPort));
-        replaceFile(pathToCatalinaProperties, "tomcat.nonhttps.host=.*", "tomcat.nonhttps.host=" + privateAddress);
-        replaceFile(pathToCatalinaProperties, "tomcat.nonhttps.port=.*", "tomcat.nonhttps.port=" + Integer.toString(port));
+        if (pathToTomcatBase != null) {
+            final Path pathToCatalinaProperties = pathToTomcatBase.resolve(Paths.get("conf", "catalina.properties"));
+            replaceFile(pathToCatalinaProperties, "tomcat.host=.*", "tomcat.host=" + privateSecureAddress);
+            replaceFile(pathToCatalinaProperties, "tomcat.https.port=.*", "tomcat.https.port=" + Integer.toString(securePort));
+            replaceFile(pathToCatalinaProperties, "tomcat.backchannel.port=.*", "tomcat.backchannel.port=" + Integer.toString(backchannelPort));
+            replaceFile(pathToCatalinaProperties, "tomcat.nonhttps.host=.*", "tomcat.nonhttps.host=" + privateAddress);
+            replaceFile(pathToCatalinaProperties, "tomcat.nonhttps.port=.*", "tomcat.nonhttps.port=" + Integer.toString(port));
+        }
 
         // Metadata.
         replaceIdPHomeFile(Paths.get("metadata", "example-metadata.xml"), "http://localhost:8080", baseURL);
@@ -546,7 +598,7 @@ public abstract class BaseIntegrationTest
      * 
      * @throws Exception
      */
-    @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"})
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpIdPPaths"})
     public void setUpDebugLogging() throws Exception {
         final Path pathToLogbackXML = Paths.get("conf", "logback.xml");
 
@@ -566,7 +618,7 @@ public abstract class BaseIntegrationTest
      * 
      * @throws Exception
      */
-    @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"})
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpIdPPaths"})
     public void setUpExampleMetadataProvider() throws Exception {
         final Path pathToMetadataProvidersXML = Paths.get("conf", "metadata-providers.xml");
 
@@ -582,7 +634,7 @@ public abstract class BaseIntegrationTest
      * 
      * @throws Exception
      */
-    @BeforeClass(enabled = true, dependsOnMethods = {"setUpPaths"})
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpIdPPaths"})
     public void setUpStorageServlet() throws Exception {
 
         final Path pathToIdPWebXML = pathToIdPHome.resolve(Paths.get("webapp", "WEB-INF", "web.xml"));
@@ -609,42 +661,6 @@ public abstract class BaseIntegrationTest
         builder.append("</web-app>\n");
 
         replaceFile(pathToIdPWebXML, oldText, builder.toString());
-    }
-
-    /**
-     * Set per-test idp.home in setenv.sh. Use expanded IdP webapp.
-     * 
-     * @throws IOException
-     */
-    @BeforeClass(dependsOnMethods = {"setUpAddresses", "setUpAvailablePorts"})
-    public void setUpTomcatIdPHome() throws IOException {
-        final Path pathToSetenvSh = pathToTomcatBase.resolve(Paths.get("bin", "setenv.sh"));
-        Assert.assertTrue(pathToSetenvSh.toAbsolutePath().toFile().exists(), "Path to setenv.sh not found");
-
-        final String oldTextSetenvSh = "-Didp.home=/opt/shibboleth-idp";
-        final String newTextSetenvSh = "-Didp.home=" + pathToIdPHome.toAbsolutePath().toString();
-        replaceFile(pathToSetenvSh, oldTextSetenvSh, newTextSetenvSh);
-
-        final Path pathToIdpXML = pathToTomcatBase.resolve(Paths.get("conf", "Catalina", "localhost", "idp.xml"));
-        Assert.assertTrue(pathToIdpXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
-
-        replaceFile(pathToIdpXML, "/war/idp.war\"", "/webapp/\"");
-    }
-
-    /**
-     * Append additional server commands to Tomcat setenv.sh.
-     * 
-     * @throws IOException
-     */
-    public void setUpTomcatServerCommands() throws IOException {
-        final Path pathToSetenvSh = pathToTomcatBase.resolve(Paths.get("bin", "setenv.sh"));
-        Assert.assertTrue(pathToSetenvSh.toAbsolutePath().toFile().exists(), "Path to setenv.sh not found");
-
-        for (final String serverCommand : serverCommands) {
-            if (serverCommand.startsWith("-D")) {
-                replaceFile(pathToSetenvSh, "\"$", " " + serverCommand + "\"");
-            }
-        }
     }
 
     /**
@@ -684,7 +700,7 @@ public abstract class BaseIntegrationTest
      *
      * @throws Exception
      */
-    @BeforeClass(dependsOnMethods = {"setUpPaths"})
+    @BeforeClass(dependsOnMethods = {"setUpIdPPaths"})
     public void disableLDAPSTARTTLS() throws Exception {
         replaceLDAPProperty("idp.authn.LDAP.useStartTLS", "false");
     }
@@ -769,11 +785,7 @@ public abstract class BaseIntegrationTest
         server = new TomcatServerProcess();
         server.setServletContainerBasePath(pathToTomcatBase);
         server.setServletContainerHomePath(pathToTomcatHome);
-        try {
-            setUpTomcatServerCommands();
-        } catch (IOException e) {
-            throw new ComponentInitializationException(e);
-        }
+        server.setAdditionalCommands(serverCommands);
         server.setStatusPageURL(getBaseURL() + StatusTest.statusPath);
         server.initialize();
         server.start();
@@ -867,8 +879,7 @@ public abstract class BaseIntegrationTest
      * @param replacement string to be substituted for each match
      * @throws IOException if the file cannot be overwritten
      */
-    public static void replaceFile(@Nonnull final Path pathToFile,
-            @Nonnull @NotEmpty final String regex,
+    public static void replaceFile(@Nonnull final Path pathToFile, @Nonnull @NotEmpty final String regex,
             @Nonnull @NotEmpty final String replacement) throws IOException {
         LoggerFactory.getLogger(BaseIntegrationTest.class).debug("Replacing regex '{}' with '{}' in file '{}'", regex,
                 replacement, pathToFile);

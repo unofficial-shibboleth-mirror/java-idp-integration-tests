@@ -28,6 +28,7 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.SocketUtils;
+import org.testng.Assert;
 
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 
@@ -41,6 +42,20 @@ public class TomcatServerProcess extends AbstractServerProcess {
     @Override
     protected void doInitialize() throws ComponentInitializationException {
         super.doInitialize();
+        
+        final Path pathToSetenvSh = getServletContainerBasePath().resolve(Paths.get("bin", "setenv.sh"));
+        Assert.assertTrue(pathToSetenvSh.toAbsolutePath().toFile().exists(), "Path to setenv.sh not found");
+
+        for (final String serverCommand : getAdditionalCommands()) {
+            if (serverCommand.startsWith("-D")) {
+                try {
+                    BaseIntegrationTest.replaceFile(pathToSetenvSh, "\"$", " " + serverCommand + "\"");
+                } catch (IOException e) {
+                    log.error("Unable to replace file", e);
+                    throw new ComponentInitializationException(e);
+                }
+            }
+        }
 
         // Add CATALINA_BASE to environment
         getProcessBuilder().environment().put("CATALINA_BASE", getServletContainerBasePath().toAbsolutePath().toString());

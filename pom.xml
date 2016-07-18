@@ -329,82 +329,6 @@
                             <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
                         </configuration>
                     </execution>
-                    <!-- Unpack idp-jetty-base. -->
-                    <execution>
-                        <id>unpack-idp-jetty-base</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>net.shibboleth.idp</groupId>
-                                    <artifactId>idp-jetty-base</artifactId>
-                                    <version>${idp-jetty-base.version}</version>
-                                    <type>tar.gz</type>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
-                        </configuration>
-                    </execution>
-                    <!-- Unpack idp-tomcat-base. -->
-                    <execution>
-                        <id>unpack-idp-tomcat-base</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>net.shibboleth.idp</groupId>
-                                    <artifactId>idp-tomcat-base</artifactId>
-                                    <version>${idp-tomcat-base.version}</version>
-                                    <type>tar.gz</type>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
-                        </configuration>
-                    </execution>
-                    <!-- Unpack jetty-distribution to test-distributions directory. -->
-                    <execution>
-                        <id>unpack-jetty-distribution</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.eclipse.jetty</groupId>
-                                    <artifactId>jetty-distribution</artifactId>
-                                    <version>${jetty.version}</version>
-                                    <type>zip</type>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${test-distributions.directory}</outputDirectory>
-                        </configuration>
-                    </execution>
-                    <!-- Unpack Tomcat to test-distributions directory. -->
-                    <execution>
-                        <id>unpack-tomcat-distribution</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.apache.tomcat</groupId>
-                                    <artifactId>tomcat</artifactId>
-                                    <version>${tomcat.version}</version>
-                                    <type>tar.gz</type>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${test-distributions.directory}</outputDirectory>
-                        </configuration>
-                    </execution>
                     <!-- Copy testbed war to IdP distribution directory. -->
                     <execution>
                         <id>copy-testbed-war</id>
@@ -443,48 +367,6 @@
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/webapp/WEB-INF/lib/</outputDirectory>
-                        </configuration>
-                    </execution>
-                    <!-- Copy testbed deployment descriptor from testbed jar to Jetty. -->
-                    <execution>
-                        <id>copy-testbed-deployment-descriptor-jetty</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                   <groupId>net.shibboleth.idp</groupId>
-                                    <artifactId>idp-testbed</artifactId>
-                                    <version>${testbed.version}</version>
-                                    <type>jar</type>
-                                    <classifier>${testbed.classifier}</classifier>
-                                    <includes>webapps/0-idp-testbed.xml</includes>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/jetty-base/</outputDirectory>
-                        </configuration>
-                    </execution>
-                    <!-- Copy testbed context descriptor from testbed jar to Tomcat. -->
-                    <execution>
-                        <id>copy-testbed-context-descriptor-tomcat</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                   <groupId>net.shibboleth.idp</groupId>
-                                    <artifactId>idp-testbed</artifactId>
-                                    <version>${testbed.version}</version>
-                                    <type>jar</type>
-                                    <classifier>${testbed.classifier}</classifier>
-                                    <includes>conf/Catalina/localhost/ROOT.xml</includes>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/tomcat-base/</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -547,11 +429,11 @@
 
     </build>
 
-    <!--
+    <profiles>
+        <!--
         Remove the testbed dependency classifier when using Eclipse, but not from the command line.
         See https://wiki.eclipse.org/M2E-WTP_FAQ
-    -->
-    <profiles>
+        -->
         <profile>
             <id>m2e</id>
             <activation>
@@ -562,6 +444,169 @@
             <properties>
                 <testbed.classifier></testbed.classifier>
             </properties>
+        </profile>
+        <!--
+        The jetty profile unpacks Jetty, idp-jetty-base, and adds the testbed to Jetty.
+        The jetty profile is active by default and not active if the 'tomcat' system property is present.
+        -->
+        <profile>
+            <id>jetty</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!tomcat</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <!-- Unpack jetty-distribution to test-distributions directory. -->
+                            <execution>
+                                <id>unpack-jetty-distribution</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.eclipse.jetty</groupId>
+                                            <artifactId>jetty-distribution</artifactId>
+                                            <version>${jetty.version}</version>
+                                            <type>zip</type>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${test-distributions.directory}</outputDirectory>
+                                </configuration>
+                            </execution>
+                            <!-- Unpack idp-jetty-base. -->
+                            <execution>
+                                <id>unpack-idp-jetty-base</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>net.shibboleth.idp</groupId>
+                                            <artifactId>idp-jetty-base</artifactId>
+                                            <version>${idp-jetty-base.version}</version>
+                                            <type>tar.gz</type>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                                </configuration>
+                            </execution>
+                            <!-- Copy testbed deployment descriptor from testbed jar to Jetty. -->
+                            <execution>
+                                <id>copy-testbed-deployment-descriptor-jetty</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>net.shibboleth.idp</groupId>
+                                            <artifactId>idp-testbed</artifactId>
+                                            <version>${testbed.version}</version>
+                                            <type>jar</type>
+                                            <classifier>${testbed.classifier}</classifier>
+                                            <includes>webapps/0-idp-testbed.xml</includes>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/jetty-base/</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!--
+        The tomcat profile unpacks Tomcat, idp-tomcat-base, and adds the testbed webapp to Tomcat.
+        The tomcat profile is active if the 'tomcat' system property is present.
+        -->
+        <profile>
+            <id>tomcat</id>
+            <activation>
+                <property>
+                    <name>tomcat</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <!-- Unpack Tomcat to test-distributions directory. -->
+                            <execution>
+                                <id>unpack-tomcat-distribution</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.apache.tomcat</groupId>
+                                            <artifactId>tomcat</artifactId>
+                                            <version>${tomcat.version}</version>
+                                            <type>tar.gz</type>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${test-distributions.directory}</outputDirectory>
+                                </configuration>
+                            </execution>
+                            <!-- Unpack idp-tomcat-base. -->
+                            <execution>
+                                <id>unpack-idp-tomcat-base</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>net.shibboleth.idp</groupId>
+                                            <artifactId>idp-tomcat-base</artifactId>
+                                            <version>${idp-tomcat-base.version}</version>
+                                            <type>tar.gz</type>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                                </configuration>
+                            </execution>
+                            <!-- Copy testbed context descriptor from testbed jar to Tomcat. -->
+                            <execution>
+                                <id>copy-testbed-context-descriptor-tomcat</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>net.shibboleth.idp</groupId>
+                                            <artifactId>idp-testbed</artifactId>
+                                            <version>${testbed.version}</version>
+                                            <type>jar</type>
+                                            <classifier>${testbed.classifier}</classifier>
+                                            <includes>conf/Catalina/localhost/ROOT.xml</includes>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/tomcat-base/</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
