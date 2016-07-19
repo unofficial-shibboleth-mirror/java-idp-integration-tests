@@ -111,6 +111,9 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
     public ProcessBuilder buildProcessBuilder() {
         final ProcessBuilder builder = new ProcessBuilder();
         builder.redirectErrorStream(true);
+        if (Boolean.getBoolean("inheritIO")) {
+            builder.inheritIO();
+        }
         builder.directory(pathToContainerBase.toAbsolutePath().toFile());
         return builder;
     }
