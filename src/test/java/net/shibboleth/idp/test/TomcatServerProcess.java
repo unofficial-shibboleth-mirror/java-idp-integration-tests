@@ -42,10 +42,16 @@ public class TomcatServerProcess extends AbstractServerProcess {
     @Override
     protected void doInitialize() throws ComponentInitializationException {
         super.doInitialize();
-        
-        final Path pathToSetenvSh = getServletContainerBasePath().resolve(Paths.get("bin", "setenv.sh"));
-        Assert.assertTrue(pathToSetenvSh.toAbsolutePath().toFile().exists(), "Path to setenv.sh not found");
 
+        // Windows or not ?
+        final String suffix = System.getProperty("os.name").toLowerCase().startsWith("windows") ? "bat" : "sh";
+
+        // Name of setenv script, either ending in .sh or .bat.
+        final String setenv = "setenv." + suffix;
+
+        // Append system properties to bin/setenv.sh
+        final Path pathToSetenvSh = getServletContainerBasePath().resolve(Paths.get("bin", setenv));
+        Assert.assertTrue(pathToSetenvSh.toAbsolutePath().toFile().exists(), "Path to " + setenv + " not found");
         for (final String serverCommand : getAdditionalCommands()) {
             if (serverCommand.startsWith("-D")) {
                 try {
@@ -60,10 +66,15 @@ public class TomcatServerProcess extends AbstractServerProcess {
         // Add CATALINA_BASE to environment
         getProcessBuilder().environment().put("CATALINA_BASE", getServletContainerBasePath().toAbsolutePath().toString());
 
+        // Name of catalina script, either ending in .sh or .bat.
+        final String catalina = "catalina." + suffix;
+        final Path pathToCatalina = getServletContainerHomePath().resolve(Paths.get("bin", catalina));
+        Assert.assertTrue(pathToCatalina.toAbsolutePath().toFile().exists(), "Path to " + catalina + " not found");
+
         // Start Tomcat in current window
-        getCommands().add(getServletContainerHomePath().toAbsolutePath().toString() + "/bin/catalina.sh");
+        getCommands().add(pathToCatalina.toAbsolutePath().toString());
         getCommands().add("run");
-        
+
         // Randomize Tomcat's shutdown port
         final SortedSet<Integer> ports = SocketUtils.findAvailableTcpPorts(4, 20000, 30000);
         final Iterator<Integer> iterator = ports.iterator();
@@ -76,8 +87,6 @@ public class TomcatServerProcess extends AbstractServerProcess {
             log.error("Unable to replace file", e);
             throw new ComponentInitializationException(e);
         }
-        
-        // TODO Windows file separator and .bat
     }
 
 }

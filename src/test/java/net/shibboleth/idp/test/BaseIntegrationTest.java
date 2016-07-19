@@ -411,12 +411,15 @@ public abstract class BaseIntegrationTest
             // Make tmp directories exist
             Assert.assertTrue(pathToTomcatBase.resolve("temp").toFile().exists(), "Path to temp/ not found");
             
-            // Modify setenv.sh with per-test idp.home directory
+            // Modify setenv.sh and setenv.bat with per-test idp.home directory
             final Path pathToSetenvSh = pathToTomcatBase.resolve(Paths.get("bin", "setenv.sh"));
             Assert.assertTrue(pathToSetenvSh.toAbsolutePath().toFile().exists(), "Path to setenv.sh not found");
+            final Path pathToSetenvBat = pathToTomcatBase.resolve(Paths.get("bin", "setenv.bat"));
+            Assert.assertTrue(pathToSetenvBat.toAbsolutePath().toFile().exists(), "Path to setenv.bat not found");
             final String oldTextSetenvSh = "-Didp.home=/opt/shibboleth-idp";
             final String newTextSetenvSh = "-Didp.home=" + pathToIdPHome.toAbsolutePath().toString();
             replaceFile(pathToSetenvSh, oldTextSetenvSh, newTextSetenvSh);
+            replaceFile(pathToSetenvBat, oldTextSetenvSh, newTextSetenvSh);
 
             // Modify context descriptor with per-test idp.home directory
             final Path pathToIdpXML = pathToTomcatBase.resolve(Paths.get("conf", "Catalina", "localhost", "idp.xml"));
