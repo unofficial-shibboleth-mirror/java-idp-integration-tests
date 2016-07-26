@@ -64,6 +64,8 @@ public class TomcatServerProcess extends AbstractServerProcess {
             }
         }
 
+        // Add CATALINA_HOME to environment
+        getProcessBuilder().environment().put("CATALINA_HOME", getServletContainerHomePath().toAbsolutePath().toString());
         // Add CATALINA_BASE to environment
         getProcessBuilder().environment().put("CATALINA_BASE", getServletContainerBasePath().toAbsolutePath().toString());
 
