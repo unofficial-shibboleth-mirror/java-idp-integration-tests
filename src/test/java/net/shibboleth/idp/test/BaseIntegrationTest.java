@@ -511,6 +511,10 @@ public abstract class BaseIntegrationTest
      */
     @BeforeClass(enabled = true)
     public void setUpAvailablePorts() {
+        if (Boolean.getBoolean("8080")) {
+            return;
+        }
+        
         final SortedSet<Integer> ports = SocketUtils.findAvailableTcpPorts(4, 20000, 30000);
         final Iterator<Integer> iterator = ports.iterator();
 
