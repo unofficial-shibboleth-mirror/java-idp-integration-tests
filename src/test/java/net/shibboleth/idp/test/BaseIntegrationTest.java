@@ -867,10 +867,11 @@ public abstract class BaseIntegrationTest
      * @param replacement string to be substituted for each match
      * @throws IOException if the file cannot be overwritten
      */
-    public void replaceFile(@Nonnull final Path pathToFile,
+    public static void replaceFile(@Nonnull final Path pathToFile,
             @Nonnull @NotEmpty final String regex,
             @Nonnull @NotEmpty final String replacement) throws IOException {
-        log.debug("Replacing regex '{}' with '{}' in file '{}'", regex, replacement, pathToFile);
+        LoggerFactory.getLogger(BaseIntegrationTest.class).debug("Replacing regex '{}' with '{}' in file '{}'", regex,
+                replacement, pathToFile);
 
         Assert.assertNotNull(pathToFile, "Path not found");
         Assert.assertTrue(pathToFile.toAbsolutePath().toFile().exists(), "Path does not exist");

@@ -17,10 +17,17 @@
 
 package net.shibboleth.idp.test;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Iterator;
+import java.util.SortedSet;
+
 import javax.annotation.Nonnull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.SocketUtils;
 
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 
@@ -41,6 +48,19 @@ public class TomcatServerProcess extends AbstractServerProcess {
         // Start Tomcat in current window
         getCommands().add(getServletContainerHomePath().toAbsolutePath().toString() + "/bin/catalina.sh");
         getCommands().add("run");
+        
+        // Randomize Tomcat's shutdown port
+        final SortedSet<Integer> ports = SocketUtils.findAvailableTcpPorts(4, 20000, 30000);
+        final Iterator<Integer> iterator = ports.iterator();
+        int shutdownPort = iterator.next();
+        log.info("Selecting shutdown port '{}' for Tomcat", shutdownPort);
+        final Path pathToCatalinaProperties = getServletContainerBasePath().resolve(Paths.get("conf", "catalina.properties"));
+        try {
+            BaseIntegrationTest.replaceFile(pathToCatalinaProperties, "tomcat.shutdown.port=.*", "tomcat.shutdown.port=" + Integer.toString(shutdownPort));
+        } catch (IOException e) {
+            log.error("Unable to replace file", e);
+            throw new ComponentInitializationException(e);
+        }
         
         // TODO Windows file separator and .bat
     }
