@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.SortedSet;
+import java.util.regex.Matcher;
 
 import javax.annotation.Nonnull;
 
@@ -55,7 +56,7 @@ public class TomcatServerProcess extends AbstractServerProcess {
         for (final String serverCommand : getAdditionalCommands()) {
             if (serverCommand.startsWith("-D")) {
                 try {
-                    BaseIntegrationTest.replaceFile(pathToSetenvSh, "\"$", " " + serverCommand + "\"");
+                    BaseIntegrationTest.replaceFile(pathToSetenvSh, "\"$", " " + Matcher.quoteReplacement(serverCommand) + "\"");
                 } catch (IOException e) {
                     log.error("Unable to replace file", e);
                     throw new ComponentInitializationException(e);

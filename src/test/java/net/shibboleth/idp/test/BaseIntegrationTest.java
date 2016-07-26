@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.regex.Matcher;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -417,7 +418,7 @@ public abstract class BaseIntegrationTest
             final Path pathToSetenvBat = pathToTomcatBase.resolve(Paths.get("bin", "setenv.bat"));
             Assert.assertTrue(pathToSetenvBat.toAbsolutePath().toFile().exists(), "Path to setenv.bat not found");
             final String oldTextSetenvSh = "-Didp.home=/opt/shibboleth-idp";
-            final String newTextSetenvSh = "-Didp.home=" + pathToIdPHome.toAbsolutePath().toString();
+            final String newTextSetenvSh = "-Didp.home=" + Matcher.quoteReplacement(pathToIdPHome.toAbsolutePath().toString());
             replaceFile(pathToSetenvSh, oldTextSetenvSh, newTextSetenvSh);
             replaceFile(pathToSetenvBat, oldTextSetenvSh, newTextSetenvSh);
 
@@ -613,7 +614,7 @@ public abstract class BaseIntegrationTest
         logUnencryptedSAML();
 
         // Add logging when starting the server.
-        serverCommands.add("-Dlogback.configurationFile=" + pathToIdPHome.resolve(pathToLogbackXML).toAbsolutePath());
+        serverCommands.add("-Dlogback.configurationFile=" + pathToIdPHome.resolve(pathToLogbackXML).toAbsolutePath().toString());
     }
 
     /**
