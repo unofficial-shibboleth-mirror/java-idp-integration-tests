@@ -19,6 +19,7 @@ package net.shibboleth.idp.test.saml2;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -33,16 +34,23 @@ import org.opensaml.core.xml.io.UnmarshallingException;
 import org.opensaml.saml.common.SAMLObjectBuilder;
 import org.opensaml.saml.saml2.core.NameID;
 import org.opensaml.saml.saml2.core.Response;
+import org.opensaml.saml.saml2.core.StatusCode;
 import org.opensaml.saml.saml2.core.SubjectConfirmation;
 import org.opensaml.soap.soap11.Body;
 import org.opensaml.soap.soap11.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import net.shibboleth.idp.test.BrowserData;
 import net.shibboleth.idp.test.flows.saml2.SAML2TestResponseValidator;
+import net.shibboleth.idp.test.flows.saml2.SAML2TestStatusResponseTypeValidator;
+import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
+import net.shibboleth.utilities.java.support.logic.Constraint;
+import net.shibboleth.utilities.java.support.net.URLBuilder;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
 
 /** SAML 2 AttributeQuery test. */
@@ -50,11 +58,30 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(SAML2AttributeQueryIntegrationTest.class);
+    
+    /** Validator to use for error responses. */
+    @Nullable private SAML2TestStatusResponseTypeValidator errorValidator;
+    
+    /** Path to trusted SP certificate resource. */
+    @NonnullAfterInit private String trustedSpCert;
+
+    /** Path to trusted SP private key resource. */
+    @NonnullAfterInit private String trustedSpKey;
+    
+    /** Path to untrusted SP certificate resource. */
+    @NonnullAfterInit private String untrustedSpCert;
+
+    /** Path to untrusted SP private key resource. */
+    @NonnullAfterInit private String untrustedSpKey;
 
     /**
-     * Set up the validator for SAML 2 attribute queries.
+     * Setup response validators.
+     * 
+     * @throws IOException if an I/O error occurs
      */
-    public void setupValidator() {
+    @BeforeMethod
+    @Override
+    public void setUpValidator() {
         final SAMLObjectBuilder<NameID> builder = (SAMLObjectBuilder<NameID>) XMLObjectProviderRegistrySupport
                 .getBuilderFactory().<NameID> getBuilderOrThrow(NameID.DEFAULT_ELEMENT_NAME);
         final NameID nameID = builder.buildObject();
@@ -68,6 +95,9 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
         validator.subjectConfirmationMethod = SubjectConfirmation.METHOD_SENDER_VOUCHES;
         validator.validateAuthnStatements = false;
         validator.validateSubjectConfirmationData = false;
+
+        errorValidator = new SAML2TestResponseValidator();
+        errorValidator.statusCode = StatusCode.REQUESTER;
     }
 
     /**
@@ -96,38 +126,132 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
     }
 
     /**
+     * Set up paths to trusted and untrusted SP certificates and private keys from idp-conf.
+     */
+    @BeforeClass
+    protected void setUpPaths() {
+        final Path pathToTrustedSpCert = pathToIdPHome.resolve(Paths.get("credentials", "sp.crt"));
+        Assert.assertTrue(pathToTrustedSpCert.toFile().exists(), "Path to sp.crt not found");
+        trustedSpCert = "file://" + pathToTrustedSpCert.toAbsolutePath().toString();
+
+        final Path pathToTrustedSpKey = pathToIdPHome.resolve(Paths.get("credentials", "sp.key"));
+        Assert.assertTrue(pathToTrustedSpKey.toFile().exists(), "Path to sp.key not found");
+        trustedSpKey = "file://" + pathToTrustedSpKey.toAbsolutePath().toString();
+        
+        final Path pathToUntrustedSpCert = pathToIdPHome.resolve(Paths.get("credentials", "sp-untrusted.crt"));
+        Assert.assertTrue(pathToUntrustedSpCert.toFile().exists(), "Path to sp-untrusted.crt not found");
+        untrustedSpCert = "file://" + pathToUntrustedSpCert.toAbsolutePath().toString();
+
+        final Path pathToUntrustedSpKey = pathToIdPHome.resolve(Paths.get("credentials", "sp-untrusted.key"));
+        Assert.assertTrue(pathToUntrustedSpKey.toFile().exists(), "Path to sp-untrusted.key not found");
+        untrustedSpKey = "file://" + pathToUntrustedSpKey.toAbsolutePath().toString();
+    }
+
+    /**
+     * Change endpoint port from the default to whatever is in use.
+     * 
+     * @throws MalformedURLException
+     */
+    protected void adjustEndpointPort() throws MalformedURLException {
+        final WebElement endpointInput = driver.findElement(By.id("saml2-attribute-query-endpoint"));
+        final String oldEndpoint = endpointInput.getAttribute("value");
+        final URLBuilder urlBuilder = new URLBuilder(oldEndpoint);
+        urlBuilder.setPort(backchannelPort);
+        final String newEndpoint = urlBuilder.buildURL();
+        endpointInput.clear();
+        endpointInput.sendKeys(newEndpoint);
+    }
+
+    /**
      * Enable direct NameID mapping.
      * 
      * @throws IOException if the configuration file cannot be changed
      */
-    public void enableDirectNameIDMapping() throws IOException {
+    protected void enableDirectNameIDMapping() throws IOException {
         final Path pathToSubjectC14nXML = pathToIdPHome.resolve(Paths.get("conf", "c14n", "subject-c14n.xml"));
         final String toUncomment = "<value>https://sp.example.org</value>";
         uncommentFile(pathToSubjectC14nXML, toUncomment);
     }
 
     /**
+     * Set path to client TLS certificate resource. A <code>null</code> path clears the request parameter.
+     * 
+     * @param resource path to client TLS certificate resource
+     */
+    protected void setClientTLSCertificate(@Nullable final String resource) {
+        setParameter("saml2-attribute-query-clientTLSCertificate", resource);
+    }
+
+    /**
+     * Set path to client TLS private key resource. A <code>null</code> path clears the request parameter.
+     * 
+     * @param resource path to client TLS private key resource
+     */
+    protected void setClientTLSPrivateKey(@Nullable final String resource) {
+        setParameter("saml2-attribute-query-clientTLSPrivateKey", resource);
+    }
+
+    /**
+     * Set path to client signing certificate resource. A <code>null</code> path clears the request parameter.
+     * 
+     * @param resource path to client TLS signing resource
+     */
+    protected void setClientSigningCertificate(@Nullable final String resource) {
+        setParameter("saml2-attribute-query-clientSigningCertificate", resource);
+    }
+
+    /**
+     * Set path to client signing private key resource. A <code>null</code> path clears the request parameter.
+     * 
+     * @param resource path to client TLS private key resource
+     */
+    protected void setClientSigningPrivateKey(@Nullable final String resource) {
+        setParameter("saml2-attribute-query-clientSigningPrivateKey", resource);
+    }
+
+    /**
+     * Clear form input parameter and set value if not <code>null</code>.
+     * 
+     * @param name form parameter name
+     * @param value form parameter value
+     */
+    private void setParameter(@Nonnull final String name, @Nullable final String value) {
+        Constraint.isNotNull(name, "Parameter name cannot be null");
+        final WebElement element = driver.findElement(By.id(name));
+        element.clear();
+        if (value != null) {
+            element.sendKeys(value);
+        }
+    }
+
+    /**
      * Submit the SAML 2 AttributeQuery form.
      */
-    public void submitAttributeQueryForm() {
+    protected void submitAttributeQueryForm() {
         driver.findElement(By.id("saml2-attribute-query")).submit();
     }
 
     /**
-     * Change endpoint port from the default to whatever is in use.
+     * Validate SAML error response.
+     * 
+     * @throws Exception
      */
-    public void adjustEndpointPort() {
-        final WebElement endpointInput = driver.findElement(By.id("saml2-attribute-query-endpoint"));
-        final String oldEndpoint = endpointInput.getAttribute("value");
-        final String newEndpoint = oldEndpoint.replaceAll("9443", backchannelPort.toString());
-        endpointInput.clear();
-        endpointInput.sendKeys(newEndpoint);
+    protected void validateErrorResponse() throws Exception {
+        
+        log.debug("Error response:\n{}", getPageSource());
+
+        final Response response = unmarshallResponse(getPageSource());
+
+        errorValidator.validateResponse(response);
     }
 
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
-    public void testAttributeQuery(@Nullable final BrowserData browserData) throws Exception {
-
-        setupValidator();
+    /**
+     * Activities common to tests. Start a browser, configure and start the IdP, etc.
+     * 
+     * @param browserData browser/os/version triplet provided by data provider
+     * @throws Exception if an error occurs
+     */
+    protected void commonSetup(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
 
@@ -138,10 +262,156 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
         getAndWaitForTestbedPage();
 
         adjustEndpointPort();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testNoCertNoSignature(@Nullable final BrowserData browserData) throws Exception {
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(null);
+
+        setClientSigningCertificate(null);
+
+        submitAttributeQueryForm();
+
+        validateErrorResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testNoCertTrustedSignature(@Nullable final BrowserData browserData) throws Exception {
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(null);
+
+        setClientSigningCertificate(trustedSpCert);
+
+        setClientSigningPrivateKey(trustedSpKey);
 
         submitAttributeQueryForm();
 
         validateResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testNoCertUntrustedSignature(@Nullable final BrowserData browserData) throws Exception {
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(null);
+
+        setClientSigningCertificate("classpath:/credentials/sp-untrusted.crt");
+
+        setClientSigningPrivateKey("classpath:/credentials/sp-untrusted.key");
+
+        submitAttributeQueryForm();
+
+        validateErrorResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testTrustedCertNoSignature(@Nullable final BrowserData browserData) throws Exception {
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(trustedSpCert);
+
+        setClientTLSPrivateKey(trustedSpKey);
+
+        setClientSigningCertificate(null);
+
+        submitAttributeQueryForm();
+
+        validateResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testTrustedCertTrustedSignature(@Nullable final BrowserData browserData) throws Exception {
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(trustedSpCert);
+
+        setClientTLSPrivateKey(trustedSpKey);
+
+        setClientSigningCertificate(trustedSpCert);
+
+        setClientSigningPrivateKey(trustedSpKey);
+
+        submitAttributeQueryForm();
+
+        validateResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testTrustedCertUntrustedSignature(@Nullable final BrowserData browserData) throws Exception {
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(trustedSpCert);
+
+        setClientTLSPrivateKey(trustedSpKey);
+
+        setClientSigningCertificate(untrustedSpCert);
+
+        setClientSigningPrivateKey(untrustedSpKey);
+
+        submitAttributeQueryForm();
+
+        validateErrorResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testUntrustedCertNotSigned(@Nullable final BrowserData browserData) throws Exception {
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(untrustedSpCert);
+
+        setClientTLSPrivateKey(untrustedSpKey);
+
+        setClientSigningCertificate(null);
+
+        submitAttributeQueryForm();
+
+        validateErrorResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testUntrustedCertTrustedSignature(@Nullable final BrowserData browserData) throws Exception {
+        
+        commonSetup(browserData);
+
+        setClientTLSCertificate(untrustedSpCert);
+
+        setClientTLSPrivateKey(untrustedSpKey);
+
+        setClientSigningCertificate(trustedSpCert);
+
+        setClientSigningPrivateKey(trustedSpKey);
+
+        submitAttributeQueryForm();
+
+        validateErrorResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testUntrustedCertUntrustedSignature(@Nullable final BrowserData browserData) throws Exception {
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(untrustedSpCert);
+
+        setClientTLSPrivateKey(untrustedSpKey);
+
+        setClientSigningCertificate(untrustedSpCert);
+
+        setClientSigningPrivateKey(untrustedSpKey);
+
+        submitAttributeQueryForm();
+
+        validateErrorResponse();
     }
 
 }
