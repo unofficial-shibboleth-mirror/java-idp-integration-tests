@@ -132,19 +132,23 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
     protected void setUpPaths() {
         final Path pathToTrustedSpCert = pathToIdPHome.resolve(Paths.get("credentials", "sp.crt"));
         Assert.assertTrue(pathToTrustedSpCert.toFile().exists(), "Path to sp.crt not found");
-        trustedSpCert = "file://" + pathToTrustedSpCert.toAbsolutePath().toString();
+        trustedSpCert = "file:///" + pathToTrustedSpCert.toAbsolutePath().toString();
+        log.debug("Path to trusted SP cert '{}'", trustedSpCert);
 
         final Path pathToTrustedSpKey = pathToIdPHome.resolve(Paths.get("credentials", "sp.key"));
         Assert.assertTrue(pathToTrustedSpKey.toFile().exists(), "Path to sp.key not found");
-        trustedSpKey = "file://" + pathToTrustedSpKey.toAbsolutePath().toString();
-        
+        trustedSpKey = "file:///" + pathToTrustedSpKey.toAbsolutePath().toString();
+        log.debug("Path to trusted SP key '{}'", trustedSpKey);
+
         final Path pathToUntrustedSpCert = pathToIdPHome.resolve(Paths.get("credentials", "sp-untrusted.crt"));
         Assert.assertTrue(pathToUntrustedSpCert.toFile().exists(), "Path to sp-untrusted.crt not found");
-        untrustedSpCert = "file://" + pathToUntrustedSpCert.toAbsolutePath().toString();
+        untrustedSpCert = "file:///" + pathToUntrustedSpCert.toAbsolutePath().toString();
+        log.debug("Path to untrusted SP cert '{}'", untrustedSpCert);
 
         final Path pathToUntrustedSpKey = pathToIdPHome.resolve(Paths.get("credentials", "sp-untrusted.key"));
         Assert.assertTrue(pathToUntrustedSpKey.toFile().exists(), "Path to sp-untrusted.key not found");
-        untrustedSpKey = "file://" + pathToUntrustedSpKey.toAbsolutePath().toString();
+        untrustedSpKey = "file:///" + pathToUntrustedSpKey.toAbsolutePath().toString();
+        log.debug("Path to untrusted SP key '{}'", untrustedSpKey);
     }
 
     /**
