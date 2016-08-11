@@ -20,24 +20,27 @@ package net.shibboleth.idp.test;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Iterator;
-import java.util.SortedSet;
 import java.util.regex.Matcher;
 
 import javax.annotation.Nonnull;
 
+import org.apache.commons.net.telnet.TelnetClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.SocketUtils;
 import org.testng.Assert;
 
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
+import net.shibboleth.utilities.java.support.logic.Constraint;
 
 /** Start Tomcat via 'catalina.sh run'. */
 public class TomcatServerProcess extends AbstractServerProcess {
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(TomcatServerProcess.class);
+
+    /** Port to use to shutdown Tomcat. */
+    @Nonnull private int shutdownPort = 8005;
 
     /** {@inheritDoc} */
     @Override
@@ -69,27 +72,79 @@ public class TomcatServerProcess extends AbstractServerProcess {
         // Add CATALINA_BASE to environment
         getProcessBuilder().environment().put("CATALINA_BASE", getServletContainerBasePath().toAbsolutePath().toString());
 
-        // Name of catalina script, either ending in .sh or .bat.
-        final String catalina = "catalina." + suffix;
-        final Path pathToCatalina = getServletContainerHomePath().resolve(Paths.get("bin", catalina));
-        Assert.assertTrue(pathToCatalina.toAbsolutePath().toFile().exists(), "Path to " + catalina + " not found");
+        // Name of startup script, either ending in .sh or .bat.
+        final String startup = "startup." + suffix;
+        final Path pathToStartup = getServletContainerHomePath().resolve(Paths.get("bin", startup));
+        Assert.assertTrue(pathToStartup.toAbsolutePath().toFile().exists(), "Path to " + startup + " not found");
 
         // Start Tomcat in current window
-        getCommands().add(pathToCatalina.toAbsolutePath().toString());
-        getCommands().add("run");
+        getCommands().add(pathToStartup.toAbsolutePath().toString());
 
-        // Randomize Tomcat's shutdown port
-        final SortedSet<Integer> ports = SocketUtils.findAvailableTcpPorts(4, 20000, 30000);
-        final Iterator<Integer> iterator = ports.iterator();
-        int shutdownPort = iterator.next();
-        log.info("Selecting shutdown port '{}' for Tomcat", shutdownPort);
-        final Path pathToCatalinaProperties = getServletContainerBasePath().resolve(Paths.get("conf", "catalina.properties"));
+        // Configure Tomcat's shutdown port
+        nextAvailableShutdownPort();
+    }
+
+    /**
+     * Configure the next available port in the range 20000-30000 to shutdown Tomcat.
+     * 
+     * @return the next available port to use to shutdown Tomcat, by default '8005' if the '8080' system property is
+     *         <code>true</code>
+     * @throws ComponentInitializationException if catalina.properties cannot be modified
+     */
+    @Nonnull
+    public int nextAvailableShutdownPort() throws ComponentInitializationException {
+
+        if (Boolean.getBoolean("8080")) {
+            log.debug("System property '8080' is true, using default shutdown port {}", shutdownPort);
+            return shutdownPort;
+        }
+
+        shutdownPort = SocketUtils.findAvailableTcpPort(20000, 30000);
+        log.debug("Selecting Tomcat shutdown port {}", shutdownPort);
+
+        final Path pathToCatalinaProp = getServletContainerBasePath().resolve(Paths.get("conf", "catalina.properties"));
         try {
-            BaseIntegrationTest.replaceFile(pathToCatalinaProperties, "tomcat.shutdown.port=.*", "tomcat.shutdown.port=" + Integer.toString(shutdownPort));
+            BaseIntegrationTest.replaceFile(pathToCatalinaProp, "tomcat.shutdown.port=.*$",
+                    "tomcat.shutdown.port=" + Integer.toString(shutdownPort));
         } catch (IOException e) {
-            log.error("Unable to replace file", e);
+            log.error("Unable to replace file '{}'", pathToCatalinaProp, e);
             throw new ComponentInitializationException(e);
         }
+
+        return shutdownPort;
+    }
+
+    /**
+     * Attempt to shutdown Tomcat via telnet.
+     * 
+     * Telnet to the shutdown port and send 'SHUTDOWN'.
+     * 
+     * @param hostname the name of the remote host
+     * @param port the port to connect to on the remote host
+     * @param password The shutdown password
+     */
+    public void shutdown(@Nonnull final String hostname, final int port, @Nonnull final String password) {
+        Constraint.isNotNull(hostname, "Hostname cannot be null");
+        Constraint.isNotNull(password, "Password cannot be null");
+
+        log.debug("Attemting to shutdown Tomcat at '{}:{}'", hostname, port);
+
+        final TelnetClient telnet = new TelnetClient();
+        try {
+            telnet.connect(hostname, port);
+            telnet.getOutputStream().write(password.getBytes());
+            telnet.getOutputStream().flush();
+            telnet.disconnect();
+        } catch (IOException e) {
+            log.error("A Telnet I/O error occurred", e);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void stop() {
+        shutdown("127.0.0.1", shutdownPort, "SHUTDOWN");
+        super.stop();
     }
 
 }
