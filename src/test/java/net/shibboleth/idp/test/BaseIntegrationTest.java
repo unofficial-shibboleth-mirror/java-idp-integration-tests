@@ -1249,7 +1249,7 @@ public abstract class BaseIntegrationTest
         if (testClassFailed) {
             log.debug("There was a test class failure, not deleting per-test idp.home directory '{}'",
                     pathToIdPHome.toAbsolutePath());
-        } else {
+        } else if (!Boolean.getBoolean("keepTests")) {
             log.debug("Deleting per-test idp.home directory '{}'", pathToIdPHome.toAbsolutePath());
             FileSystemUtils.deleteRecursively(pathToIdPHome.toAbsolutePath().toFile());
         }
