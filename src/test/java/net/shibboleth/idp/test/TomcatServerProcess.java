@@ -104,7 +104,7 @@ public class TomcatServerProcess extends AbstractServerProcess {
 
         final Path pathToCatalinaProp = getServletContainerBasePath().resolve(Paths.get("conf", "catalina.properties"));
         try {
-            BaseIntegrationTest.replaceFile(pathToCatalinaProp, "tomcat.shutdown.port=.*$",
+            BaseIntegrationTest.replaceFile(pathToCatalinaProp, "tomcat.shutdown.port=.*",
                     "tomcat.shutdown.port=" + Integer.toString(shutdownPort));
         } catch (IOException e) {
             log.error("Unable to replace file '{}'", pathToCatalinaProp, e);
