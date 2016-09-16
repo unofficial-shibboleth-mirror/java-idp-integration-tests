@@ -17,8 +17,11 @@
 
 package net.shibboleth.idp.test;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import org.testng.Assert;
 
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 
@@ -32,6 +35,15 @@ public class JettyServerProcess extends AbstractServerProcess {
 
         // Add JETTY_BASE to environment
         getProcessBuilder().environment().put("JETTY_BASE", getServletContainerBasePath().toAbsolutePath().toString());
+
+        // Add testbed webapp
+        final Path startIni = getServletContainerBasePath().resolve("start.ini");
+        Assert.assertTrue(startIni.toAbsolutePath().toFile().exists(), "Path to start.ini not found");
+        try {
+            BaseIntegrationTest.replaceFile(startIni, "\\Z", System.lineSeparator() + "testbed.xml");
+        } catch (IOException e) {
+            throw new ComponentInitializationException(e);
+        }
 
         // Start Jetty via start.jar
         final Path pathToJava = Paths.get(System.getProperty("java.home"), "bin", "java");

@@ -528,7 +528,7 @@
                                             <version>${testbed.version}</version>
                                             <type>jar</type>
                                             <classifier>${testbed.classifier}</classifier>
-                                            <includes>webapps/0-idp-testbed.xml</includes>
+                                            <includes>etc/testbed.xml</includes>
                                         </artifactItem>
                                     </artifactItems>
                                     <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/jetty-base/</outputDirectory>
