@@ -615,4 +615,53 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
         validateLogoutResponse();
     }
 
+    /**
+     * Test SAML 2 SSO releasing attributes from an LDAP directory.
+     * 
+     * @param browserData browser/os/version triplet provided by data provider
+     * @throws Exception if an error occurs
+     */
+    public void testSSOReleaseLDAPAttributes(@Nullable final BrowserData browserData) throws Exception {
+
+        // Only the mail attribute is released from LDAP by default
+        validator.expectedAttributes.clear();
+        validator.expectedAttributes.add(validator.mailAttribute);
+
+        enableAttributeResolverLDAP();
+
+        startSeleniumClient(browserData);
+
+        startServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        rememberConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // twice
+
+        startFlow();
+
+        waitForResponsePage();
+
+        validateResponse();
+    }
+
 }

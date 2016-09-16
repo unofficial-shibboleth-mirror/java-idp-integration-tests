@@ -1040,6 +1040,18 @@ public abstract class BaseIntegrationTest
     }
 
     /**
+     * Use attribute-resolver-ldap.xml instead of attribute-resolver.xml.
+     * 
+     * @throws IOException
+     */
+    public void enableAttributeResolverLDAP() throws IOException {
+        final Path pathToServicesXML = Paths.get("conf", "services.xml");
+        final String oldText = "<value>%\\{idp.home\\}/conf/attribute-resolver.xml</value>";
+        final String newText = "<value>%\\{idp.home\\}/conf/attribute-resolver-ldap.xml</value>";
+        replaceIdPHomeFile(pathToServicesXML, oldText, newText);
+    }
+
+    /**
      * Log unencrypted SAML.
      */
     public void logUnencryptedSAML() {
