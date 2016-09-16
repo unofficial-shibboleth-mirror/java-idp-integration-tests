@@ -465,6 +465,12 @@ public abstract class BaseIntegrationTest
 
             // Make tmp directories exist
             Assert.assertTrue(pathToJettyBase.resolve("tmp").toFile().exists(), "Path to jetty.base/tmp/ not found");
+            
+            // Add testbed webapp
+            final Path startIni = pathToJettyBase.resolve("start.ini");
+            log.debug("Path to start.ini '{}'", startIni.toAbsolutePath());
+            Assert.assertTrue(startIni.toAbsolutePath().toFile().exists(), "Path to start.ini not found");
+            replaceFile(startIni, "\\Z", System.lineSeparator() + "testbed.xml");
         }
     }
 
