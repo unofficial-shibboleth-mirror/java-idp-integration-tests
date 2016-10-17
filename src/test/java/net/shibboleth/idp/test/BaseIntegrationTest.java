@@ -1053,15 +1053,18 @@ public abstract class BaseIntegrationTest
 
     /**
      * Log unencrypted SAML.
+     * 
+     * @throws IOException
      */
-    public void logUnencryptedSAML() {
+    public void logUnencryptedSAML() throws IOException {
         final Path pathToLogbackXML = Paths.get("conf", "logback.xml");
-        final String toUncomment = "<logger name=\"org.opensaml.saml.saml2.encryption.Encrypter\" level=\"DEBUG\" />";
-        try {
-            uncommentFile(pathToIdPHome.resolve(pathToLogbackXML), toUncomment);
-        } catch (IOException e) {
-            Assert.fail("Unable to log unencrypted SAML", e);
-        }
+        final String oldMessagesText = "<variable name=\"idp.loglevel.messages\" value=\"INFO\" />";
+        final String newMessagesText = "<variable name=\"idp.loglevel.messages\" value=\"DEBUG\" />";
+        replaceIdPHomeFile(pathToLogbackXML, oldMessagesText, newMessagesText);
+        
+        final String oldEncryptionText = "<variable name=\"idp.loglevel.encryption\" value=\"INFO\" />";
+        final String newEncryptionText = "<variable name=\"idp.loglevel.encryption\" value=\"DEBUG\" />";
+        replaceIdPHomeFile(pathToLogbackXML, oldEncryptionText, newEncryptionText);
     }
 
     /**
