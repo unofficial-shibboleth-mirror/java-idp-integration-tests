@@ -1392,9 +1392,23 @@ public abstract class BaseIntegrationTest
      * </ul>
      */
     public void login() {
+        login("jdoe");
+    }
+    
+
+    /**
+     * <ul>
+     * <li>Input username</li>
+     * <li>Input password</li>
+     * <li>Submit form.</li>
+     * </ul>
+     * 
+     * @param user username
+     */
+    public void login(final @Nonnull String user) {
         final WebElement username = driver.findElement(By.name("j_username"));
         final WebElement password = driver.findElement(By.name("j_password"));
-        username.sendKeys("jdoe");
+        username.sendKeys(user);
         password.sendKeys("changeit");
         submitForm();
     }
