@@ -623,9 +623,10 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
      */
     public void testSSOReleaseLDAPAttributes(@Nullable final BrowserData browserData) throws Exception {
 
-        // Only the mail attribute is released from LDAP by default
+        // Only the mail and uid attributes are released from LDAP by default
         validator.expectedAttributes.clear();
         validator.expectedAttributes.add(validator.mailAttribute);
+        validator.expectedAttributes.add(validator.uidAttribute);
 
         enableAttributeResolverLDAP();
 

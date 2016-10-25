@@ -1053,15 +1053,18 @@ public abstract class BaseIntegrationTest
 
     /**
      * Log unencrypted SAML.
+     * 
+     * @throws IOException
      */
-    public void logUnencryptedSAML() {
+    public void logUnencryptedSAML() throws IOException {
         final Path pathToLogbackXML = Paths.get("conf", "logback.xml");
-        final String toUncomment = "<logger name=\"org.opensaml.saml.saml2.encryption.Encrypter\" level=\"DEBUG\" />";
-        try {
-            uncommentFile(pathToIdPHome.resolve(pathToLogbackXML), toUncomment);
-        } catch (IOException e) {
-            Assert.fail("Unable to log unencrypted SAML", e);
-        }
+        final String oldMessagesText = "<variable name=\"idp.loglevel.messages\" value=\"INFO\" />";
+        final String newMessagesText = "<variable name=\"idp.loglevel.messages\" value=\"DEBUG\" />";
+        replaceIdPHomeFile(pathToLogbackXML, oldMessagesText, newMessagesText);
+        
+        final String oldEncryptionText = "<variable name=\"idp.loglevel.encryption\" value=\"INFO\" />";
+        final String newEncryptionText = "<variable name=\"idp.loglevel.encryption\" value=\"DEBUG\" />";
+        replaceIdPHomeFile(pathToLogbackXML, oldEncryptionText, newEncryptionText);
     }
 
     /**
@@ -1389,9 +1392,23 @@ public abstract class BaseIntegrationTest
      * </ul>
      */
     public void login() {
+        login("jdoe");
+    }
+    
+
+    /**
+     * <ul>
+     * <li>Input username</li>
+     * <li>Input password</li>
+     * <li>Submit form.</li>
+     * </ul>
+     * 
+     * @param user username
+     */
+    public void login(final @Nonnull String user) {
         final WebElement username = driver.findElement(By.name("j_username"));
         final WebElement password = driver.findElement(By.name("j_password"));
-        username.sendKeys("jdoe");
+        username.sendKeys(user);
         password.sendKeys("changeit");
         submitForm();
     }
