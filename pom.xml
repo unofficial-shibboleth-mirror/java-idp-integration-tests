@@ -18,8 +18,8 @@
 
     <properties>
         <java-support.version>7.3.1-SNAPSHOT</java-support.version>
-        <opensaml.version>3.3.1-SNAPSHOT</opensaml.version>
-        <idp.version>3.3.1-SNAPSHOT</idp.version>
+        <opensaml.version>3.4.0-SNAPSHOT</opensaml.version>
+        <idp.version>3.4.0-SNAPSHOT</idp.version>
         <idp-jetty-base.version>9.2.0-SNAPSHOT</idp-jetty-base.version>
         <idp-tomcat-base.version>8.0.0-SNAPSHOT</idp-tomcat-base.version>
         <selenium.version>2.53.1</selenium.version>
