@@ -17,7 +17,7 @@
 
 
     <properties>
-        <java-support.version>7.3.1-SNAPSHOT</java-support.version>
+        <java-support.version>7.4.0-SNAPSHOT</java-support.version>
         <opensaml.version>3.4.0-SNAPSHOT</opensaml.version>
         <idp.version>3.4.0-SNAPSHOT</idp.version>
         <idp-jetty-base.version>9.2.0-SNAPSHOT</idp-jetty-base.version>
