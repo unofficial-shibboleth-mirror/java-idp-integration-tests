@@ -710,16 +710,6 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Do not use STARTTLS for LDAP connection to test in-memory directory server.
-     *
-     * @throws Exception
-     */
-    @BeforeClass(dependsOnMethods = {"setUpIdPPaths"})
-    public void disableLDAPSTARTTLS() throws Exception {
-        replaceLDAPProperty("idp.authn.LDAP.useStartTLS", "false");
-    }
-
-    /**
      * Start the web driver.
      * 
      * If the test is local, as defined by {@link #isLocal()}, then start a {@link HtmlUnitDriver}. Otherwise, start a
