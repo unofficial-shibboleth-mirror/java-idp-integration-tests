@@ -22,7 +22,7 @@
         <idp.version>3.4.0-SNAPSHOT</idp.version>
         <idp-jetty-base.version>9.3.1-SNAPSHOT</idp-jetty-base.version>
         <idp-tomcat-base.version>8.0.0-SNAPSHOT</idp-tomcat-base.version>
-        <jetty.version>9.3.15.v20161220</jetty.version>
+        <jetty.version>9.3.16.v20170120</jetty.version>
         <selenium.version>2.53.1</selenium.version>
         <testbed.version>0.7.0-SNAPSHOT</testbed.version>
         <testbed.classifier>classes</testbed.classifier>
