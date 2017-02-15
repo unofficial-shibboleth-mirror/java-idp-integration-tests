@@ -383,7 +383,7 @@
                                     <classifier>${testbed.classifier}</classifier>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/webapp/WEB-INF/lib/</outputDirectory>
+                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/dist/webapp/WEB-INF/lib/</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

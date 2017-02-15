@@ -425,7 +425,7 @@ public abstract class BaseIntegrationTest
             // Modify context descriptor with per-test idp.home directory
             final Path pathToIdpXML = pathToTomcatBase.resolve(Paths.get("conf", "Catalina", "localhost", "idp.xml"));
             Assert.assertTrue(pathToIdpXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
-            replaceFile(pathToIdpXML, "/war/idp.war\"", "/webapp/\"");
+            replaceFile(pathToIdpXML, "/war/idp.war\"", "/dist/webapp/\"");
         }
     }
 
@@ -471,6 +471,10 @@ public abstract class BaseIntegrationTest
             log.debug("Path to start.ini '{}'", startIni.toAbsolutePath());
             Assert.assertTrue(startIni.toAbsolutePath().toFile().exists(), "Path to start.ini not found");
             replaceFile(startIni, "\\Z", System.lineSeparator() + "testbed.xml");
+            
+            // Set IdP webapp location
+            final Path pathToJettyIdPIni = pathToJettyBase.resolve(Paths.get("start.d", "idp.ini"));
+            replaceProperty(pathToJettyIdPIni, "jetty.war.path", "../dist/webapp");
         }
     }
 
@@ -651,7 +655,7 @@ public abstract class BaseIntegrationTest
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpIdPPaths"})
     public void setUpStorageServlet() throws Exception {
 
-        final Path pathToIdPWebXML = pathToIdPHome.resolve(Paths.get("webapp", "WEB-INF", "web.xml"));
+        final Path pathToIdPWebXML = pathToIdPHome.resolve(Paths.get("dist", "webapp", "WEB-INF", "web.xml"));
         Assert.assertTrue(pathToIdPWebXML.toAbsolutePath().toFile().exists(), "Path to IdP web.xml not found");
 
         final String oldText = "</web-app>";
