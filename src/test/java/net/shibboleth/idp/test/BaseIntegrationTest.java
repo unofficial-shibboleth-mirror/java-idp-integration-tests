@@ -655,7 +655,7 @@ public abstract class BaseIntegrationTest
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpIdPPaths"})
     public void setUpStorageServlet() throws Exception {
 
-        final Path pathToIdPWebXML = pathToIdPHome.resolve(Paths.get("dist", "webapp", "WEB-INF", "web.xml"));
+        final Path pathToIdPWebXML = pathToIdPHome.resolve(Paths.get("webapp", "WEB-INF", "web.xml"));
         Assert.assertTrue(pathToIdPWebXML.toAbsolutePath().toFile().exists(), "Path to IdP web.xml not found");
 
         final String oldText = "</web-app>";
