@@ -425,7 +425,7 @@ public abstract class BaseIntegrationTest
             // Modify context descriptor with per-test idp.home directory
             final Path pathToIdpXML = pathToTomcatBase.resolve(Paths.get("conf", "Catalina", "localhost", "idp.xml"));
             Assert.assertTrue(pathToIdpXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
-            replaceFile(pathToIdpXML, "/war/idp.war\"", "/dist/webapp/\"");
+            replaceFile(pathToIdpXML, "/war/idp.war\"", "/webapp/\"");
         }
     }
 
@@ -471,10 +471,6 @@ public abstract class BaseIntegrationTest
             log.debug("Path to start.ini '{}'", startIni.toAbsolutePath());
             Assert.assertTrue(startIni.toAbsolutePath().toFile().exists(), "Path to start.ini not found");
             replaceFile(startIni, "\\Z", System.lineSeparator() + "testbed.xml");
-            
-            // Set IdP webapp location
-            final Path pathToJettyIdPIni = pathToJettyBase.resolve(Paths.get("start.d", "idp.ini"));
-            replaceProperty(pathToJettyIdPIni, "jetty.war.path", "../dist/webapp");
         }
     }
 
@@ -916,13 +912,13 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Restore conf/idp.properties from dist/conf/idp.properties.dist.
+     * Restore conf/idp.properties from dist/conf/idp.properties.
      * 
      * @throws IOException if an I/O error occurs
      */
     public void restoreIdPProperties() throws IOException {
         final Path pathToIdPPropertiesDist =
-                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "dist", "conf", "idp.properties.dist");
+                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "dist", "conf", "idp.properties");
         Assert.assertTrue(pathToIdPPropertiesDist.toFile().exists());
 
         Files.copy(pathToIdPPropertiesDist, pathToIdPProperties, StandardCopyOption.REPLACE_EXISTING);
@@ -939,7 +935,7 @@ public abstract class BaseIntegrationTest
         Assert.assertTrue(pathToRelyingParty.toFile().exists());
 
         final Path pathToRelyingPartyDist =
-                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "dist", "conf", "relying-party.xml.dist");
+                Paths.get(pathToIdPHome.toAbsolutePath().toString(), "dist", "conf", "relying-party.xml");
         Assert.assertTrue(pathToRelyingPartyDist.toFile().exists());
 
         Files.copy(pathToRelyingPartyDist, pathToRelyingParty, StandardCopyOption.REPLACE_EXISTING);
