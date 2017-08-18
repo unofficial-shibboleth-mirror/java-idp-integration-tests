@@ -769,6 +769,7 @@ public abstract class BaseIntegrationTest
      */
     public void startJettyServer() throws ComponentInitializationException {
 
+        serverCommands.add(0, "-Didp.home=" + System.getProperty("idp.home"));
         serverCommands.add("-Djava.io.tmpdir=" + pathToJettyBase.resolve("tmp").toAbsolutePath());
 
         server = new JettyServerProcess();
