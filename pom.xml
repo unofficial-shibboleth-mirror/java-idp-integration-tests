@@ -246,6 +246,8 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
+                <!-- avoid bug unpacking test-jar artifacts in current (3.0.2) -->
+                <version>2.10</version>
                 <executions>
                     <!-- Unpack idp-distribution to test-distributions directory. -->
                     <execution>
