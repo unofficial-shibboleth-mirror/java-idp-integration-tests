@@ -465,15 +465,48 @@ public abstract class BaseIntegrationTest
 
             // Make tmp directories exist
             Assert.assertTrue(pathToJettyBase.resolve("tmp").toFile().exists(), "Path to jetty.base/tmp/ not found");
-            
-            // Add testbed webapp
-            final Path startIni = pathToJettyBase.resolve("start.ini");
-            log.debug("Path to start.ini '{}'", startIni.toAbsolutePath());
-            Assert.assertTrue(startIni.toAbsolutePath().toFile().exists(), "Path to start.ini not found");
-            replaceFile(startIni, "\\Z", System.lineSeparator() + "testbed.xml");
         }
     }
 
+    /**
+     * Add testbed webapp to Jetty.
+     * 
+     * <ul>
+     * <li>Add "testbed.xml" to either start.ini for Jetty 9.3 or start.d/idp.ini for Jetty 9.4</li>
+     * <li>Modify path to IdP webapp in webapps/idp.xml for Jetty 9.4</li>
+     * </ul>
+     * 
+     * Must run after {@link #setUpEndpoints()} so that {@link PropertiesWithComments} does not add a breaking "=" to
+     * "testbed.xml".
+     * 
+     * @throws IOException
+     */
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpEndpoints"}) // must run after setUpEndpoints
+    public void setUpJettyTestbed() throws IOException {
+
+        // Jetty 9.3
+        final Path startIni = pathToJettyBase.resolve("start.ini");
+        log.debug("Path to start.ini '{}'", startIni.toAbsolutePath());
+
+        // Jetty 9.4
+        final Path idpIni = pathToJettyBase.resolve(Paths.get("start.d", "idp.ini"));
+        log.debug("Path to idp.ini '{}'", idpIni.toAbsolutePath());
+
+        // Add testbed to either start.ini or start.d/idp.ini
+        if (startIni.toAbsolutePath().toFile().exists()) {
+            replaceFile(startIni, "\\z", System.lineSeparator() + "testbed.xml");
+        } else if (idpIni.toAbsolutePath().toFile().exists()) {
+            replaceFile(idpIni, "\\z", System.lineSeparator() + "testbed.xml");
+        } else {
+            Assert.fail("Unable to find start.ini or idp.ini");
+        }
+
+        // Jetty 9.4 point IdP webapp to /webapp rather than /war/idp.war
+        final Path pathToIdpXML = pathToJettyBase.resolve(Paths.get("webapps", "idp.xml"));
+        Assert.assertTrue(pathToIdpXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
+        replaceFile(pathToIdpXML, "/war/idp.war", "/webapp/");
+    }
+ 
     /**
      * Set up addresses the web server listens on and clients connect to.
      * <p/>
