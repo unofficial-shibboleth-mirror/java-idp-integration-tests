@@ -618,11 +618,32 @@ public abstract class BaseIntegrationTest
         // Jetty endpoints.
         if (pathToJettyBase != null) {
             final Path pathToJettyIdPIni = pathToJettyBase.resolve(Paths.get("start.d", "idp.ini"));
+            // Jetty 9.3
             replaceProperty(pathToJettyIdPIni, "jetty.host", privateSecureAddress);
             replaceProperty(pathToJettyIdPIni, "jetty.https.port", Integer.toString(securePort));
+            replaceProperty(pathToJettyIdPIni, "jetty.backchannel.host", privateSecureAddress);
             replaceProperty(pathToJettyIdPIni, "jetty.backchannel.port", Integer.toString(backchannelPort));
             replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.host", privateAddress);
             replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.port", Integer.toString(port));
+
+            // Jetty 9.4 add http module
+            replaceFile(pathToJettyIdPIni, "--module=\\s*idp",
+                    "--module=idp" + System.lineSeparator() + "--module=http");
+
+            // Jetty 9.4 http host and port
+            replaceProperty(pathToJettyIdPIni, "jetty.http.host", privateAddress);
+            replaceProperty(pathToJettyIdPIni, "jetty.http.port", Integer.toString(port));
+
+            // Jetty 9.4 https host and port
+            replaceProperty(pathToJettyIdPIni, "jetty.ssl.host", privateSecureAddress);
+            replaceProperty(pathToJettyIdPIni, "jetty.ssl.port", Integer.toString(securePort));
+
+            // Jetty 9.4 backchannel host and port
+            final Path backchannelIni = pathToJettyBase.resolve(Paths.get("start.d", "idp-backchannel.ini"));
+            if (backchannelIni.toAbsolutePath().toFile().exists()) {
+                replaceProperty(backchannelIni, "jetty.backchannel.host", privateSecureAddress);
+                replaceProperty(backchannelIni, "jetty.backchannel.port", Integer.toString(backchannelPort));
+            }
         }
         
         // Tomcat endpoints.
