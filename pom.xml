@@ -547,6 +547,14 @@
                 </plugins>
             </build>
         </profile>
+        <!-- The jetty-9.4 profile sets the version of Jetty and our jetty-base project. -->
+        <profile>
+            <id>jetty-9.4</id>
+            <properties>
+                <idp-jetty-base.version>9.4.0-SNAPSHOT</idp-jetty-base.version>
+                <jetty.version>9.4.6.v20170531</jetty.version>
+            </properties>
+        </profile>
         <!--
         The tomcat profile unpacks Tomcat, idp-tomcat-base, and adds the testbed webapp to Tomcat.
         The tomcat profile is active if the 'tomcat' system property is present.
