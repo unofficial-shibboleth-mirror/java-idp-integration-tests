@@ -555,6 +555,17 @@
                 <jetty.version>9.4.6.v20170531</jetty.version>
             </properties>
         </profile>
+        <!-- The jetty-snapshots profile enables Jetty snapshot dependencies. -->
+        <profile>
+            <id>jetty-snapshots</id>
+            <repositories>
+                <repository>
+                    <id>jetty-snapshots</id>
+                    <name>jetty-snapshots</name>
+                    <url>https://oss.sonatype.org/content/repositories/jetty-snapshots/</url>
+                </repository>
+            </repositories>
+        </profile>
         <!--
         The tomcat profile unpacks Tomcat, idp-tomcat-base, and adds the testbed webapp to Tomcat.
         The tomcat profile is active if the 'tomcat' system property is present.
