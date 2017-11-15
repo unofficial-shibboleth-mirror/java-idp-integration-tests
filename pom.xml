@@ -53,17 +53,6 @@
 
     <dependencies>
         <!-- Compile Dependencies -->
-        <dependency>
-            <groupId>net.shibboleth.utilities</groupId>
-            <artifactId>java-support</artifactId>
-            <version>${java-support.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.shibboleth.idp</groupId>
-            <artifactId>idp-conf</artifactId>
-            <version>${idp.version}</version>
-            <type>test-jar</type>
-        </dependency>
 
         <!-- Provided Dependencies -->
         <dependency>
@@ -101,11 +90,30 @@
 
         <!-- Test Dependencies -->
         <dependency>
+            <groupId>net.shibboleth.utilities</groupId>
+            <artifactId>java-support</artifactId>
+            <version>${java-support.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.shibboleth.idp</groupId>
+            <artifactId>idp-installer</artifactId>
+            <version>${idp.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>net.shibboleth.idp</groupId>
             <artifactId>idp-distribution</artifactId>
             <version>${idp.version}</version>
             <scope>test</scope>
             <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>net.shibboleth.idp</groupId>
+            <artifactId>idp-conf</artifactId>
+            <version>${idp.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>net.shibboleth.idp</groupId>
