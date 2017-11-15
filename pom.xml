@@ -20,12 +20,10 @@
         <java-support.version>7.4.0-SNAPSHOT</java-support.version>
         <opensaml.version>3.4.0-SNAPSHOT</opensaml.version>
         <idp.version>3.4.0-SNAPSHOT</idp.version>
-        <idp-tomcat-base.version>8.0.0-SNAPSHOT</idp-tomcat-base.version>
         <selenium.version>2.53.1</selenium.version>
         <testbed.version>0.7.0-SNAPSHOT</testbed.version>
         <testbed.classifier>classes</testbed.classifier>
         <test-distributions.directory>${project.basedir}/test-distributions</test-distributions.directory>
-        <tomcat.version>8.0.36</tomcat.version>
         <svn.relative.location>java-idp-integration-tests</svn.relative.location>
         <xalan.groupId>xalan</xalan.groupId>
         <xalan.version>2.7.1</xalan.version>
@@ -123,13 +121,6 @@
             <scope>test</scope>
             <type>jar</type>
             <classifier>${testbed.classifier}</classifier>
-        </dependency>
-        <dependency>
-            <groupId>net.shibboleth.idp</groupId>
-            <artifactId>idp-tomcat-base</artifactId>
-            <version>${idp-tomcat-base.version}</version>
-            <scope>test</scope>
-            <type>tar.gz</type>
         </dependency>
         <dependency>
             <groupId>org.opensaml</groupId>
@@ -601,6 +592,19 @@
                     <name>tomcat</name>
                 </property>
             </activation>
+            <properties>
+                <idp-tomcat-base.version>8.0.0-SNAPSHOT</idp-tomcat-base.version>
+                <tomcat.version>8.0.36</tomcat.version>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>net.shibboleth.idp</groupId>
+                    <artifactId>idp-tomcat-base</artifactId>
+                    <version>${idp-tomcat-base.version}</version>
+                    <scope>test</scope>
+                    <type>tar.gz</type>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>
