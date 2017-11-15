@@ -20,9 +20,7 @@
         <java-support.version>7.4.0-SNAPSHOT</java-support.version>
         <opensaml.version>3.4.0-SNAPSHOT</opensaml.version>
         <idp.version>3.4.0-SNAPSHOT</idp.version>
-        <idp-jetty-base.version>9.3.1-SNAPSHOT</idp-jetty-base.version>
         <idp-tomcat-base.version>8.0.0-SNAPSHOT</idp-tomcat-base.version>
-        <jetty.version>9.3.16.v20170120</jetty.version>
         <selenium.version>2.53.1</selenium.version>
         <testbed.version>0.7.0-SNAPSHOT</testbed.version>
         <testbed.classifier>classes</testbed.classifier>
@@ -113,13 +111,6 @@
         </dependency>
         <dependency>
             <groupId>net.shibboleth.idp</groupId>
-            <artifactId>idp-jetty-base</artifactId>
-            <version>${idp-jetty-base.version}</version>
-            <scope>test</scope>
-            <type>tar.gz</type>
-        </dependency>
-        <dependency>
-            <groupId>net.shibboleth.idp</groupId>
             <artifactId>idp-testbed</artifactId>
             <version>${testbed.version}</version>
             <scope>test</scope>
@@ -150,27 +141,6 @@
             <groupId>com.unboundid</groupId>
             <artifactId>unboundid-ldapsdk</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-distribution</artifactId>
-            <version>${jetty.version}</version>
-            <scope>test</scope>
-            <type>zip</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.eclipse.jetty</groupId>
-                    <artifactId>test-jetty-webapp</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.eclipse.jetty</groupId>
-                    <artifactId>test-proxy-webapp</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.glassfish</groupId>
-                    <artifactId>javax.el</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
@@ -477,6 +447,28 @@
                     <name>!tomcat</name>
                 </property>
             </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>net.shibboleth.idp</groupId>
+                    <artifactId>idp-jetty-base</artifactId>
+                    <version>${idp-jetty-base.version}</version>
+                    <scope>test</scope>
+                    <type>tar.gz</type>
+                </dependency>
+                <dependency>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-distribution</artifactId>
+                    <version>${jetty.version}</version>
+                    <scope>test</scope>
+                    <type>zip</type>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>*</groupId>
+                            <artifactId>*</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -547,12 +539,44 @@
                 </plugins>
             </build>
         </profile>
-        <!-- The jetty-9.4 profile sets the version of Jetty and our jetty-base project. -->
+        <!--
+        The jetty-current profile sets the versions of Jetty and jetty-base to the versions included
+        in the current release of the IdP.
+        The jetty-current profile is active by default and not active if the 'tomcat' system property is present.
+        -->
         <profile>
-            <id>jetty-9.4</id>
+            <id>jetty-current</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!tomcat</name>
+                </property>
+            </activation>
+            <properties>
+                <idp-jetty-base.version>9.3.0</idp-jetty-base.version>
+                <jetty.version>9.3.9.v20160517</jetty.version>
+            </properties>
+        </profile>
+        <!--
+        The jetty-next profile sets the versions of Jetty and jetty-base to the versions to be included
+        in the next release of the IdP.
+        -->
+        <profile>
+            <id>jetty-next</id>
+            <properties>
+                <idp-jetty-base.version>9.3.0</idp-jetty-base.version>
+                <jetty.version>9.3.21.v20170918</jetty.version>
+            </properties>
+        </profile>
+        <!--
+        The jetty-future profile sets the versions of Jetty and jetty-base to the versions to be included
+        in a future release of the IdP.
+        -->
+        <profile>
+            <id>jetty-future</id>
             <properties>
                 <idp-jetty-base.version>9.4.0-SNAPSHOT</idp-jetty-base.version>
-                <jetty.version>9.4.6.v20170531</jetty.version>
+                <jetty.version>9.4.7.v20170914</jetty.version>
             </properties>
         </profile>
         <!-- The jetty-snapshots profile enables Jetty snapshot dependencies. -->
