@@ -465,6 +465,8 @@ public abstract class BaseIntegrationTest
 
             // Make tmp directories exist
             Assert.assertTrue(pathToJettyBase.resolve("tmp").toFile().exists(), "Path to jetty.base/tmp/ not found");
+        } else {
+            Assert.fail("Unable to find jetty.home");
         }
     }
 
