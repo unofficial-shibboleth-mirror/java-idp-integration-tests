@@ -368,65 +368,6 @@
 
     <profiles>
         <!--
-        Remove the testbed dependency classifier when using Eclipse, but not from the command line.
-        See https://wiki.eclipse.org/M2E-WTP_FAQ
-        -->
-        <profile>
-            <id>m2e</id>
-            <activation>
-                <property>
-                    <name>m2e.version</name>
-                </property>
-            </activation>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.eclipse.m2e</groupId>
-                            <artifactId>lifecycle-mapping</artifactId>
-                            <version>1.0.0</version>
-                            <configuration>
-                                <lifecycleMappingMetadata>
-                                    <pluginExecutions>
-                                        <pluginExecution>
-                                            <pluginExecutionFilter>
-                                                <groupId>org.apache.maven.plugins</groupId>
-                                                <artifactId>maven-dependency-plugin</artifactId>
-                                                <versionRange>[2.8,)</versionRange>
-                                                <goals>
-                                                    <goal>unpack</goal>
-                                                    <goal>copy</goal>
-                                                </goals>
-                                            </pluginExecutionFilter>
-                                            <action>
-                                                <ignore />
-                                            </action>
-                                        </pluginExecution>
-                                        <pluginExecution>
-                                            <pluginExecutionFilter>
-                                                <groupId>org.apache.maven.plugins</groupId>
-                                                <artifactId>maven-clean-plugin</artifactId>
-                                                <versionRange>[2.5,)</versionRange>
-                                                <goals>
-                                                    <goal>clean</goal>
-                                                </goals>
-                                            </pluginExecutionFilter>
-                                            <action>
-                                                <ignore />
-                                            </action>
-                                        </pluginExecution>
-                                    </pluginExecutions>
-                                </lifecycleMappingMetadata>
-                            </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
-            <properties>
-                <testbed.classifier></testbed.classifier>
-            </properties>
-        </profile>
-        <!--
         The idp-current profile sets the version of the IdP to the current release.
         -->
         <profile>
@@ -699,6 +640,66 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <!--
+        Remove the testbed dependency classifier when using Eclipse, but not from the command line.
+        See https://wiki.eclipse.org/M2E-WTP_FAQ
+        -->
+        <profile>
+            <id>m2e</id>
+            <activation>
+                <property>
+                    <name>m2e.version</name>
+                </property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.eclipse.m2e</groupId>
+                            <artifactId>lifecycle-mapping</artifactId>
+                            <version>1.0.0</version>
+                            <configuration>
+                                <lifecycleMappingMetadata>
+                                    <pluginExecutions>
+                                        <pluginExecution>
+                                            <pluginExecutionFilter>
+                                                <groupId>org.apache.maven.plugins</groupId>
+                                                <artifactId>maven-dependency-plugin</artifactId>
+                                                <versionRange>[2.8,)</versionRange>
+                                                <goals>
+                                                    <goal>unpack</goal>
+                                                    <goal>copy</goal>
+                                                </goals>
+                                            </pluginExecutionFilter>
+                                            <action>
+                                                <ignore />
+                                            </action>
+                                        </pluginExecution>
+                                        <pluginExecution>
+                                            <pluginExecutionFilter>
+                                                <groupId>org.apache.maven.plugins</groupId>
+                                                <artifactId>maven-clean-plugin</artifactId>
+                                                <versionRange>[2.5,)</versionRange>
+                                                <goals>
+                                                    <goal>clean</goal>
+                                                </goals>
+                                            </pluginExecutionFilter>
+                                            <action>
+                                                <ignore />
+                                            </action>
+                                        </pluginExecution>
+                                    </pluginExecutions>
+                                </lifecycleMappingMetadata>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+            <properties>
+                <testbed.classifier></testbed.classifier>
+            </properties>
         </profile>
     </profiles>
 
