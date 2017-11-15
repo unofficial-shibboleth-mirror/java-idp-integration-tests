@@ -427,6 +427,31 @@
             </properties>
         </profile>
         <!--
+        The idp-current profile sets the version of the IdP to the current release.
+        -->
+        <profile>
+            <id>idp-current</id>
+            <properties>
+                 <idp.version>3.3.2</idp.version>
+            </properties>
+        </profile>
+        <!--
+        The idp-next-patch profile sets the version of the IdP to the next patch release.
+        -->
+        <profile>
+            <id>idp-next-patch</id>
+            <properties>
+                <idp.version>3.3.3-SNAPSHOT</idp.version>
+            </properties>
+        </profile>
+        <!--
+        The idp-next-minor profile exists for Jenkins, does nothing, and assumes the version of the IdP is
+        the next minor version as defined in the <properties> section of this POM.  
+        -->
+        <profile>
+            <id>idp-next-minor</id>
+        </profile>
+        <!--
         The jetty profile unpacks Jetty, idp-jetty-base, and adds the testbed to Jetty.
         The jetty profile is active by default and not active if the 'tomcat' system property is present.
         -->
