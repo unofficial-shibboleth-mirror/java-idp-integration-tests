@@ -20,6 +20,14 @@
         <java-support.version>7.4.0-SNAPSHOT</java-support.version>
         <opensaml.version>3.4.0-SNAPSHOT</opensaml.version>
         <idp.version>3.4.0-SNAPSHOT</idp.version>
+        <idp-current.version>3.3.2</idp-current.version>
+        <idp-next-patch.version>3.3.3-SNAPSHOT</idp-next-patch.version>
+        <idp-jetty-base-current.version>9.3.0</idp-jetty-base-current.version>
+        <idp-jetty-base-next.version>9.3.0</idp-jetty-base-next.version>
+        <idp-jetty-base-future.version>9.4.0-SNAPSHOT</idp-jetty-base-future.version>
+        <jetty-current.version>9.3.9.v20160517</jetty-current.version>
+        <jetty-next.version>9.3.21.v20170918</jetty-next.version>
+        <jetty-future.version>9.4.7.v20170914</jetty-future.version>
         <selenium.version>2.53.1</selenium.version>
         <testbed.version>0.7.0-SNAPSHOT</testbed.version>
         <testbed.classifier>classes</testbed.classifier>
@@ -381,7 +389,7 @@
         <profile>
             <id>idp-current</id>
             <properties>
-                 <idp.version>3.3.2</idp.version>
+                 <idp.version>${idp-current.version}</idp.version>
             </properties>
         </profile>
         <!--
@@ -390,7 +398,7 @@
         <profile>
             <id>idp-next-patch</id>
             <properties>
-                <idp.version>3.3.3-SNAPSHOT</idp.version>
+                <idp.version>${idp-next-patch.version}</idp.version>
             </properties>
         </profile>
         <!--
@@ -518,8 +526,8 @@
                 </property>
             </activation>
             <properties>
-                <idp-jetty-base.version>9.3.0</idp-jetty-base.version>
-                <jetty.version>9.3.9.v20160517</jetty.version>
+                <idp-jetty-base.version>${idp-jetty-base-current.version}</idp-jetty-base.version>
+                <jetty.version>${jetty-current.version}</jetty.version>
             </properties>
         </profile>
         <!--
@@ -529,8 +537,8 @@
         <profile>
             <id>jetty-next</id>
             <properties>
-                <idp-jetty-base.version>9.3.0</idp-jetty-base.version>
-                <jetty.version>9.3.21.v20170918</jetty.version>
+                <idp-jetty-base.version>${idp-jetty-base-next.version}</idp-jetty-base.version>
+                <jetty.version>${jetty-next.version}</jetty.version>
             </properties>
         </profile>
         <!--
@@ -540,8 +548,8 @@
         <profile>
             <id>jetty-future</id>
             <properties>
-                <idp-jetty-base.version>9.4.0-SNAPSHOT</idp-jetty-base.version>
-                <jetty.version>9.4.7.v20170914</jetty.version>
+                <idp-jetty-base.version>${idp-jetty-base-future.version}</idp-jetty-base.version>
+                <jetty.version>${jetty-future.version}</jetty.version>
             </properties>
         </profile>
         <!-- The jetty-snapshots profile enables Jetty snapshot dependencies. -->
