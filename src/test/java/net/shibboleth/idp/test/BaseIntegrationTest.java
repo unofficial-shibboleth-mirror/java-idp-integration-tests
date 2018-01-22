@@ -240,8 +240,8 @@ public abstract class BaseIntegrationTest
     /** Secure web server base URL. Defaults to https://localhost:8443. */
     @NonnullAfterInit protected String secureBaseURL;
 
-    /** Whether to use the secure base URL by default. Defaults to false. */
-    @Nonnull protected boolean useSecureBaseURL = false;
+    /** Whether to use the secure base URL by default. Defaults to true. */
+    @Nonnull protected boolean useSecureBaseURL = true;
 
     /** Client IP range to allow access from. Defaults to "127.0.0.1/32". */
     @Nonnull protected String clientIPRange = "127.0.0.1/32";
