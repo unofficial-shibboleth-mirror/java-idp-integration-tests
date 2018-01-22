@@ -61,7 +61,7 @@ public class CASIntegrationTest extends BaseIntegrationTest {
 
         startFlowURLPath = "/sp/CAS/InitSSO";
 
-        loginPageURLPath = "/idp/profile/cas/login;";
+        loginPageURLPath = "/idp/profile/cas/login";
     }
 
     /**
