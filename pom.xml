@@ -26,7 +26,7 @@
         <idp-jetty-base-next.version>9.3.0</idp-jetty-base-next.version>
         <idp-jetty-base-future.version>9.4.0-SNAPSHOT</idp-jetty-base-future.version>
         <jetty-current.version>9.3.9.v20160517</jetty-current.version>
-        <jetty-next.version>9.3.21.v20170918</jetty-next.version>
+        <jetty-next.version>9.3.23.v20180228</jetty-next.version>
         <jetty-future.version>9.4.8.v20171121</jetty-future.version>
         <selenium.version>2.53.1</selenium.version>
         <testbed.version>0.7.0-SNAPSHOT</testbed.version>
