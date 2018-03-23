@@ -430,12 +430,17 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Set up paths to Jetty if they exist.
+     * Set up paths to Jetty if they exist and if 'tomcat' system property is not true.
      * 
      * @throws Exception if an error occurs
      */
     @BeforeClass
     public void setUpJettyPaths() throws Exception {
+
+        if (Boolean.getBoolean("tomcat")) {
+            log.debug("Not setting up Jetty because system property 'tomcat' is true");
+            return;
+        }
 
         // Path to the project build directory.
         final Path buildPath = Paths.get(TEST_DISTRIBUTIONS_DIRECTORY);
@@ -485,6 +490,11 @@ public abstract class BaseIntegrationTest
      */
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpEndpoints"}) // must run after setUpEndpoints
     public void setUpJettyTestbed() throws IOException {
+
+        if (pathToJettyBase == null) {
+            log.debug("Not setting up jetty-base because directory does not exist.");
+            return;
+        }
 
         // Jetty 9.3
         final Path startIni = pathToJettyBase.resolve("start.ini");
@@ -811,7 +821,7 @@ public abstract class BaseIntegrationTest
      * @throws ComponentInitializationException
      */
     public void startServer() throws ComponentInitializationException {
-        if (Boolean.valueOf(System.getProperty("tomcat"))) {
+        if (Boolean.getBoolean("tomcat")) {
             startTomcatServer();
         } else {
             startJettyServer();
