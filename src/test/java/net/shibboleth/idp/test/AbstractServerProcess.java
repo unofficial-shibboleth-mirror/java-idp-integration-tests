@@ -18,6 +18,7 @@
 package net.shibboleth.idp.test;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -423,6 +424,7 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
     /** {@inheritDoc} */
     @Override
     public void stop() {
+        waitForServerToStop(10, 500); // wait 5s for server to stop
         if (process != null) {
             log.trace("Stopping process");
             process.destroy();
@@ -440,6 +442,42 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
     @Override
     public boolean isRunning() {
         return isRunning;
+    }
+
+    /**
+     * Wait for server to stop.
+     * 
+     * If server status page is available, wait until it is not available.
+     * 
+     * @param retries maximum number of times to retry
+     * @param millis length of time to sleep in milliseconds between retry attempts
+     */
+    public void waitForServerToStop(@Nonnull final int retries, @Nonnull final int millis) {
+        try {
+            log.debug("Waiting for server to stop ...");
+            if (getStatusPageText(1, 0) == null) {
+                log.debug("Server appears to be stopped.");
+                return;
+            }
+            int executionCount = 0;
+            while (executionCount < retries) {
+                log.debug("Server still running, waiting '{}'ms for server to stop ...", millis);
+                Thread.sleep(millis);
+                if (getStatusPageText(1, 0) == null) { // is server up ?
+                    log.debug("Server appears to be stopped.");
+                    return;
+                }
+            }
+            log.warn("Server did not stop.");
+        } catch (final ConnectException e) {
+            if (e.getMessage().endsWith("Connection refused (Connection refused)")) {
+                log.debug("Server appears to be stopped.");
+            } else {
+                log.warn("Server might be stopped", e);
+            }
+        } catch (final Exception e) {
+            log.warn("An error occurred waiting for server to stop", e);
+        }
     }
 
 }
