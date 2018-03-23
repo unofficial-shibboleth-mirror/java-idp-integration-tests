@@ -297,17 +297,21 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
     /**
      * Get the text of the IdP status page.
      * 
+     * Retries must be greater than 1 to enable the retry handlers.
+     * 
      * @param retries maximum number of times to retry
      * @param millis length of time to sleep in milliseconds between retry attempts
      * @return the text of the IdP status page or <code>null</code>
      * @throws Exception if an error occurs
      */
     @Nullable
-    public String getStatusPageText(@Nullable final int retries, @Nonnull final int millis) throws Exception {
+    public String getStatusPageText(@Nonnull final int retries, @Nonnull final int millis) throws Exception {
 
         final HttpClientBuilder builder = new HttpClientBuilder();
-        builder.setHttpRequestRetryHandler(new FiniteWaitHttpRequestRetryHandler(retries / 2, millis));
-        builder.setServiceUnavailableRetryHandler(new FiniteWaitServiceUnavailableRetryStrategy(retries / 2, millis));
+        if (retries > 1) {
+            builder.setHttpRequestRetryHandler(new FiniteWaitHttpRequestRetryHandler(retries / 2, millis));
+            builder.setServiceUnavailableRetryHandler(new FiniteWaitServiceUnavailableRetryStrategy(retries / 2, millis));
+        }
         builder.setConnectionCloseAfterResponse(false);
         builder.setConnectionDisregardTLSCertificate(true);
         final HttpClient httpClient = builder.buildClient();
