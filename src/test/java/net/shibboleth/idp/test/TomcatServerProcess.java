@@ -39,7 +39,7 @@ public class TomcatServerProcess extends AbstractServerProcess {
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(TomcatServerProcess.class);
 
-    /** Port to use to shutdown Tomcat. */
+    /** Port to use to shutdown Tomcat. Defaults to 8005. */
     @Nonnull private int shutdownPort = 8005;
 
     /** {@inheritDoc} */
@@ -127,7 +127,7 @@ public class TomcatServerProcess extends AbstractServerProcess {
         Constraint.isNotNull(hostname, "Hostname cannot be null");
         Constraint.isNotNull(password, "Password cannot be null");
 
-        log.debug("Attemting to shutdown Tomcat at '{}:{}'", hostname, port);
+        log.debug("Attempting to shutdown Tomcat at '{}:{}'", hostname, port);
 
         final TelnetClient telnet = new TelnetClient();
         try {
