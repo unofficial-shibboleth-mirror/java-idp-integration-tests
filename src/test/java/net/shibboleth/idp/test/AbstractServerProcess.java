@@ -464,7 +464,7 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
                 return;
             }
             int executionCount = 0;
-            while (executionCount < retries) {
+            while (executionCount++ < retries) {
                 log.debug("Server still running, waiting '{}'ms for server to stop ...", millis);
                 Thread.sleep(millis);
                 if (getStatusPageText(1, 0) == null) { // is server up ?
