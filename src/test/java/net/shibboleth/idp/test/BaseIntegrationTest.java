@@ -865,7 +865,7 @@ public abstract class BaseIntegrationTest
     /**
      * Stop the server.
      */
-    @AfterMethod
+    @AfterMethod(dependsOnMethods = {"failTestClass", "stopSeleniumClient"})
     public void stopServer() {
         if (server != null) {
             server.stop();
