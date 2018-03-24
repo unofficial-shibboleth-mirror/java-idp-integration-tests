@@ -40,6 +40,12 @@
         <xmlresolver.groupId>xml-resolver</xmlresolver.groupId>
         <xmlresolver.version>1.2</xmlresolver.version>
         <sauce.version>2.1.20</sauce.version>
+        <idp-tomcat-base-current.version>8.0.0-SNAPSHOT</idp-tomcat-base-current.version>
+        <idp-tomcat-base-next.version>8.5.0-SNAPSHOT</idp-tomcat-base-next.version>
+        <idp-tomcat-base-future.version>9.0.0-SNAPSHOT</idp-tomcat-base-future.version>
+        <tomcat-current.version>8.0.50</tomcat-current.version>
+        <tomcat-next.version>8.5.29</tomcat-next.version>
+        <tomcat-future.version>9.0.6</tomcat-future.version>
     </properties>
 
     <repositories>
@@ -574,10 +580,6 @@
                     <name>tomcat</name>
                 </property>
             </activation>
-            <properties>
-                <idp-tomcat-base.version>8.0.0-SNAPSHOT</idp-tomcat-base.version>
-                <tomcat.version>8.0.36</tomcat.version>
-            </properties>
             <dependencies>
                 <dependency>
                     <groupId>net.shibboleth.idp</groupId>
@@ -656,6 +658,45 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <!--
+        The tomcat-current profile sets the versions of Tomcat and tomcat-base to the versions included
+        in the current release of the IdP.
+        The tomcat-current profile is active if the 'tomcat' system property is present.
+        -->
+        <profile>
+            <id>tomcat-current</id>
+            <activation>
+                <property>
+                    <name>tomcat</name>
+                </property>
+            </activation>
+            <properties>
+                <idp-tomcat-base.version>${idp-tomcat-base-current.version}</idp-tomcat-base.version>
+                <tomcat.version>${tomcat-current.version}</tomcat.version>
+            </properties>
+        </profile>
+        <!--
+        The tomcat-next profile sets the versions of Tomcat and tomcat-base to the versions to be included
+        in the next release of the IdP.
+        -->
+        <profile>
+            <id>tomcat-next</id>
+            <properties>
+                <idp-tomcat-base.version>${idp-tomcat-base-next.version}</idp-tomcat-base.version>
+                <tomcat.version>${tomcat-next.version}</tomcat.version>
+            </properties>
+        </profile>
+        <!--
+        The tomcat-future profile sets the versions of Tomcat and tomcat-base to the versions to be included
+        in a future release of the IdP.
+        -->
+        <profile>
+            <id>tomcat-future</id>
+            <properties>
+                <idp-tomcat-base.version>${idp-tomcat-base-future.version}</idp-tomcat-base.version>
+                <tomcat.version>${tomcat-future.version}</tomcat.version>
+            </properties>
         </profile>
 
         <!--
