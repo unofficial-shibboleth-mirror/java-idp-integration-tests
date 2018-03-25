@@ -278,15 +278,19 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
     }
 
     /**
-     * Wait up to 60 seconds for the IdP status page, trying every half-second.
+     * Wait up to 60 seconds for the IdP status page, trying every second.
+     * 
+     * Set the 'waitForStatusPage' system property to change the maximum wait time.
      * 
      * @throws RuntimeException if the actual status page text is not expected
      * @throws Exception if an error occurs
      */
     public void waitForStatusPage() throws Exception {
-        log.debug("Waiting for server to start ...");
+        final String retries = System.getProperty("waitForStatusPage", "60");
 
-        final String statusPageText = getStatusPageText(120, 500);
+        log.debug("Waiting {} seconds for server to start ...", retries);
+
+        final String statusPageText = getStatusPageText(Integer.parseInt(retries), 1000);
 
         if (!statusPageText.startsWith(StatusTest.STARTS_WITH)) {
             log.error("Unable to determine if server has started.");
@@ -309,8 +313,8 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
 
         final HttpClientBuilder builder = new HttpClientBuilder();
         if (retries > 1) {
-            builder.setHttpRequestRetryHandler(new FiniteWaitHttpRequestRetryHandler(retries / 2, millis));
-            builder.setServiceUnavailableRetryHandler(new FiniteWaitServiceUnavailableRetryStrategy(retries / 2, millis));
+            builder.setHttpRequestRetryHandler(new FiniteWaitHttpRequestRetryHandler(retries, millis));
+            builder.setServiceUnavailableRetryHandler(new FiniteWaitServiceUnavailableRetryStrategy(retries, millis));
         }
         builder.setConnectionCloseAfterResponse(false);
         builder.setConnectionDisregardTLSCertificate(true);
