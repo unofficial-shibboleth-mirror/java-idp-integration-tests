@@ -635,16 +635,6 @@ public abstract class BaseIntegrationTest
             replaceProperty(pathToJettyIdPIni, "jetty.https.port", Integer.toString(securePort));
             replaceProperty(pathToJettyIdPIni, "jetty.backchannel.host", privateSecureAddress);
             replaceProperty(pathToJettyIdPIni, "jetty.backchannel.port", Integer.toString(backchannelPort));
-            replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.host", privateAddress);
-            replaceProperty(pathToJettyIdPIni, "jetty.nonhttps.port", Integer.toString(port));
-
-            // Jetty 9.4 add http module
-            replaceFile(pathToJettyIdPIni, "--module=\\s*idp",
-                    "--module=idp" + System.lineSeparator() + "--module=http");
-
-            // Jetty 9.4 http host and port
-            replaceProperty(pathToJettyIdPIni, "jetty.http.host", privateAddress);
-            replaceProperty(pathToJettyIdPIni, "jetty.http.port", Integer.toString(port));
 
             // Jetty 9.4 https host and port
             replaceProperty(pathToJettyIdPIni, "jetty.ssl.host", privateSecureAddress);
@@ -664,8 +654,6 @@ public abstract class BaseIntegrationTest
             replaceFile(pathToCatalinaProperties, "tomcat.host=.*", "tomcat.host=" + privateSecureAddress);
             replaceFile(pathToCatalinaProperties, "tomcat.https.port=.*", "tomcat.https.port=" + Integer.toString(securePort));
             replaceFile(pathToCatalinaProperties, "tomcat.backchannel.port=.*", "tomcat.backchannel.port=" + Integer.toString(backchannelPort));
-            replaceFile(pathToCatalinaProperties, "tomcat.nonhttps.host=.*", "tomcat.nonhttps.host=" + privateAddress);
-            replaceFile(pathToCatalinaProperties, "tomcat.nonhttps.port=.*", "tomcat.nonhttps.port=" + Integer.toString(port));
         }
 
         // Metadata.
