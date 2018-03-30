@@ -380,7 +380,7 @@ public abstract class BaseIntegrationTest
      * 
      * @throws Exception if an error occurs
      */
-    @BeforeClass
+    @BeforeClass(dependsOnMethods = {"setUpIdPPaths"})
     public void setUpTomcatPaths() throws Exception {
 
         // Path to the project build directory.
@@ -434,7 +434,7 @@ public abstract class BaseIntegrationTest
      * 
      * @throws Exception if an error occurs
      */
-    @BeforeClass
+    @BeforeClass(dependsOnMethods = {"setUpIdPPaths"})
     public void setUpJettyPaths() throws Exception {
 
         if (Boolean.getBoolean("tomcat")) {
@@ -470,6 +470,9 @@ public abstract class BaseIntegrationTest
 
             // Make tmp directories exist
             Assert.assertTrue(pathToJettyBase.resolve("tmp").toFile().exists(), "Path to jetty.base/tmp/ not found");
+            
+            serverCommands.add(0, "-Didp.home=" + System.getProperty("idp.home"));
+            serverCommands.add("-Djava.io.tmpdir=" + pathToJettyBase.resolve("tmp").toAbsolutePath());
         } else {
             Assert.fail("Unable to find jetty.home");
         }
@@ -822,10 +825,6 @@ public abstract class BaseIntegrationTest
      * @throws ComponentInitializationException if the server cannot be initialized
      */
     public void startJettyServer() throws ComponentInitializationException {
-
-        serverCommands.add(0, "-Didp.home=" + System.getProperty("idp.home"));
-        serverCommands.add("-Djava.io.tmpdir=" + pathToJettyBase.resolve("tmp").toAbsolutePath());
-
         server = new JettyServerProcess();
         server.setServletContainerBasePath(pathToJettyBase);
         server.setServletContainerHomePath(pathToJettyHome);
