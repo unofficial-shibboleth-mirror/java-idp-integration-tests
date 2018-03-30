@@ -40,7 +40,7 @@ public class StatusTest extends BaseIntegrationTest {
 
         startServer();
 
-        driver.get(baseURL + statusPath);
+        driver.get(getBaseURL() + statusPath);
 
         Assert.assertTrue(getPageSource().startsWith(STARTS_WITH));
     }
