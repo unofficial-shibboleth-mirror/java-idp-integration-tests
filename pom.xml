@@ -30,7 +30,7 @@
         <!-- Jetty -->
         <jetty-current.version>9.3.9.v20160517</jetty-current.version>
         <jetty-next.version>9.3.23.v20180228</jetty-next.version>
-        <jetty-future.version>9.4.9.v20180320</jetty-future.version>
+        <jetty-future.version>9.4.10.v20180503</jetty-future.version>
 
         <!-- tomcat-base -->
         <idp-tomcat-base-current.version>8.0.0-SNAPSHOT</idp-tomcat-base-current.version>
