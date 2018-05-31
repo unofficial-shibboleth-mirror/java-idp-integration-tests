@@ -20,7 +20,7 @@
         <!-- IdP -->
         <idp.version>3.4.0-SNAPSHOT</idp.version>
         <idp-current.version>3.3.2</idp-current.version>
-        <idp-next-patch.version>3.3.3-SNAPSHOT</idp-next-patch.version>
+        <idp-next-patch.version>3.3.4-SNAPSHOT</idp-next-patch.version>
 
         <!-- IdP and OpenSAML for the maint-3.3 branch of the IdP -->
         <idp-maint-3.3.version>3.3.4-SNAPSHOT</idp-maint-3.3.version>
