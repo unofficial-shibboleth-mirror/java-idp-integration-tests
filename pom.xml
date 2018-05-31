@@ -22,6 +22,10 @@
         <idp-current.version>3.3.2</idp-current.version>
         <idp-next-patch.version>3.3.3-SNAPSHOT</idp-next-patch.version>
 
+        <!-- IdP and OpenSAML for the maint-3.3 branch of the IdP -->
+        <idp-maint-3.3.version>3.3.4-SNAPSHOT</idp-maint-3.3.version>
+        <opensaml-maint-3.3.version>3.3.1</opensaml-maint-3.3.version>
+
         <!-- jetty-base -->
         <idp-jetty-base-current.version>9.3.0</idp-jetty-base-current.version>
         <idp-jetty-base-next.version>9.3.0</idp-jetty-base-next.version>
@@ -709,6 +713,17 @@
             <properties>
                 <idp-tomcat-base.version>${idp-tomcat-base-future.version}</idp-tomcat-base.version>
                 <tomcat.version>${tomcat-future.version}</tomcat.version>
+            </properties>
+        </profile>
+
+        <!--
+        The maint-3.3 profile sets the versions of the IdP and OpenSAML to that of the maint-3.3 branch of the IdP.
+        -->
+        <profile>
+            <id>maint-3.3</id>
+            <properties>
+                <idp.version>${idp-maint-3.3.version}</idp.version>
+                <opensaml.version>${opensaml-maint-3.3.version}</opensaml.version>
             </properties>
         </profile>
 
