@@ -413,6 +413,7 @@
             <id>idp-current</id>
             <properties>
                  <idp.version>${idp-current.version}</idp.version>
+                 <opensaml.version>${opensaml-maint-3.3.version}</opensaml.version>
             </properties>
         </profile>
         <!--
@@ -422,6 +423,7 @@
             <id>idp-next-patch</id>
             <properties>
                 <idp.version>${idp-next-patch.version}</idp.version>
+                <opensaml.version>${opensaml-maint-3.3.version}</opensaml.version>
             </properties>
         </profile>
         <!--
