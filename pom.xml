@@ -32,8 +32,8 @@
         <idp-jetty-base-future.version>9.4.0-SNAPSHOT</idp-jetty-base-future.version>
 
         <!-- Jetty -->
-        <jetty-current.version>9.3.9.v20160517</jetty-current.version>
-        <jetty-next.version>9.3.24.v20180605</jetty-next.version>
+        <jetty-current.version>9.3.24.v20180605</jetty-current.version>
+        <jetty-next.version>9.3.25-SNAPSHOT</jetty-next.version>
         <jetty-future.version>9.4.11.v20180605</jetty-future.version>
 
         <!-- tomcat-base -->
@@ -565,6 +565,13 @@
                 <idp-jetty-base.version>${idp-jetty-base-next.version}</idp-jetty-base.version>
                 <jetty.version>${jetty-next.version}</jetty.version>
             </properties>
+            <repositories>
+                <repository>
+                    <id>jetty-snapshots</id>
+                    <name>jetty-snapshots</name>
+                    <url>https://oss.sonatype.org/content/repositories/jetty-snapshots/</url>
+                </repository>
+            </repositories>
         </profile>
         <!--
         The jetty-future profile sets the versions of Jetty and jetty-base to the versions to be included
