@@ -880,7 +880,7 @@ public abstract class BaseIntegrationTest
      */
     public void replaceLDAPProperty(@Nonnull @NotEmpty final String key, @Nonnull @NotEmpty final String value)
             throws IOException {
-        replaceProperty(pathToLDAPProperties, key, value);
+        replaceProperty(pathToLDAPProperties, key, value, false);
     }
 
     /**
@@ -891,22 +891,38 @@ public abstract class BaseIntegrationTest
      * @param value property value
      * @throws IOException if an I/O error occurs
      */
-    public void replaceProperty(@Nonnull final Path pathToPropertyFile,
-            @Nonnull @NotEmpty final String key,
+    public void replaceProperty(@Nonnull final Path pathToPropertyFile, @Nonnull @NotEmpty final String key,
             @Nonnull @NotEmpty final String value) throws IOException {
+        replaceProperty(pathToPropertyFile, key, value, false);
+    }
+
+    /**
+     * Replace a property in a properties file.
+     * 
+     * @param pathToPropertyFile path to the property file
+     * @param key property key
+     * @param value property value
+     * @param addNewProperties add new properties as well as replace existing
+     * @throws IOException if an I/O error occurs
+     */
+    public void replaceProperty(@Nonnull final Path pathToPropertyFile, @Nonnull @NotEmpty final String key,
+            @Nonnull @NotEmpty final String value, final boolean addNewProperties) throws IOException {
         Constraint.isNotNull(pathToPropertyFile, "Path to property file cannot be null nor empty");
         Constraint.isNotNull(StringSupport.trimOrNull(key), "Replacement property key cannot be null nor empty");
         Constraint.isNotNull(StringSupport.trimOrNull(value), "Replacement property value cannot be null nor empty");
 
-        log.debug("Replacing property '{}' with '{}' in file '{}'", key, value, pathToPropertyFile);
+        log.debug("Replace property '{}' with '{}' in file '{}'", key, value, pathToPropertyFile);
 
         final FileSystemResource propertyResource =
                 new FileSystemResource(pathToPropertyFile.toAbsolutePath().toString());
 
         final PropertiesWithComments pwc = new PropertiesWithComments();
         pwc.load(propertyResource.getInputStream());
-        pwc.replaceProperty(key, value);
-        pwc.store(propertyResource.getOutputStream());
+        boolean wasPropertyReplaced = pwc.replaceProperty(key, value);
+        if (wasPropertyReplaced || addNewProperties) {
+            log.debug("Replacing property '{}' with '{}' in file '{}'", key, value, pathToPropertyFile);
+            pwc.store(propertyResource.getOutputStream());
+        }
     }
 
     /**
