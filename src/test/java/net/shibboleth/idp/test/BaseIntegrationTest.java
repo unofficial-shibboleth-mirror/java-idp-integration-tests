@@ -646,8 +646,11 @@ public abstract class BaseIntegrationTest
             // Jetty 9.4 backchannel host and port
             final Path backchannelIni = pathToJettyBase.resolve(Paths.get("start.d", "idp-backchannel.ini"));
             if (backchannelIni.toAbsolutePath().toFile().exists()) {
+                // 'jetty.backchannel' properties are deprecated and replaced with 'idp.backchannel'. 
                 replaceProperty(backchannelIni, "jetty.backchannel.host", privateSecureAddress);
                 replaceProperty(backchannelIni, "jetty.backchannel.port", Integer.toString(backchannelPort));
+                replaceProperty(backchannelIni, "idp.backchannel.host", privateSecureAddress);
+                replaceProperty(backchannelIni, "idp.backchannel.port", Integer.toString(backchannelPort));
             }
         }
         
