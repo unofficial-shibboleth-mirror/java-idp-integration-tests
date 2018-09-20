@@ -87,6 +87,11 @@ public class SAML2SSOPOSTIntegrationTest extends AbstractSAML2IntegrationTest {
         super.testSSOPassiveWithSession(browserData);
     }
 
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testSSOPassiveWithSessionNoConsent(@Nullable final BrowserData browserData) throws Exception {
+        super.testSSOPassiveWithSessionNoConsent(browserData);
+    }
+
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider", enabled = false)
     public void testSLO(@Nullable final BrowserData browserData) throws Exception {
         super.testSLO(browserData);

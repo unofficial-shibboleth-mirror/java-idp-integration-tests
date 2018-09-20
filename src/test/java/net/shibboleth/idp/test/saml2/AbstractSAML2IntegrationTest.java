@@ -564,6 +564,57 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
         validateResponse();
     }
 
+    /**
+     * Test SSO isPassive with a pre-existing session.
+     * 
+     * @param browserData browser/os/version triplet provided by data provider
+     * @throws Exception if an error occurs
+     */
+    public void testSSOPassiveWithSessionNoConsent(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        startServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        doNotRememberConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // isPassive
+
+        driver.get(getBaseURL() + isPassiveRequestURLPath);
+
+        // response
+
+        waitForResponsePage();
+
+        final SAML2TestResponseValidator passiveValidator = new SAML2TestResponseValidator();
+        passiveValidator.spCredential = getSPCredential();
+        passiveValidator.statusCode = StatusCode.REQUESTER;
+        passiveValidator.statusCodeNested = StatusCode.NO_PASSIVE;
+        passiveValidator.statusMessage = "An error occurred.";
+
+        passiveValidator.validateResponse(unmarshallResponse(getPageSource()));
+    }
+
     public void testSLO(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
