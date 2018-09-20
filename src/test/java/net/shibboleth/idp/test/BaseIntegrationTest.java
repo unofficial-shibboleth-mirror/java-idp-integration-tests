@@ -55,8 +55,6 @@ import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.firefox.internal.ProfilesIni;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.CapabilityType;
@@ -1154,10 +1152,7 @@ public abstract class BaseIntegrationTest
      */
     @BeforeMethod(enabled = false)
     public void setUpFirefoxDriver() throws IOException {
-        final ProfilesIni allProfiles = new ProfilesIni();
-        final FirefoxProfile profile = allProfiles.getProfile("FirefoxShibtest");
-        driver = new FirefoxDriver(profile);
-
+        driver = new FirefoxDriver();
         driver.manage().window().setPosition(new Point(0, 0));
         driver.manage().window().setSize(new Dimension(1024, 768));
     }
