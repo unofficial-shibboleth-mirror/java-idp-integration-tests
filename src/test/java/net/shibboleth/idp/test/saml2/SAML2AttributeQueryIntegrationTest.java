@@ -32,6 +32,7 @@ import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.io.UnmarshallingException;
 import org.opensaml.saml.common.SAMLObjectBuilder;
+import org.opensaml.saml.saml2.core.AuthnContext;
 import org.opensaml.saml.saml2.core.NameID;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.StatusCode;
@@ -45,11 +46,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import net.shibboleth.idp.test.BaseIntegrationTest;
 import net.shibboleth.idp.test.BrowserData;
 import net.shibboleth.idp.test.flows.saml2.SAML2TestResponseValidator;
 import net.shibboleth.idp.test.flows.saml2.SAML2TestStatusResponseTypeValidator;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
 import net.shibboleth.utilities.java.support.logic.Constraint;
+import net.shibboleth.utilities.java.support.net.IPRange;
 import net.shibboleth.utilities.java.support.net.URLBuilder;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
 
@@ -58,16 +61,19 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(SAML2AttributeQueryIntegrationTest.class);
-    
+
     /** Validator to use for error responses. */
     @Nullable private SAML2TestStatusResponseTypeValidator errorValidator;
-    
+
+    /** SSO Response validator. */
+    @Nonnull protected SAML2TestResponseValidator ssoValidator;
+
     /** Path to trusted SP certificate resource. */
     @NonnullAfterInit private String trustedSpCert;
 
     /** Path to trusted SP private key resource. */
     @NonnullAfterInit private String trustedSpKey;
-    
+
     /** Path to untrusted SP certificate resource. */
     @NonnullAfterInit private String untrustedSpCert;
 
@@ -81,7 +87,7 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
      */
     @BeforeMethod
     @Override
-    public void setUpValidator() {
+    public void setUpValidator() throws IOException {
         final SAMLObjectBuilder<NameID> builder = (SAMLObjectBuilder<NameID>) XMLObjectProviderRegistrySupport
                 .getBuilderFactory().<NameID> getBuilderOrThrow(NameID.DEFAULT_ELEMENT_NAME);
         final NameID nameID = builder.buildObject();
@@ -98,6 +104,13 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         errorValidator = new SAML2TestResponseValidator();
         errorValidator.statusCode = StatusCode.REQUESTER;
+
+        ssoValidator = new SAML2TestResponseValidator();
+        ssoValidator.spCredential = getSPCredential();
+        ssoValidator.authnContextClassRef = AuthnContext.PPT_AUTHN_CTX;
+        if (BaseIntegrationTest.isRemote()) {
+            ssoValidator.subjectConfirmationDataAddressRange = IPRange.parseCIDRBlock(SAUCE_LABS_IP_RANGE);
+        }
     }
 
     /**
@@ -151,6 +164,16 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
         log.debug("Path to untrusted SP key '{}'", untrustedSpKey);
     }
 
+    @BeforeClass
+    protected void setUpURLs() throws Exception {
+
+        startFlowURLPath = "/sp/SAML2/InitSSO/Redirect";
+
+        loginPageURLPath = "/idp/profile/SAML2/Redirect/SSO";
+
+        responsePageURLPath = "/sp/SAML2/POST/ACS";
+    }
+
     /**
      * Change endpoint port from the default to whatever is in use.
      * 
@@ -164,6 +187,31 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
         final String newEndpoint = urlBuilder.buildURL();
         endpointInput.clear();
         endpointInput.sendKeys(newEndpoint);
+    }
+
+    /**
+     * Enable attribute consent during an attribute query.
+     * 
+     * @throws IOException if the configuration file cannot be changed
+     */
+    protected void enableConsent() throws IOException {
+        final Path pathToConsentInterceptConfigXML = Paths.get("conf", "intercept", "consent-intercept-config.xml");
+
+        final String oldText =
+                "<bean id=\"shibboleth.consent.AttributeQuery.Condition\" parent=\"shibboleth.Conditions.FALSE\" />";
+        final String newText =
+                "<bean id=\"shibboleth.consent.AttributeQuery.Condition\" parent=\"shibboleth.Conditions.TRUE\" />";
+
+        replaceIdPHomeFile(pathToConsentInterceptConfigXML, oldText, newText);
+    }
+
+    /**
+     * Use in-memory storage service for consent.
+     * 
+     * @throws IOException
+     */
+    protected void enableConsentStorageService() throws IOException {
+        replaceIdPProperty("idp.consent.StorageService", "shibboleth.StorageService");
     }
 
     /**
@@ -247,6 +295,15 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
         final Response response = unmarshallResponse(getPageSource());
 
         errorValidator.validateResponse(response);
+    }
+
+    /**
+     * Validate SAML 2 SSO {@link Response}.
+     * 
+     * @throws Exception
+     */
+    protected void validateSSOResponse() throws Exception {
+        ssoValidator.validateResponse(super.unmarshallResponse(getPageSource()));
     }
 
     /**
@@ -418,4 +475,313 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
         validateErrorResponse();
     }
 
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testConsentDisabledReleaseAllAttributes(@Nullable final BrowserData browserData) throws Exception {
+
+        enableConsentStorageService();
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(trustedSpCert);
+
+        setClientTLSPrivateKey(trustedSpKey);
+
+        setClientSigningCertificate(trustedSpCert);
+
+        setClientSigningPrivateKey(trustedSpKey);
+
+        // attribute query, should have attributes
+
+        submitAttributeQueryForm();
+
+        validateResponse();
+
+        // start SSO
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        rememberConsent();
+
+        submitForm();
+
+        waitForResponsePage();
+
+        validateSSOResponse();
+
+        // attribute query, should have attributes
+
+        getAndWaitForTestbedPage();
+
+        submitAttributeQueryForm();
+
+        validateResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testConsentEnabledNoConsent(@Nullable final BrowserData browserData) throws Exception {
+
+        enableConsent();
+
+        enableConsentStorageService();
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(trustedSpCert);
+
+        setClientTLSPrivateKey(trustedSpKey);
+
+        setClientSigningCertificate(trustedSpCert);
+
+        setClientSigningPrivateKey(trustedSpKey);
+
+        // attribute query, should return an error since there are no consent storage records
+
+        submitAttributeQueryForm();
+
+        errorValidator.statusCode = StatusCode.RESPONDER;
+
+        validateErrorResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testConsentEnabledDoNotRememberConsent(@Nullable final BrowserData browserData) throws Exception {
+
+        enableConsent();
+
+        enableConsentStorageService();
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(trustedSpCert);
+
+        setClientTLSPrivateKey(trustedSpKey);
+
+        setClientSigningCertificate(trustedSpCert);
+
+        setClientSigningPrivateKey(trustedSpKey);
+
+        // attribute query, should return an error since there are no consent storage records
+
+        submitAttributeQueryForm();
+
+        errorValidator.statusCode = StatusCode.RESPONDER;
+
+        validateErrorResponse();
+
+        // start SSO
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        doNotRememberConsent();
+
+        submitForm();
+
+        waitForResponsePage();
+
+        validateSSOResponse();
+
+        // attribute query, should return an error since there are no consent storage records
+
+        getAndWaitForTestbedPage();
+
+        submitAttributeQueryForm();
+
+        validateErrorResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testConsentEnabledGlobalConsent(@Nullable final BrowserData browserData) throws Exception {
+
+        enableConsent();
+
+        enableConsentStorageService();
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(trustedSpCert);
+
+        setClientTLSPrivateKey(trustedSpKey);
+
+        setClientSigningCertificate(trustedSpCert);
+
+        setClientSigningPrivateKey(trustedSpKey);
+
+        // attribute query, should return an error since there are no consent storage records
+
+        submitAttributeQueryForm();
+
+        errorValidator.statusCode = StatusCode.RESPONDER;
+
+        validateErrorResponse();
+
+        // start SSO
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        globalConsent();
+
+        submitForm();
+
+        waitForResponsePage();
+
+        validateSSOResponse();
+
+        // attribute query, should have attributes
+
+        getAndWaitForTestbedPage();
+
+        submitAttributeQueryForm();
+
+        validateResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testConsentEnabledReleaseAllAttributes(@Nullable final BrowserData browserData) throws Exception {
+
+        enableConsent();
+
+        enableConsentStorageService();
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(trustedSpCert);
+
+        setClientTLSPrivateKey(trustedSpKey);
+
+        setClientSigningCertificate(trustedSpCert);
+
+        setClientSigningPrivateKey(trustedSpKey);
+
+        // attribute query, should return an error since there are no consent storage records
+
+        submitAttributeQueryForm();
+
+        errorValidator.statusCode = StatusCode.RESPONDER;
+
+        validateErrorResponse();
+
+        // start SSO
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        rememberConsent();
+
+        submitForm();
+
+        waitForResponsePage();
+
+        validateSSOResponse();
+
+        // attribute query, should have attributes
+
+        getAndWaitForTestbedPage();
+
+        submitAttributeQueryForm();
+
+        validateResponse();
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testConsentEnabledReleaseOneAttribute(@Nullable final BrowserData browserData) throws Exception {
+
+        enableConsent();
+
+        enableConsentStorageService();
+
+        enablePerAttributeConsent();
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(trustedSpCert);
+
+        setClientTLSPrivateKey(trustedSpKey);
+
+        setClientSigningCertificate(trustedSpCert);
+
+        setClientSigningPrivateKey(trustedSpKey);
+
+        // attribute query, should return an error since there are no consent storage records
+
+        submitAttributeQueryForm();
+
+        errorValidator.statusCode = StatusCode.RESPONDER;
+
+        validateErrorResponse();
+
+        // start SSO
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseEmailAttributeOnly();
+
+        rememberConsent();
+
+        submitForm();
+
+        waitForResponsePage();
+
+        ssoValidator.expectedAttributes.clear();
+        ssoValidator.expectedAttributes.add(validator.mailAttribute);
+
+        validateSSOResponse();
+
+        // attribute query, should have one attribute
+
+        getAndWaitForTestbedPage();
+
+        submitAttributeQueryForm();
+
+        validator.expectedAttributes.clear();
+        validator.expectedAttributes.add(validator.mailAttribute);
+
+        validateResponse();
+    }
 }
