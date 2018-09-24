@@ -784,4 +784,32 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         validateResponse();
     }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testConsentNoCondition(@Nullable final BrowserData browserData) throws Exception {
+
+        // remove condition from configuration, simulate an upgrade
+        final Path pathToConsentInterceptConfigXML = Paths.get("conf", "intercept", "consent-intercept-config.xml");
+        final String oldText =
+                "<bean id=\"shibboleth.consent.AttributeQuery.Condition\" parent=\"shibboleth.Conditions.FALSE\" />";
+        replaceIdPHomeFile(pathToConsentInterceptConfigXML, oldText, "");
+
+        enableConsentStorageService();
+
+        commonSetup(browserData);
+
+        setClientTLSCertificate(trustedSpCert);
+
+        setClientTLSPrivateKey(trustedSpKey);
+
+        setClientSigningCertificate(trustedSpCert);
+
+        setClientSigningPrivateKey(trustedSpKey);
+
+        // attribute query, should have attributes
+
+        submitAttributeQueryForm();
+
+        validateResponse();
+    }
 }
