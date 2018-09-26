@@ -522,6 +522,8 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         getAndWaitForTestbedPage();
 
+        adjustEndpointPort();
+
         submitAttributeQueryForm();
 
         validateResponse();
@@ -604,6 +606,8 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         getAndWaitForTestbedPage();
 
+        adjustEndpointPort();
+
         submitAttributeQueryForm();
 
         validateErrorResponse();
@@ -660,6 +664,8 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         getAndWaitForTestbedPage();
 
+        adjustEndpointPort();
+
         submitAttributeQueryForm();
 
         validateResponse();
@@ -715,6 +721,8 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
         // attribute query, should have attributes
 
         getAndWaitForTestbedPage();
+
+        adjustEndpointPort();
 
         submitAttributeQueryForm();
 
@@ -776,6 +784,8 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
         // attribute query, should have one attribute
 
         getAndWaitForTestbedPage();
+
+        adjustEndpointPort();
 
         submitAttributeQueryForm();
 
