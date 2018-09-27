@@ -447,6 +447,99 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     }
 
     /**
+     * Test IsPassive SAML 2 SSO terms of use flow.
+     * 
+     * @param browserData browser/os/version triplet provided by data provider
+     * @throws Exception if an error occurs
+     */
+    public void testSSOTermsOfUsePassive(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        enableCustomRelyingPartyConfiguration();
+
+        // startServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // terms of use
+
+        waitForTermsOfUsePage();
+
+        acceptTermsOfUse();
+
+        submitForm();
+
+        // attribute release
+
+        waitForAttributeReleasePage();
+
+        releaseAllAttributes();
+
+        rememberConsent();
+
+        submitForm();
+
+        // response
+
+        waitForResponsePage();
+
+        validateResponse();
+
+        // isPassive
+
+        driver.get(getBaseURL() + isPassiveRequestURLPath);
+
+        waitForResponsePage();
+
+        validateResponse();
+    }
+
+    /**
+     * Test IsPassive SAML 2 SSO terms of use flow with no previous consent.
+     * 
+     * @param browserData browser/os/version triplet provided by data provider
+     * @throws Exception if an error occurs
+     */
+    public void testSSOTermsOfUsePassiveNoConsent(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        enableCustomRelyingPartyConfiguration();
+
+        // startServer();
+
+        startFlow();
+
+        waitForLoginPage();
+
+        login();
+
+        // terms of use
+
+        waitForTermsOfUsePage();
+
+        // do not accept ToU
+
+        // isPassive
+        driver.get(getBaseURL() + isPassiveRequestURLPath);
+
+        waitForResponsePage();
+
+        final SAML2TestResponseValidator passiveValidator = new SAML2TestResponseValidator();
+        passiveValidator.spCredential = getSPCredential();
+        passiveValidator.statusCode = StatusCode.REQUESTER;
+        passiveValidator.statusCodeNested = StatusCode.NO_PASSIVE;
+        passiveValidator.statusMessage = "An error occurred.";
+
+        passiveValidator.validateResponse(unmarshallResponse(getPageSource()));
+    }
+
+    /**
      * Test SAML 2 SSO ForceAuthn.
      * 
      * @param browserData browser/os/version triplet provided by data provider
@@ -494,7 +587,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Test SSO isPasive without a session.
+     * Test SSO IsPassive without a session.
      * 
      * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs
@@ -520,7 +613,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Test SSO isPassive with a pre-existing session.
+     * Test SSO IsPassive with a pre-existing session.
      * 
      * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs
@@ -565,7 +658,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Test SSO isPassive with a pre-existing session.
+     * Test SSO IsPassive with a pre-existing session.
      * 
      * @param browserData browser/os/version triplet provided by data provider
      * @throws Exception if an error occurs

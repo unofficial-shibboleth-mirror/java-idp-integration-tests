@@ -73,6 +73,16 @@ public class SAML2SSORedirectIntegrationTest extends AbstractSAML2IntegrationTes
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testSSOTermsOfUsePassive(@Nullable final BrowserData browserData) throws Exception {
+        super.testSSOTermsOfUsePassive(browserData);
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testSSOTermsOfUsePassiveNoConsent(@Nullable final BrowserData browserData) throws Exception {
+        super.testSSOTermsOfUsePassiveNoConsent(browserData);
+    }
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSSOForceAuthn(@Nullable final BrowserData browserData) throws Exception {
         super.testSSOForceAuthn(browserData);
     }
