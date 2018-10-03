@@ -458,7 +458,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         enableCustomRelyingPartyConfiguration();
 
-        // startServer();
+        startServer();
 
         startFlow();
 
@@ -511,7 +511,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         enableCustomRelyingPartyConfiguration();
 
-        // startServer();
+        startServer();
 
         startFlow();
 
