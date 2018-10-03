@@ -800,9 +800,12 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         // remove condition from configuration, simulate an upgrade
         final Path pathToConsentInterceptConfigXML = Paths.get("conf", "intercept", "consent-intercept-config.xml");
-        final String oldText =
-                "<bean id=\"shibboleth.consent.AttributeQuery.Condition\" parent=\"shibboleth.Conditions.FALSE\" />";
-        replaceIdPHomeFile(pathToConsentInterceptConfigXML, oldText, "");
+        replaceIdPHomeFile(pathToConsentInterceptConfigXML,
+                "<bean id=\"shibboleth.consent.AttributeQuery.Condition\" parent=\"shibboleth.Conditions.FALSE\" />",
+                "");
+        replaceIdPHomeFile(pathToConsentInterceptConfigXML,
+                "<bean id=\"shibboleth.consent.AttributeQuery.Condition\" parent=\"shibboleth.Conditions.TRUE\" />",
+                "");
 
         enableConsentStorageService();
 
