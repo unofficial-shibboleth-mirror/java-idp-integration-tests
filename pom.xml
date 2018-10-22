@@ -7,54 +7,39 @@
     <parent>
         <groupId>net.shibboleth</groupId>
         <artifactId>parent</artifactId>
-        <version>7.11.0-SNAPSHOT</version>
+        <version>7.11.1-SNAPSHOT</version>
     </parent>
 
     <name>idp-integration-tests</name>
     <groupId>net.shibboleth.idp</groupId>
     <artifactId>idp-integration-tests</artifactId>
     <packaging>jar</packaging>
+    <version>0.0.1-SNAPSHOT</version>
 
 
     <properties>
         <!-- IdP -->
-        <idp.version>3.4.0-SNAPSHOT</idp.version>
-        <idp-current.version>3.3.3</idp-current.version>
-        <idp-next-patch.version>3.3.4-SNAPSHOT</idp-next-patch.version>
-
-        <!-- IdP and OpenSAML for the maint-3.3 branch of the IdP -->
-        <idp-maint-3.3.version>3.3.4-SNAPSHOT</idp-maint-3.3.version>
-        <opensaml-maint-3.3.version>3.3.1</opensaml-maint-3.3.version>
-
-        <!-- IdP installer, need to use latest version -->
-        <idp-installer.version>3.4.0-SNAPSHOT</idp-installer.version>
-
-        <!-- jetty-base -->
-        <idp-jetty-base-current.version>9.3.0</idp-jetty-base-current.version>
-        <idp-jetty-base-next.version>9.3.0</idp-jetty-base-next.version>
-        <idp-jetty-base-future.version>9.4.0-SNAPSHOT</idp-jetty-base-future.version>
+        <idp.version>3.4.1-SNAPSHOT</idp.version>
+        <idp-conf.version>${idp.version}</idp-conf.version>
+        <idp-distribution.version>${idp.version}</idp-distribution.version>
+        <idp-installer.version>${idp.version}</idp-installer.version>
 
         <!-- Jetty -->
-        <jetty-current.version>9.3.24.v20180605</jetty-current.version>
-        <jetty-next.version>9.3.25-SNAPSHOT</jetty-next.version>
-        <jetty-future.version>9.4.11.v20180605</jetty-future.version>
-
-        <!-- tomcat-base -->
-        <idp-tomcat-base-current.version>8.0.0-SNAPSHOT</idp-tomcat-base-current.version>
-        <idp-tomcat-base-next.version>8.5.0-SNAPSHOT</idp-tomcat-base-next.version>
-        <idp-tomcat-base-future.version>9.0.0-SNAPSHOT</idp-tomcat-base-future.version>
+        <idp-jetty-base.version>9.4.0</idp-jetty-base.version>
+        <jetty.version>9.4.12.v20180830</jetty.version>
 
         <!-- Tomcat -->
-        <tomcat-current.version>8.0.50</tomcat-current.version>
-        <tomcat-next.version>8.5.29</tomcat-next.version>
-        <tomcat-future.version>9.0.6</tomcat-future.version>
+        <idp-tomcat-base.version>8.0.0-SNAPSHOT</idp-tomcat-base.version>
+        <tomcat.version>8.0.50</tomcat.version>
 
         <!-- Testbed -->
-        <testbed.version>0.7.0-SNAPSHOT</testbed.version>
+        <testbed.version>0.8.0-SNAPSHOT</testbed.version>
         <testbed.classifier>classes</testbed.classifier>
 
-        <java-support.version>7.4.0-SNAPSHOT</java-support.version>
-        <opensaml.version>3.4.0-SNAPSHOT</opensaml.version>
+        <!-- OpenSAML and Java support -->
+        <java-support.version>7.4.1-SNAPSHOT</java-support.version>
+        <opensaml.version>3.4.1-SNAPSHOT</opensaml.version>
+
         <xalan.groupId>xalan</xalan.groupId>
         <xalan.version>2.7.1</xalan.version>
         <xerces.groupId>org.apache.xerces</xerces.groupId>
@@ -138,14 +123,14 @@
         <dependency>
             <groupId>net.shibboleth.idp</groupId>
             <artifactId>idp-distribution</artifactId>
-            <version>${idp.version}</version>
+            <version>${idp-distribution.version}</version>
             <scope>test</scope>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>net.shibboleth.idp</groupId>
             <artifactId>idp-conf</artifactId>
-            <version>${idp.version}</version>
+            <version>${idp-conf.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -264,7 +249,7 @@
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp</groupId>
                                     <artifactId>idp-distribution</artifactId>
-                                    <version>${idp.version}</version>
+                                    <version>${idp-distribution.version}</version>
                                     <type>zip</type>
                                 </artifactItem>
                             </artifactItems>
@@ -283,7 +268,7 @@
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp</groupId>
                                     <artifactId>idp-conf</artifactId>
-                                    <version>${idp.version}</version>
+                                    <version>${idp-conf.version}</version>
                                     <type>test-jar</type>
                                     <includes>**/credentials/*</includes>
                                 </artifactItem>
@@ -303,7 +288,7 @@
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp</groupId>
                                     <artifactId>idp-conf</artifactId>
-                                    <version>${idp.version}</version>
+                                    <version>${idp-conf.version}</version>
                                     <type>test-jar</type>
                                     <includes>views-test/**</includes>
                                 </artifactItem>
@@ -323,7 +308,7 @@
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp</groupId>
                                     <artifactId>idp-conf</artifactId>
-                                    <version>${idp.version}</version>
+                                    <version>${idp-conf.version}</version>
                                     <type>test-jar</type>
                                     <includes>flows/**</includes>
                                 </artifactItem>
@@ -343,7 +328,7 @@
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp</groupId>
                                     <artifactId>idp-conf</artifactId>
-                                    <version>${idp.version}</version>
+                                    <version>${idp-conf.version}</version>
                                     <type>test-jar</type>
                                     <includes>metadata/**</includes>
                                 </artifactItem>
@@ -410,32 +395,35 @@
 
     <profiles>
         <!--
-        The idp-current profile sets the version of the IdP to the current release.
+        IdP 3.4.0
         -->
         <profile>
-            <id>idp-current</id>
+            <id>idp-3.4.0</id>
             <properties>
-                 <idp.version>${idp-current.version}</idp.version>
-                 <opensaml.version>${opensaml-maint-3.3.version}</opensaml.version>
+                 <idp.version>3.4.0</idp.version>
             </properties>
         </profile>
+
         <!--
-        The idp-next-patch profile sets the version of the IdP to the next patch release.
+        Jetty 9.4.13 snapshot
         -->
         <profile>
-            <id>idp-next-patch</id>
+            <id>jetty-9.4.13-SNAPSHOT</id>
             <properties>
-                <idp.version>${idp-next-patch.version}</idp.version>
-                <opensaml.version>${opensaml-maint-3.3.version}</opensaml.version>
+                 <jetty.version>9.4.13-SNAPSHOT</jetty.version>
             </properties>
+             <repositories>
+                <repository>
+                    <id>jetty-snapshots</id>
+                    <name>jetty-snapshots</name>
+                    <url>https://oss.sonatype.org/content/repositories/jetty-snapshots/</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
         </profile>
-        <!--
-        The idp-next-minor profile exists for Jenkins, does nothing, and assumes the version of the IdP is
-        the next minor version as defined in the <properties> section of this POM.  
-        -->
-        <profile>
-            <id>idp-next-minor</id>
-        </profile>
+
         <!--
         The jetty profile unpacks Jetty, idp-jetty-base, and adds the testbed to Jetty.
         The jetty profile is active by default and not active if the 'tomcat' system property is present.
@@ -540,64 +528,7 @@
                 </plugins>
             </build>
         </profile>
-        <!--
-        The jetty-current profile sets the versions of Jetty and jetty-base to the versions included
-        in the current release of the IdP.
-        The jetty-current profile is active by default and not active if the 'tomcat' system property is present.
-        -->
-        <profile>
-            <id>jetty-current</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <property>
-                    <name>!tomcat</name>
-                </property>
-            </activation>
-            <properties>
-                <idp-jetty-base.version>${idp-jetty-base-current.version}</idp-jetty-base.version>
-                <jetty.version>${jetty-current.version}</jetty.version>
-            </properties>
-        </profile>
-        <!--
-        The jetty-next profile sets the versions of Jetty and jetty-base to the versions to be included
-        in the next release of the IdP.
-        -->
-        <profile>
-            <id>jetty-next</id>
-            <properties>
-                <idp-jetty-base.version>${idp-jetty-base-next.version}</idp-jetty-base.version>
-                <jetty.version>${jetty-next.version}</jetty.version>
-            </properties>
-            <repositories>
-                <repository>
-                    <id>jetty-snapshots</id>
-                    <name>jetty-snapshots</name>
-                    <url>https://oss.sonatype.org/content/repositories/jetty-snapshots/</url>
-                </repository>
-            </repositories>
-        </profile>
-        <!--
-        The jetty-future profile sets the versions of Jetty and jetty-base to the versions to be included
-        in a future release of the IdP.
-        -->
-        <profile>
-            <id>jetty-future</id>
-            <properties>
-                <idp-jetty-base.version>${idp-jetty-base-future.version}</idp-jetty-base.version>
-                <jetty.version>${jetty-future.version}</jetty.version>
-            </properties>
-        </profile>
-        <!-- The jetty-snapshots profile enables Jetty snapshot dependencies. -->
-        <profile>
-            <id>jetty-snapshots</id>
-            <repositories>
-                <repository>
-                    <id>jetty-snapshots</id>
-                    <name>jetty-snapshots</name>
-                    <url>https://oss.sonatype.org/content/repositories/jetty-snapshots/</url>
-                </repository>
-            </repositories>
-        </profile>
+
         <!--
         The tomcat profile unpacks Tomcat, idp-tomcat-base, and adds the testbed webapp to Tomcat.
         The tomcat profile is active if the 'tomcat' system property is present.
@@ -703,39 +634,6 @@
             <properties>
                 <idp-tomcat-base.version>${idp-tomcat-base-current.version}</idp-tomcat-base.version>
                 <tomcat.version>${tomcat-current.version}</tomcat.version>
-            </properties>
-        </profile>
-        <!--
-        The tomcat-next profile sets the versions of Tomcat and tomcat-base to the versions to be included
-        in the next release of the IdP.
-        -->
-        <profile>
-            <id>tomcat-next</id>
-            <properties>
-                <idp-tomcat-base.version>${idp-tomcat-base-next.version}</idp-tomcat-base.version>
-                <tomcat.version>${tomcat-next.version}</tomcat.version>
-            </properties>
-        </profile>
-        <!--
-        The tomcat-future profile sets the versions of Tomcat and tomcat-base to the versions to be included
-        in a future release of the IdP.
-        -->
-        <profile>
-            <id>tomcat-future</id>
-            <properties>
-                <idp-tomcat-base.version>${idp-tomcat-base-future.version}</idp-tomcat-base.version>
-                <tomcat.version>${tomcat-future.version}</tomcat.version>
-            </properties>
-        </profile>
-
-        <!--
-        The maint-3.3 profile sets the versions of the IdP and OpenSAML to that of the maint-3.3 branch of the IdP.
-        -->
-        <profile>
-            <id>maint-3.3</id>
-            <properties>
-                <idp.version>${idp-maint-3.3.version}</idp.version>
-                <opensaml.version>${opensaml-maint-3.3.version}</opensaml.version>
             </properties>
         </profile>
 
