@@ -466,6 +466,16 @@
             </properties>
         </profile>
 
+        <!--
+        Tomcat 9.0.12
+        -->
+        <profile>
+            <id>tomcat-9.0.12</id>
+            <properties>
+                <idp-tomcat-base.version>9.0.0-SNAPSHOT</idp-tomcat-base.version>
+                <tomcat.version>9.0.12</tomcat.version>
+            </properties>
+        </profile>
 
         <!--
         The jetty profile unpacks Jetty, idp-jetty-base, and adds the testbed to Jetty.
