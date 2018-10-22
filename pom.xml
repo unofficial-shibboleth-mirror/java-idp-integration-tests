@@ -405,6 +405,37 @@
         </profile>
 
         <!--
+        IdP 3.4.1 snapshot
+        -->
+        <profile>
+            <id>idp-3.4.1-SNAPSHOT</id>
+            <properties>
+                 <idp.version>3.4.1-SNAPSHOT</idp.version>
+            </properties>
+        </profile>
+
+        <!--
+        Jetty 9.3.25
+        -->
+        <profile>
+            <id>jetty-9.3.25</id>
+            <properties>
+                 <idp-jetty-base.version>9.3.0</idp-jetty-base.version>
+                 <jetty.version>9.3.25.v20180904</jetty.version>
+            </properties>
+        </profile>
+
+        <!--
+        Jetty 9.4.12
+        -->
+        <profile>
+            <id>jetty-9.4.12</id>
+            <properties>
+                 <jetty.version>9.4.12.v20180830</jetty.version>
+            </properties>
+        </profile>
+
+        <!--
         Jetty 9.4.13 snapshot
         -->
         <profile>
