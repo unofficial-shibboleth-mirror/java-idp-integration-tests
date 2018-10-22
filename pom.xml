@@ -29,8 +29,8 @@
         <jetty.version>9.4.12.v20180830</jetty.version>
 
         <!-- Tomcat -->
-        <idp-tomcat-base.version>8.0.0-SNAPSHOT</idp-tomcat-base.version>
-        <tomcat.version>8.0.50</tomcat.version>
+        <idp-tomcat-base.version>8.5.0-SNAPSHOT</idp-tomcat-base.version>
+        <tomcat.version>8.5.34</tomcat.version>
 
         <!-- Testbed -->
         <testbed.version>0.8.0-SNAPSHOT</testbed.version>
@@ -456,6 +456,18 @@
         </profile>
 
         <!--
+        Tomcat 8.5.34
+        -->
+        <profile>
+            <id>tomcat-8.5.34</id>
+            <properties>
+                <idp-tomcat-base.version>8.5.0-SNAPSHOT</idp-tomcat-base.version>
+                <tomcat.version>8.5.34</tomcat.version>
+            </properties>
+        </profile>
+
+
+        <!--
         The jetty profile unpacks Jetty, idp-jetty-base, and adds the testbed to Jetty.
         The jetty profile is active by default and not active if the 'tomcat' system property is present.
         -->
@@ -649,23 +661,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        <!--
-        The tomcat-current profile sets the versions of Tomcat and tomcat-base to the versions included
-        in the current release of the IdP.
-        The tomcat-current profile is active if the 'tomcat' system property is present.
-        -->
-        <profile>
-            <id>tomcat-current</id>
-            <activation>
-                <property>
-                    <name>tomcat</name>
-                </property>
-            </activation>
-            <properties>
-                <idp-tomcat-base.version>${idp-tomcat-base-current.version}</idp-tomcat-base.version>
-                <tomcat.version>${tomcat-current.version}</tomcat.version>
-            </properties>
         </profile>
 
         <!--
