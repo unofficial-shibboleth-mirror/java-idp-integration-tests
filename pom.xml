@@ -19,7 +19,7 @@
 
     <properties>
         <!-- IdP -->
-        <idp.version>3.4.1-SNAPSHOT</idp.version>
+        <idp.version>3.4.2-SNAPSHOT</idp.version>
         <idp-conf.version>${idp.version}</idp-conf.version>
         <idp-distribution.version>${idp.version}</idp-distribution.version>
         <idp-installer.version>${idp.version}</idp-installer.version>
@@ -37,7 +37,7 @@
         <testbed.classifier>classes</testbed.classifier>
 
         <!-- OpenSAML and Java support -->
-        <java-support.version>7.4.1-SNAPSHOT</java-support.version>
+        <java-support.version>7.4.2-SNAPSHOT</java-support.version>
         <opensaml.version>3.4.1-SNAPSHOT</opensaml.version>
 
         <xalan.groupId>xalan</xalan.groupId>
@@ -395,22 +395,22 @@
 
     <profiles>
         <!--
-        IdP 3.4.0
+        IdP 3.4.1
         -->
         <profile>
-            <id>idp-3.4.0</id>
+            <id>idp-3.4.1</id>
             <properties>
-                 <idp.version>3.4.0</idp.version>
+                 <idp.version>3.4.1</idp.version>
             </properties>
         </profile>
 
         <!--
-        IdP 3.4.1 snapshot
+        IdP 3.4.2 snapshot
         -->
         <profile>
-            <id>idp-3.4.1-SNAPSHOT</id>
+            <id>idp-3.4.2-SNAPSHOT</id>
             <properties>
-                 <idp.version>3.4.1-SNAPSHOT</idp.version>
+                 <idp.version>3.4.2-SNAPSHOT</idp.version>
             </properties>
         </profile>
 
