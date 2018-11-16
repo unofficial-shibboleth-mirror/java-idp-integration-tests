@@ -26,7 +26,7 @@
 
         <!-- Jetty -->
         <idp-jetty-base.version>9.4.0</idp-jetty-base.version>
-        <jetty.version>9.4.12.v20180830</jetty.version>
+        <jetty.version>9.4.14.v20181114</jetty.version>
 
         <!-- Tomcat -->
         <idp-tomcat-base.version>8.5.0-SNAPSHOT</idp-tomcat-base.version>
@@ -395,7 +395,7 @@
 
     <profiles>
         <!--
-        IdP 3.4.1
+        Latest IdP release
         -->
         <profile>
             <id>idp-3.4.1</id>
@@ -404,9 +404,6 @@
             </properties>
         </profile>
 
-        <!--
-        IdP 3.4.2 snapshot
-        -->
         <profile>
             <id>idp-3.4.2-SNAPSHOT</id>
             <properties>
@@ -414,9 +411,13 @@
             </properties>
         </profile>
 
-        <!--
-        Jetty 9.3.25
-        -->
+        <profile>
+            <id>idp-4.0.0-SNAPSHOT</id>
+            <properties>
+                 <idp.version>4.0.0-SNAPSHOT</idp.version>
+            </properties>
+        </profile>
+
         <profile>
             <id>jetty-9.3.25</id>
             <properties>
@@ -426,22 +427,26 @@
         </profile>
 
         <!--
-        Jetty 9.4.12
+        Latest Jetty included by Windows Installer
         -->
         <profile>
-            <id>jetty-9.4.12</id>
+            <id>jetty-9.4.11</id>
             <properties>
-                 <jetty.version>9.4.12.v20180830</jetty.version>
+                 <jetty.version>9.4.11.v20180605</jetty.version>
             </properties>
         </profile>
 
-        <!--
-        Jetty 9.4.13 snapshot
-        -->
         <profile>
-            <id>jetty-9.4.13-SNAPSHOT</id>
+            <id>jetty-9.4.14</id>
             <properties>
-                 <jetty.version>9.4.13-SNAPSHOT</jetty.version>
+                 <jetty.version>9.4.14.v20181114</jetty.version>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>jetty-9.4.15-SNAPSHOT</id>
+            <properties>
+                 <jetty.version>9.4.15-SNAPSHOT</jetty.version>
             </properties>
              <repositories>
                 <repository>
@@ -455,9 +460,6 @@
             </repositories>
         </profile>
 
-        <!--
-        Tomcat 8.5.34
-        -->
         <profile>
             <id>tomcat-8.5.34</id>
             <properties>
@@ -466,9 +468,6 @@
             </properties>
         </profile>
 
-        <!--
-        Tomcat 9.0.12
-        -->
         <profile>
             <id>tomcat-9.0.12</id>
             <properties>
