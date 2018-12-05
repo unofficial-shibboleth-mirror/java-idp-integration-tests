@@ -1043,6 +1043,15 @@ public abstract class BaseIntegrationTest
     }
 
     /**
+     * Disable Local Storage in conf/idp.properties.
+     * 
+     * @throws Exception
+     */
+    public void disableLocalStorage() throws Exception {
+        replaceIdPProperty("idp.storage.htmlLocalStorage", "false");
+    }
+    
+    /**
      * Enable logout in conf/idp.properties.
      * 
      * @throws Exception

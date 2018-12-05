@@ -131,6 +131,8 @@ public class ClientStorageTest extends BaseIntegrationTest {
     public void testRecordNotFound(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
+        
+        disableLocalStorage();
 
         startServer();
 
@@ -147,6 +149,8 @@ public class ClientStorageTest extends BaseIntegrationTest {
     public void testCreate(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
+
+        disableLocalStorage();
 
         startServer();
 
