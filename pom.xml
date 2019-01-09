@@ -398,16 +398,16 @@
         Latest IdP release
         -->
         <profile>
-            <id>idp-3.4.2</id>
+            <id>idp-3.4.3</id>
             <properties>
-                 <idp.version>3.4.2</idp.version>
+                 <idp.version>3.4.3</idp.version>
             </properties>
         </profile>
 
         <profile>
-            <id>idp-3.4.3-SNAPSHOT</id>
+            <id>idp-3.4.4-SNAPSHOT</id>
             <properties>
-                 <idp.version>3.4.3-SNAPSHOT</idp.version>
+                 <idp.version>3.4.4-SNAPSHOT</idp.version>
             </properties>
         </profile>
 
