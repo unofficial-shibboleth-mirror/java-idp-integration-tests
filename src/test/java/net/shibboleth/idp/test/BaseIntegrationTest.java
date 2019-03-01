@@ -28,6 +28,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -46,8 +48,6 @@ import net.shibboleth.utilities.java.support.net.URLBuilder;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Platform;
@@ -350,7 +350,7 @@ public abstract class BaseIntegrationTest
         Assert.assertTrue(pathToDistIdPHome.toAbsolutePath().toFile().exists(), "Path to dist idp.home not found");
 
         // Path to per-test idp.home
-        final String timestamp = new DateTime().toString(DateTimeFormat.forPattern(idpHomePattern));
+        final String timestamp = DateTimeFormatter.ofPattern(idpHomePattern).format(Instant.now());
         pathToIdPHome = pathToDistIdPHome.getParent().resolve(timestamp);
         log.info("Path to idp.home '{}'", pathToIdPHome.toAbsolutePath());
         Assert.assertFalse(pathToIdPHome.toAbsolutePath().toFile().exists(), "Path to idp.home already exists");
