@@ -20,9 +20,9 @@
     <properties>
         <!-- IdP -->
         <idp.version>4.0.0-SNAPSHOT</idp.version>
-        <idp-conf.version>${idp.version}</idp-conf.version>
-        <idp-distribution.version>${idp.version}</idp-distribution.version>
-        <idp-installer.version>${idp.version}</idp-installer.version>
+
+        <!--  IdP to be tested -->
+        <idp-to-be-tested.version>${idp.version}</idp-to-be-tested.version>
 
         <!-- Jetty -->
         <idp-jetty-base.version>9.4.0</idp-jetty-base.version>
@@ -50,6 +50,7 @@
         <sauce.version>2.1.20</sauce.version>
 
         <test-distributions.directory>${project.basedir}/test-distributions</test-distributions.directory>
+        <idp-to-be-tested.directory>${test-distributions.directory}/shibboleth-identity-provider-${idp-to-be-tested.version}</idp-to-be-tested.directory>
         <svn.relative.location>java-idp-integration-tests</svn.relative.location>
     </properties>
 
@@ -69,6 +70,39 @@
             </releases>
         </repository>
     </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-bom</artifactId>
+                <version>${opensaml.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-tests-bom</artifactId>
+                <version>${opensaml.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.shibboleth.idp</groupId>
+                <artifactId>idp-bom</artifactId>
+                <version>${idp.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.shibboleth.idp</groupId>
+                <artifactId>idp-tests-bom</artifactId>
+                <version>${idp.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- Compile Dependencies -->
@@ -117,20 +151,18 @@
         <dependency>
             <groupId>net.shibboleth.idp</groupId>
             <artifactId>idp-installer</artifactId>
-            <version>${idp-installer.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>net.shibboleth.idp</groupId>
             <artifactId>idp-distribution</artifactId>
-            <version>${idp-distribution.version}</version>
+            <version>${idp-to-be-tested.version}</version>
             <scope>test</scope>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>net.shibboleth.idp</groupId>
             <artifactId>idp-conf</artifactId>
-            <version>${idp-conf.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -152,7 +184,6 @@
         <dependency>
             <groupId>org.opensaml</groupId>
             <artifactId>opensaml-saml-impl</artifactId>
-            <version>${opensaml.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -254,7 +285,7 @@
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp</groupId>
                                     <artifactId>idp-distribution</artifactId>
-                                    <version>${idp-distribution.version}</version>
+                                    <version>${idp-to-be-tested.version}</version>
                                     <type>zip</type>
                                 </artifactItem>
                             </artifactItems>
@@ -273,12 +304,12 @@
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp</groupId>
                                     <artifactId>idp-conf</artifactId>
-                                    <version>${idp-conf.version}</version>
+                                    <version>${idp-to-be-tested.version}</version>
                                     <type>test-jar</type>
                                     <includes>**/credentials/*</includes>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                            <outputDirectory>${idp-to-be-tested.directory}</outputDirectory>
                         </configuration>
                     </execution>
                     <!-- Copy test views from idp-conf test jar. -->
@@ -293,12 +324,12 @@
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp</groupId>
                                     <artifactId>idp-conf</artifactId>
-                                    <version>${idp-conf.version}</version>
+                                    <version>${idp-to-be-tested.version}</version>
                                     <type>test-jar</type>
                                     <includes>views-test/**</includes>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                            <outputDirectory>${idp-to-be-tested.directory}</outputDirectory>
                         </configuration>
                     </execution>
                     <!-- Copy test flows from idp-conf test jar. -->
@@ -313,12 +344,12 @@
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp</groupId>
                                     <artifactId>idp-conf</artifactId>
-                                    <version>${idp-conf.version}</version>
+                                    <version>${idp-to-be-tested.version}</version>
                                     <type>test-jar</type>
                                     <includes>flows/**</includes>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                            <outputDirectory>${idp-to-be-tested.directory}</outputDirectory>
                         </configuration>
                     </execution>
                     <!-- Copy example metadata from idp-conf test jar. -->
@@ -333,12 +364,12 @@
                                 <artifactItem>
                                     <groupId>net.shibboleth.idp</groupId>
                                     <artifactId>idp-conf</artifactId>
-                                    <version>${idp-conf.version}</version>
+                                    <version>${idp-to-be-tested.version}</version>
                                     <type>test-jar</type>
                                     <includes>metadata/**</includes>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                            <outputDirectory>${idp-to-be-tested.directory}</outputDirectory>
                         </configuration>
                     </execution>
                     <!-- Copy testbed war to IdP distribution directory. -->
@@ -358,7 +389,7 @@
                                     <destFileName>idp-testbed.war</destFileName>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/testbed-war/</outputDirectory>
+                            <outputDirectory>${idp-to-be-tested.directory}/testbed-war/</outputDirectory>
                         </configuration>
                     </execution>
                     <!-- Copy testbed jar to IdP webapp. -->
@@ -378,7 +409,7 @@
                                     <classifier>${testbed.classifier}</classifier>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/webapp/WEB-INF/lib/</outputDirectory>
+                            <outputDirectory>${idp-to-be-tested.directory}/webapp/WEB-INF/lib/</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -405,21 +436,23 @@
         <profile>
             <id>idp-3.4.3</id>
             <properties>
-                 <idp.version>3.4.3</idp.version>
+                 <idp-to-be-tested.version>3.4.3</idp-to-be-tested.version>
+                 <testbed.version>3.8.0-SNAPSHOT</testbed.version>
             </properties>
         </profile>
 
         <profile>
             <id>idp-3.4.4-SNAPSHOT</id>
             <properties>
-                 <idp.version>3.4.4-SNAPSHOT</idp.version>
+                 <idp-to-be-tested.version>3.4.4-SNAPSHOT</idp-to-be-tested.version>
+                 <testbed.version>3.8.0-SNAPSHOT</testbed.version>
             </properties>
         </profile>
 
         <profile>
             <id>idp-4.0.0-SNAPSHOT</id>
             <properties>
-                 <idp.version>4.0.0-SNAPSHOT</idp.version>
+                 <idp-to-be-tested.version>4.0.0-SNAPSHOT</idp-to-be-tested.version>
             </properties>
         </profile>
 
@@ -556,7 +589,7 @@
                                             <type>tar.gz</type>
                                         </artifactItem>
                                     </artifactItems>
-                                    <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                                    <outputDirectory>${idp-to-be-tested.directory}</outputDirectory>
                                 </configuration>
                             </execution>
                             <!-- Copy testbed deployment descriptor from testbed jar to Jetty. -->
@@ -577,7 +610,7 @@
                                             <includes>etc/testbed.xml</includes>
                                         </artifactItem>
                                     </artifactItems>
-                                    <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/jetty-base/</outputDirectory>
+                                    <outputDirectory>${idp-to-be-tested.directory}/jetty-base/</outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>
@@ -647,7 +680,7 @@
                                             <type>tar.gz</type>
                                         </artifactItem>
                                     </artifactItems>
-                                    <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}</outputDirectory>
+                                    <outputDirectory>${idp-to-be-tested.directory}</outputDirectory>
                                 </configuration>
                             </execution>
                             <!-- Copy testbed context descriptor from testbed jar to Tomcat. -->
@@ -668,7 +701,7 @@
                                             <includes>conf/Catalina/localhost/ROOT.xml</includes>
                                         </artifactItem>
                                     </artifactItems>
-                                    <outputDirectory>${test-distributions.directory}/shibboleth-identity-provider-${idp.version}/tomcat-base/</outputDirectory>
+                                    <outputDirectory>${idp-to-be-tested.directory}/tomcat-base/</outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>
