@@ -56,7 +56,9 @@ public class JettyServerProcess extends AbstractServerProcess {
         getProcessBuilder().environment().put("JETTY_BASE", getServletContainerBasePath().toAbsolutePath().toString());
 
         // Start Jetty via start.jar
-        final Path pathToJava = Paths.get(System.getProperty("java.home"), "bin", "java");
+        // Prefer Java located at idp.java.home system property
+        final Path pathToJava = Paths.get(System.getProperty("idp.java.home", System.getProperty("java.home")), "bin", "java");
+        log.debug("Will use Java located at '{}'", pathToJava);
         getCommands().add(pathToJava.toAbsolutePath().toString());
         getCommands().add("-jar");
         getCommands().add(getServletContainerHomePath().toAbsolutePath().toString() + "/start.jar");
