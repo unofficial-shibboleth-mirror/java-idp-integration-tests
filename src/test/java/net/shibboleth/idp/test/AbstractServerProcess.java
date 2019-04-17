@@ -115,6 +115,7 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
         if (Boolean.getBoolean("inheritIO")) {
             builder.inheritIO();
         }
+        log.debug("Setting builder path to {}", pathToContainerBase.toAbsolutePath());
         builder.directory(pathToContainerBase.toAbsolutePath().toFile());
         return builder;
     }
@@ -328,7 +329,7 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
             final HttpEntity entity = response.getEntity();
             if (entity != null) {
                 long len = entity.getContentLength();
-                if (len != -1 && len < 2048) {
+                if (len != -1 && len < 3048) {
                     final String statusPageText = EntityUtils.toString(entity);
                     log.trace("Status page text '{}'", statusPageText);
                     return statusPageText;
