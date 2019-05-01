@@ -434,17 +434,17 @@
         Latest IdP release
         -->
         <profile>
-            <id>idp-3.4.3</id>
+            <id>idp-3.4.4</id>
             <properties>
-                 <idp-to-be-tested.version>3.4.3</idp-to-be-tested.version>
+                 <idp-to-be-tested.version>3.4.4</idp-to-be-tested.version>
                  <testbed.version>3.8.0-SNAPSHOT</testbed.version>
             </properties>
         </profile>
 
         <profile>
-            <id>idp-3.4.4-SNAPSHOT</id>
+            <id>idp-3.4.5-SNAPSHOT</id>
             <properties>
-                 <idp-to-be-tested.version>3.4.4-SNAPSHOT</idp-to-be-tested.version>
+                 <idp-to-be-tested.version>3.4.5-SNAPSHOT</idp-to-be-tested.version>
                  <testbed.version>3.8.0-SNAPSHOT</testbed.version>
             </properties>
         </profile>
@@ -467,13 +467,6 @@
         <!--
         Latest Jetty included by Windows Installer
         -->
-        <profile>
-            <id>jetty-9.4.11</id>
-            <properties>
-                 <jetty.version>9.4.11.v20180605</jetty.version>
-            </properties>
-        </profile>
-
         <profile>
             <id>jetty-9.4.18</id>
             <properties>
