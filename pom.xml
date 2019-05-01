@@ -457,10 +457,10 @@
         </profile>
 
         <profile>
-            <id>jetty-9.3.25</id>
+            <id>jetty-9.3.27</id>
             <properties>
                  <idp-jetty-base.version>9.3.0</idp-jetty-base.version>
-                 <jetty.version>9.3.25.v20180904</jetty.version>
+                 <jetty.version>9.3.27.v20190418</jetty.version>
             </properties>
         </profile>
 
