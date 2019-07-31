@@ -437,7 +437,7 @@
             <id>idp-3.4.4</id>
             <properties>
                  <idp-to-be-tested.version>3.4.4</idp-to-be-tested.version>
-                 <testbed.version>3.8.0-SNAPSHOT</testbed.version>
+                 <testbed.version>3.8.1-SNAPSHOT</testbed.version>
             </properties>
         </profile>
 
@@ -445,7 +445,7 @@
             <id>idp-3.4.5-SNAPSHOT</id>
             <properties>
                  <idp-to-be-tested.version>3.4.5-SNAPSHOT</idp-to-be-tested.version>
-                 <testbed.version>3.8.0-SNAPSHOT</testbed.version>
+                 <testbed.version>3.8.1-SNAPSHOT</testbed.version>
             </properties>
         </profile>
 
