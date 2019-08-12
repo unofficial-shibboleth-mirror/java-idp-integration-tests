@@ -474,7 +474,14 @@
             </properties>
         </profile>
 
-        <!-- 
+        <profile>
+            <id>jetty-9.4.19</id>
+            <properties>
+                 <jetty.version>9.4.19.v20190610</jetty.version>
+            </properties>
+        </profile>
+
+        <!--
         <profile>
             <id>jetty-9.4.15-SNAPSHOT</id>
             <properties>
