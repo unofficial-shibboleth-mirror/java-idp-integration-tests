@@ -312,26 +312,6 @@
                             <outputDirectory>${idp-to-be-tested.directory}</outputDirectory>
                         </configuration>
                     </execution>
-                    <!-- Copy test views from idp-conf test jar. -->
-                    <execution>
-                        <id>unpack-idp-conf-views-test</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>net.shibboleth.idp</groupId>
-                                    <artifactId>idp-conf</artifactId>
-                                    <version>${idp-to-be-tested.version}</version>
-                                    <type>test-jar</type>
-                                    <includes>views-test/**</includes>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${idp-to-be-tested.directory}</outputDirectory>
-                        </configuration>
-                    </execution>
                     <!-- Copy test flows from idp-conf test jar. -->
                     <execution>
                         <id>unpack-idp-conf-test-flows</id>
