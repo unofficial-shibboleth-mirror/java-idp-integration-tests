@@ -160,7 +160,7 @@ public class ClientStorageTest extends BaseIntegrationTest {
 
         submitCreateForm(DEFAULT_STORAGE_SERIVCE_ID, "context", "key", "value");
 
-        Assert.assertEquals(getPageSource(), HttpStatus.CREATED.getReasonPhrase());
+        Assert.assertTrue(getPageSource().contains(HttpStatus.CREATED.getReasonPhrase()));
 
         Assert.assertNull(driver.manage().getCookieNamed(DEFAULT_STORAGE_NAME));
 

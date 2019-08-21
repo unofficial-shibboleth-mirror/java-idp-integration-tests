@@ -40,13 +40,8 @@
         <java-support.version>8.0.0-SNAPSHOT</java-support.version>
         <opensaml.version>4.0.0-SNAPSHOT</opensaml.version>
 
-        <xalan.groupId>xalan</xalan.groupId>
-        <xalan.version>2.7.1</xalan.version>
-        <xerces.groupId>org.apache.xerces</xerces.groupId>
-        <xerces.version>2.11.0</xerces.version>
-        <xmlresolver.groupId>xml-resolver</xmlresolver.groupId>
-        <xmlresolver.version>1.2</xmlresolver.version>
-        <selenium.version>2.53.1</selenium.version>
+        <selenium.version>3.141.59</selenium.version>
+        <selenium.htmlunit-driver.version>2.35.1</selenium.htmlunit-driver.version>
         <sauce.version>2.1.20</sauce.version>
 
         <test-distributions.directory>${project.basedir}/test-distributions</test-distributions.directory>
@@ -115,31 +110,10 @@
         </dependency>
 
         <!-- Runtime Dependencies -->
-        <!-- Override httpclient version for HtmlUnit. -->
-        <dependency>
-            <groupId>${httpclient.groupId}</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.4.4</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${httpclient.groupId}</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.2</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <!-- Required if you're using anything in the httpclient package -->
-            <groupId>${httpclient.groupId}</groupId>
-            <artifactId>httpclient-cache</artifactId>
-            <version>4.5.2</version>
-            <scope>runtime</scope>
-        </dependency>
         <dependency>
             <groupId>org.ldaptive</groupId>
             <artifactId>ldaptive</artifactId>
         </dependency>
-
 
         <!-- Test Dependencies -->
         <dependency>
@@ -212,35 +186,12 @@
             <artifactId>selenium-java</artifactId>
             <version>${selenium.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xercesImpl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xalan</groupId>
-                    <artifactId>xalan</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- AFAICT, Selenium requires the Xerces/Xalan dependencies. -->
-        <dependency>
-            <groupId>${xerces.groupId}</groupId>
-            <artifactId>xml-apis</artifactId>
-            <version>${xerces.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>${xerces.groupId}</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>${xerces.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${xalan.groupId}</groupId>
-            <artifactId>xalan</artifactId>
-            <version>${xalan.version}</version>
-            <scope>test</scope>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>htmlunit-driver</artifactId>
+            <version>${selenium.htmlunit-driver.version}</version>
+            <!-- Note : xalan and xerces are transitive dependencies -->
         </dependency>
         <dependency>
             <groupId>com.saucelabs</groupId>
