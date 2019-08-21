@@ -713,7 +713,6 @@
         </profile>
 
         <!--
-        Remove the testbed dependency classifier when using Eclipse, but not from the command line.
         See https://wiki.eclipse.org/M2E-WTP_FAQ
         -->
         <profile>
@@ -767,9 +766,6 @@
                     </plugins>
                 </pluginManagement>
             </build>
-            <properties>
-                <testbed.classifier></testbed.classifier>
-            </properties>
         </profile>
     </profiles>
 
