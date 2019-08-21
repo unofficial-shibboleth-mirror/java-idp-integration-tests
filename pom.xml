@@ -270,8 +270,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <!-- avoid bug unpacking test-jar artifacts in current (3.0.2) -->
-                <version>2.10</version>
                 <executions>
                     <!-- Unpack idp-distribution to test-distributions directory. -->
                     <execution>
@@ -306,6 +304,7 @@
                                     <artifactId>idp-conf</artifactId>
                                     <version>${idp-to-be-tested.version}</version>
                                     <type>test-jar</type>
+                                    <classifier>tests</classifier>
                                     <includes>**/credentials/*</includes>
                                 </artifactItem>
                             </artifactItems>
@@ -326,6 +325,7 @@
                                     <artifactId>idp-conf</artifactId>
                                     <version>${idp-to-be-tested.version}</version>
                                     <type>test-jar</type>
+                                    <classifier>tests</classifier>
                                     <includes>flows/**</includes>
                                 </artifactItem>
                             </artifactItems>
@@ -346,6 +346,7 @@
                                     <artifactId>idp-conf</artifactId>
                                     <version>${idp-to-be-tested.version}</version>
                                     <type>test-jar</type>
+                                    <classifier>tests</classifier>
                                     <includes>metadata/**</includes>
                                 </artifactItem>
                             </artifactItems>
