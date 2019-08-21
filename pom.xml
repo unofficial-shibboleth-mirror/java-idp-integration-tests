@@ -25,7 +25,7 @@
         <idp-to-be-tested.version>${idp.version}</idp-to-be-tested.version>
 
         <!-- Jetty -->
-        <idp-jetty-base.version>9.4.0</idp-jetty-base.version>
+        <idp-jetty-base.version>9.4.1-SNAPSHOT</idp-jetty-base.version>
         <jetty.version>9.4.18.v20190429</jetty.version>
 
         <!-- Tomcat -->
