@@ -366,17 +366,17 @@
         Latest IdP release
         -->
         <profile>
-            <id>idp-3.4.5</id>
+            <id>idp-3.4.6</id>
             <properties>
-                 <idp-to-be-tested.version>3.4.5</idp-to-be-tested.version>
+                 <idp-to-be-tested.version>3.4.6</idp-to-be-tested.version>
                  <testbed.version>3.8.1-SNAPSHOT</testbed.version>
             </properties>
         </profile>
 
         <profile>
-            <id>idp-3.4.6-SNAPSHOT</id>
+            <id>idp-3.4.7-SNAPSHOT</id>
             <properties>
-                 <idp-to-be-tested.version>3.4.6-SNAPSHOT</idp-to-be-tested.version>
+                 <idp-to-be-tested.version>3.4.7-SNAPSHOT</idp-to-be-tested.version>
                  <testbed.version>3.8.1-SNAPSHOT</testbed.version>
             </properties>
         </profile>
