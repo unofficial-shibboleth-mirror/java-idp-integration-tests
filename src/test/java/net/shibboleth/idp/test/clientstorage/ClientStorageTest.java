@@ -142,7 +142,7 @@ public class ClientStorageTest extends BaseIntegrationTest {
 
         submitReadForm(DEFAULT_STORAGE_SERIVCE_ID, "context", "key");
 
-        Assert.assertEquals(getPageSource(), HttpStatus.NOT_FOUND.getReasonPhrase());
+        Assert.assertTrue(getPageSource().contains(HttpStatus.NOT_FOUND.getReasonPhrase()));
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
