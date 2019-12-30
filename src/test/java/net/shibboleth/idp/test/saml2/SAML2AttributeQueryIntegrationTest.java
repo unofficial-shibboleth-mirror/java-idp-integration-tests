@@ -114,7 +114,7 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
     }
 
     /**
-     * Unmarshall the XML response into a SAML 2 {@link #Response} object.
+     * Unmarshall the XML response into a SAML 2 {@link Response} object.
      * 
      * This method differs from its parent class in that we are unmarshalling a SOAP response.
      * 
@@ -177,7 +177,7 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
     /**
      * Change endpoint port from the default to whatever is in use.
      * 
-     * @throws MalformedURLException
+     * @throws MalformedURLException ...
      */
     protected void adjustEndpointPort() throws MalformedURLException {
         final WebElement endpointInput = driver.findElement(By.id("saml2-attribute-query-endpoint"));
@@ -208,7 +208,7 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
     /**
      * Use in-memory storage service for consent.
      * 
-     * @throws IOException
+     * @throws IOException ...
      */
     protected void enableConsentStorageService() throws IOException {
         replaceIdPProperty("idp.consent.StorageService", "shibboleth.StorageService");
@@ -286,7 +286,7 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
     /**
      * Validate SAML error response.
      * 
-     * @throws Exception
+     * @throws Exception if something bad happens
      */
     protected void validateErrorResponse() throws Exception {
         
@@ -300,7 +300,7 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
     /**
      * Validate SAML 2 SSO {@link Response}.
      * 
-     * @throws Exception
+     * @throws Exception if something bad happens
      */
     protected void validateSSOResponse() throws Exception {
         ssoValidator.validateResponse(super.unmarshallResponse(getPageSource()));

@@ -60,7 +60,7 @@ public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
     /**
      * Validate SAML 1 response
      * 
-     * @throws Exception
+     * @throws Exception if something goes wrong
      */
     public void validateResponse() throws Exception {
         validator.validateResponse(unmarshallResponse(getPageSource()));

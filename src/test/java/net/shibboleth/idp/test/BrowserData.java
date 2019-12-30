@@ -26,7 +26,7 @@ import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 /**
  * Bean which represents browser/OS/version triplet as provided by
- * {@link net.shibboleth.idp.test.BaseIntegrationTest#browserDataProvider}.
+ * {@link BaseIntegrationTest#sauceOnDemandBrowserDataProvider}.
  */
 public class BrowserData {
 
@@ -70,6 +70,8 @@ public class BrowserData {
      * Set the browser name.
      * 
      * @param browser the browser name
+     * 
+     * @return the {@link BrowserData}
      */
     public BrowserData setBrowser(@Nonnull @NotEmpty final String browser) {
         browserName = Constraint.isNotNull(StringSupport.trimOrNull(browser), "Browser cannot be null nor empty");
@@ -80,6 +82,8 @@ public class BrowserData {
      * Set the browser version.
      * 
      * @param version the browser version
+     * 
+     * @return the {@link BrowserData}
      */
     public BrowserData setVersion(@Nonnull @NotEmpty final String version) {
         browserVersion = Constraint.isNotNull(StringSupport.trimOrNull(version), "Version cannot be null nor empty");
@@ -90,6 +94,8 @@ public class BrowserData {
      * Set the browser OS.
      * 
      * @param os the browser OS
+     * 
+     * @return the {@link BrowserData}
      */
     public BrowserData setOS(@Nonnull @NotEmpty final String os) {
         browserOS = Constraint.isNotNull(StringSupport.trimOrNull(os), "OS cannot be null nor empty");

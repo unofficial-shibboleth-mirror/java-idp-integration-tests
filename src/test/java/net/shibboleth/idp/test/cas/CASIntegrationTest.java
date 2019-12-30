@@ -69,7 +69,8 @@ public class CASIntegrationTest extends BaseIntegrationTest {
      * 
      * This method is likely fragile across browsers, it is known to work with Firefox and HtmlUnit.
      * 
-     * @param pageSource
+     * @param pageSource ...
+     * 
      * @return the CAS service response.
      */
     @Nullable

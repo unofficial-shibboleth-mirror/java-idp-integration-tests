@@ -88,33 +88,48 @@ import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
 
 /**
  * Abstract integration test which tests the IdP via the testbed using Selenium.
- * <p/>
+ * 
+ * <p>
  * The Maven POM unpacks the IdP and Jetty distributions, adds test views and flows from idp-conf, and adds deployment
  * of the testbed. The testbed provides an in-memory directory server.
- * <p/>
+ * </p>
+ * 
+ * <p>
  * The IdP and testbed webapps are run via Jetty's start.jar in a separate {@link Process}, see
  * {@link JettyServerProcess}.
- * <p/>
+ * </p>
+ * 
+ * <p>
  * Each concrete subclass is associated with an idp.home directory, which is created by copying the unpacked IdP
- * distribution, see {@link #setUpPaths()}. Consequently, each test method in a class uses the same idp.home directory.
+ * distribution, see {@link #setUpIdPPaths()}. Consequently, each test method in a class uses the same idp.home directory.
  * This per-class idp.home directory is deleted only if all tests pass. The per-class idp.home directory name is a
  * timestamp whose pattern is defined by {@link #idpHomePattern}.
  * </p>
+ * 
+ * <p>
  * Ports for Jetty and the in-memory directory server will be automatically selected between the range of 20000 - 30000,
  * see {@link #setUpAvailablePorts()}.
  * </p>
+ * 
+ * <p>
  * Test methods should start clients via {@link #startSeleniumClient(BrowserData)} and start the server via
  * {@link #startJettyServer()}.
- * <p/>
+ * </p>
+ * 
+ * <p>
  * By default, tests run using a local browser. By default the {@link HtmlUnitDriver} will be used. To override, set the
  * {@link #driver} to the desired {@link WebDriver}. See {@link #startSeleniumClient(BrowserData)} for one way to
  * override.
- * <p/>
+ * </p>
+ * 
+ * <p>
  * To run tests using remote browsers provided by Sauce Labs, set the {@link #SELENIUM_IS_REMOTE} system property and
  * set the {@link #SERVER_ADDRESS_PROPERTY} to the publicly accessible IP address of the server to which clients should
  * connect to. You will also probably need to set the {@link #PRIVATE_SERVER_ADDRESS_PROPERTY} to the IP address that
  * the server should be run on, which might be the same as the {@link #SERVER_ADDRESS_PROPERTY}.
- * <p/>
+ * </p>
+ * 
+ * <p>
  * With Sauce Labs, the browsers tested are defined by {@link SauceBrowserDataProvider#SAUCE_ONDEMAND_BROWSERS} in the
  * environment, which is a JSON string. See
  * <a href="https://docs.saucelabs.com/ci-integrations/jenkins/">https://docs.saucelabs.com/ci-integrations/jenkins/</a>
@@ -123,14 +138,21 @@ import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
  * 'firefox' browser, manipulate the {@link #desiredCapabilities} before calling
  * {@link #startSeleniumClient(BrowserData)}, for example:
  * </p>
+ * 
+ * <pre>
  * desiredCapabilities.setCapability("platform", "win8");
- * </p>
- * or
- * </p>
+ * </pre>
+ * 
+ * <p>or</p>
+ * 
+ * <pre>
  * desiredCapabilities.setCapability(org.openqa.selenium.remote.CapabilityType.Platform,
  * org.openqa.selenium.Platform.WIN8);
- * </p>
+ * </pre>
+ * 
+ * <p>
  * See {@link org.openqa.selenium.Platform}. Or, configure a new TestNG data provider.
+ * </p>
  */
 @Listeners({CustomSauceOnDemandTestListener.class})
 public abstract class BaseIntegrationTest
@@ -487,7 +509,7 @@ public abstract class BaseIntegrationTest
      * Must run after {@link #setUpEndpoints()} so that {@link PropertiesWithComments} does not add a breaking "=" to
      * "testbed.xml".
      * 
-     * @throws IOException
+     * @throws IOException ...
      */
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpEndpoints"}) // must run after setUpEndpoints
     public void setUpJettyTestbed() throws IOException {
@@ -522,17 +544,25 @@ public abstract class BaseIntegrationTest
  
     /**
      * Set up addresses the web server listens on and clients connect to.
-     * <p/>
+     * 
+     * <p>
      * If the {@link #SERVER_ADDRESS_PROPERTY} system property exists, use it as the non-secure and secure server
      * address.
-     * <p/>
+     * </p>
+     * 
+     * <p>
      * If the {@link #PRIVATE_SERVER_ADDRESS_PROPERTY} system property exists, use it as the non-secure and secure
      * private server address.
+     * </p>
+     * 
      * <p>
      * The private server address may be different than the server address, for example, when the server is behind NAT.
-     * <p/>
+     * </p>
+     * 
+     * <p>
      * If the {@link #SERVER_ADDRESS_PROPERTY} system property exists but {@link #PRIVATE_SERVER_ADDRESS_PROPERTY} does
      * not, use it as both the non-secure and secure (1) server and (2) private server address.
+     * </p>
      */
     @BeforeClass
     public void setUpAddresses() {
@@ -668,7 +698,7 @@ public abstract class BaseIntegrationTest
     /**
      * Set up debug logging for the IdP.
      * 
-     * @throws Exception
+     * @throws Exception if something bad happens
      */
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpIdPPaths"})
     public void setUpDebugLogging() throws Exception {
@@ -688,7 +718,7 @@ public abstract class BaseIntegrationTest
     /**
      * Set up example metadata provider for the IdP.
      * 
-     * @throws Exception
+     * @throws Exception if something bad happens
      */
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpIdPPaths"})
     public void setUpExampleMetadataProvider() throws Exception {
@@ -704,7 +734,7 @@ public abstract class BaseIntegrationTest
     /**
      * Add StorageServlet to IdP webapp.
      * 
-     * @throws Exception
+     * @throws Exception if something bad happens
      */
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpIdPPaths"})
     public void setUpStorageServlet() throws Exception {
@@ -758,7 +788,7 @@ public abstract class BaseIntegrationTest
     /**
      * Initialize XMLObject support classes.
      * 
-     * @throws InitializationException
+     * @throws InitializationException ...
      */
     @BeforeClass(dependsOnMethods = {"setIdPXMLSecurityManager"})
     public void initializeXMLbjectSupport() throws InitializationException {
@@ -770,12 +800,16 @@ public abstract class BaseIntegrationTest
     /**
      * Start the web driver.
      * 
-     * If the test is local, as defined by {@link #isLocal()}, then start a {@link HtmlUnitDriver}. Otherwise, start a
+     * If the test is remote, as defined by {@link #isRemote()}, then start a
      * {@link RemoteWebDriver} on Sauce Labs.
+     * Otherwise, start a {@link HtmlUnitDriver}.
      * 
+     * <p>
      * Note : this method must be called in each test.
+     * </p>
      * 
      * @param browserData the browser data
+     * 
      * @throws Exception if an error occurs
      */
     public void startSeleniumClient(@Nullable final BrowserData browserData) throws Exception {
@@ -807,10 +841,12 @@ public abstract class BaseIntegrationTest
     /**
      * Start the IdP server. Uses Jetty by default, and Tomcat if the system property 'tomcat' is true.
      * 
+     * <p>
      * Note : this method must be called in each test to allow for customization of the IdP configuration before the
      * server is started.
+     * </p>
      * 
-     * @throws ComponentInitializationException
+     * @throws ComponentInitializationException ...
      */
     public void startServer() throws ComponentInitializationException {
         if (Boolean.getBoolean("tomcat")) {
@@ -945,13 +981,18 @@ public abstract class BaseIntegrationTest
     /**
      * Replace contents of a file.
      * 
+     * <p>
      * The regular expression is replaced with the replacement string and the file is over-written.
+     * </p>
      * 
-     * See {@link String#replaceAll(String, String)} and {@link Files#write(Path, byte[], java.nio.file.OpenOption...).
+     * <p>
+     * See {@link String#replaceAll(String, String)} and {@link Files#write(Path, byte[], java.nio.file.OpenOption...)}.
+     * </p>
      * 
      * @param pathToFile path to the file
      * @param regex regular expression to be replaced
      * @param replacement string to be substituted for each match
+     * 
      * @throws IOException if the file cannot be overwritten
      */
     public static void replaceFile(@Nonnull final Path pathToFile, @Nonnull @NotEmpty final String regex,
@@ -1015,7 +1056,7 @@ public abstract class BaseIntegrationTest
     /**
      * Enable per attribute consent.
      *
-     * @throws IOException
+     * @throws IOException ...
      */
     public void enablePerAttributeConsent() throws IOException {
         replaceIdPProperty("idp.consent.allowPerAttribute", "true");
@@ -1024,7 +1065,7 @@ public abstract class BaseIntegrationTest
     /**
      * Activate terms-of-use flow and include attribute statement.
      *
-     * @throws Exception
+     * @throws Exception if something bad happens
      */
     public void enableCustomRelyingPartyConfiguration() throws Exception {
         final Path pathToRelyingPartyXML = Paths.get("conf", "relying-party.xml");
@@ -1045,7 +1086,7 @@ public abstract class BaseIntegrationTest
     /**
      * Disable Local Storage in conf/idp.properties.
      * 
-     * @throws Exception
+     * @throws Exception if something bad happens
      */
     public void disableLocalStorage() throws Exception {
         replaceIdPProperty("idp.storage.htmlLocalStorage", "false");
@@ -1054,7 +1095,7 @@ public abstract class BaseIntegrationTest
     /**
      * Enable logout in conf/idp.properties.
      * 
-     * @throws Exception
+     * @throws Exception if something bad happens
      */
     public void enableLogout() throws Exception {
         // server-side storage of user sessions
@@ -1070,7 +1111,7 @@ public abstract class BaseIntegrationTest
     /**
      * Enable CAS protocol for the default relying party.
      *
-     * @throws IOException
+     * @throws IOException ...
      */
     public void enableCASProtocol() throws IOException {
         final Path pathToRelyingPartyXML = Paths.get("conf", "relying-party.xml");
@@ -1084,7 +1125,7 @@ public abstract class BaseIntegrationTest
     /**
      * Add localhost to CAS service definition.
      * 
-     * @throws IOException
+     * @throws IOException ...
      */
     public void enableLocalhostCASServiceDefinition() throws IOException {
         final Path pathToCASProtocolXML = Paths.get("conf", "cas-protocol.xml");
@@ -1099,7 +1140,7 @@ public abstract class BaseIntegrationTest
     /**
      * Release eduPersonAffiliation by adding a wildcard regex to attribute-filter.xml.
      * 
-     * @throws IOException
+     * @throws IOException ...
      */
     public void enableLocalhostCASAttributes() throws IOException {
         final Path pathToLogbackXML = Paths.get("conf", "attribute-filter.xml");
@@ -1112,7 +1153,7 @@ public abstract class BaseIntegrationTest
     /**
      * Use attribute-resolver-ldap.xml instead of attribute-resolver.xml.
      * 
-     * @throws IOException
+     * @throws IOException ...
      */
     public void enableAttributeResolverLDAP() throws IOException {
         final Path pathToServicesXML = Paths.get("conf", "services.xml");
@@ -1124,7 +1165,7 @@ public abstract class BaseIntegrationTest
     /**
      * Log unencrypted SAML.
      * 
-     * @throws IOException
+     * @throws IOException ...
      */
     public void logUnencryptedSAML() throws IOException {
         final Path pathToLogbackXML = Paths.get("conf", "logback.xml");
@@ -1149,6 +1190,8 @@ public abstract class BaseIntegrationTest
 
     /**
      * Set up HtmlUnitDriver web driver.
+     * 
+     * @throws IOException ...
      */
     @BeforeMethod(enabled = false)
     public void setUpHtmlUnitDriver() throws IOException {
@@ -1158,6 +1201,8 @@ public abstract class BaseIntegrationTest
 
     /**
      * Set up Firefox web driver.
+     * 
+     * @throws IOException ...
      */
     @BeforeMethod(enabled = false)
     public void setUpFirefoxDriver() throws IOException {
@@ -1169,10 +1214,12 @@ public abstract class BaseIntegrationTest
     /**
      * Set up remote web driver to Sauce Labs.
      * 
+     * <p>
      * Prefers credentials from system properties/environment variables as provided by Jenkins over ~/.sauce-ondemand,
      * see {@link SauceOnDemandAuthentication}.
+     * </p>
      * 
-     * @throws IOException
+     * @throws IOException ...
      */
     @BeforeMethod(enabled = false, dependsOnMethods = {"setUpTestName"})
     public void setUpSauceDriver() throws IOException {

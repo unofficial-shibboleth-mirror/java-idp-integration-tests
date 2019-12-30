@@ -408,7 +408,7 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
          * Constructor.
          *
          * @param retries maximum number of times to retry
-         * @param millis length of time to sleep in milliseconds between retry attempts
+         * @param retryInterval length of time to sleep in milliseconds between retry attempts
          */
         public FiniteWaitServiceUnavailableRetryStrategy(int retries, int retryInterval) {
             maxRetries = retries;

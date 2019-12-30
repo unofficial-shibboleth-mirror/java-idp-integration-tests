@@ -95,7 +95,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     /**
      * Validate SAML 2 {@link Response}.
      * 
-     * @throws Exception
+     * @throws Exception if something goes wrong
      */
     public void validateResponse() throws Exception {
         validator.validateResponse(unmarshallResponse(getPageSource()));
@@ -104,7 +104,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     /**
      * Validate SAML 2 {@link LogoutResponse}.
      * 
-     * @throws Exception
+     * @throws Exception if something goes wrong
      */
     public void validateLogoutResponse() throws Exception {
 
@@ -120,13 +120,15 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Unmarshall the XML response into an {@link #XMLObject} object.
+     * Unmarshall the XML response into an {@link XMLObject} object.
      * 
-     * @param response
-     * @return
-     * @throws UnsupportedEncodingException
-     * @throws XMLParserException
-     * @throws UnmarshallingException
+     * @param response the response to unmarshall
+     * 
+     * @return the unmarshalled response
+     * 
+     * @throws UnsupportedEncodingException ...
+     * @throws XMLParserException ...
+     * @throws UnmarshallingException ...
      */
     @Nonnull
     public XMLObject unmarshallXMLObject(@Nullable final String response)
@@ -141,7 +143,7 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
     }
 
     /**
-     * Unmarshall the XML response into a SAML 2 {@link #Response} object.
+     * Unmarshall the XML response into a SAML 2 {@link Response} object.
      * 
      * @param response the XML response
      * @return the SAML 2 Response object

@@ -64,8 +64,6 @@ public class CustomSauceOnDemandTestListener extends SauceOnDemandTestListener {
      * Print public job link if {@link #printPublicJobLinkOnSuccess} is true.
      * 
      * {@inheritDoc}
-     * 
-     * @param tr
      */
     @Override
     public void onTestSuccess(ITestResult tr) {
