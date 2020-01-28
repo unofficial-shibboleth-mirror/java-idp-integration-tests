@@ -491,7 +491,7 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
                 log.warn("Server might be stopped", e);
             }
         } catch (final Exception e) {
-            log.warn("An error occurred waiting for server to stop", e);
+            log.warn("An error occurred waiting for server to stop : {}", e.getMessage());
         }
     }
 
