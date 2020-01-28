@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -317,6 +318,11 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
             builder.setHttpRequestRetryHandler(new FiniteWaitHttpRequestRetryHandler(retries, millis));
             builder.setServiceUnavailableRetryHandler(new FiniteWaitServiceUnavailableRetryStrategy(retries, millis));
         }
+
+        builder.setSocketTimeout(Duration.ofMillis(millis));
+        builder.setConnectionTimeout(Duration.ofMillis(millis));
+        builder.setConnectionRequestTimeout(Duration.ofMillis(millis));
+
         builder.setConnectionCloseAfterResponse(false);
         builder.setConnectionDisregardTLSCertificate(true);
         final HttpClient httpClient = builder.buildClient();
