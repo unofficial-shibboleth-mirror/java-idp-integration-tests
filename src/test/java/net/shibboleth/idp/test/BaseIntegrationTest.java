@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -341,6 +342,9 @@ public abstract class BaseIntegrationTest
     /** Whether any test method in a class failed. **/
     @Nonnull protected boolean testClassFailed;
 
+    /** IdP version determined from distribution name. **/
+    @Nullable protected String idpVersion;
+
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(BaseIntegrationTest.class);
 
@@ -370,6 +374,14 @@ public abstract class BaseIntegrationTest
         log.debug("Path to distribution idp.home '{}'", pathToDistIdPHome.toAbsolutePath());
         Assert.assertNotNull(pathToDistIdPHome, "Path to distribution idp.home not found");
         Assert.assertTrue(pathToDistIdPHome.toAbsolutePath().toFile().exists(), "Path to dist idp.home not found");
+
+        // Determine IdP version from distribution name
+        final Pattern pattern = Pattern.compile("shibboleth-identity-provider-(.*)");
+        final Matcher matcher = pattern.matcher(pathToDistIdPHome.getFileName().toString());
+        if (matcher.find()) {
+            idpVersion = matcher.group(1);
+            log.debug("Testing IdP version '{}'", idpVersion);
+        }
 
         // Path to per-test idp.home
         final String timestamp = DateTimeFormatter.ofPattern(idpHomePattern).format(LocalDateTime.now());
