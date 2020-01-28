@@ -190,6 +190,17 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
     }
 
     /**
+     * Enable SAML 2 Attribute Query profile.
+     * 
+     * @throws IOException if the configuration file cannot be changed
+     */
+    protected void enableAttributeQueryProfile() throws IOException {
+        final Path pathToRelyingPartyXML = pathToIdPHome.resolve(Paths.get("conf", "relying-party.xml"));
+        final String toUncomment = "<ref bean=\"SAML2.AttributeQuery\" />";
+        uncommentFile(pathToRelyingPartyXML, toUncomment);
+    }
+
+    /**
      * Enable attribute consent during an attribute query.
      * 
      * @throws IOException if the configuration file cannot be changed
@@ -317,6 +328,10 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
         startSeleniumClient(browserData);
 
         enableDirectNameIDMapping();
+
+        if (!idpVersion.startsWith("3")) {
+            enableAttributeQueryProfile();
+        }
 
         startServer();
 
