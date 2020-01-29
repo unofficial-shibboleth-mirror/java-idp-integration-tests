@@ -20,6 +20,8 @@ package net.shibboleth.idp.test.saml1;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -90,6 +92,34 @@ public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
     }
 
     /**
+     * Enable SAML 1 AttributeQuery, ArtifactResolution, and Shibboleth.SSO profiles.
+     * 
+     * @throws IOException if the configuration file cannot be changed
+     */
+    protected void enableSAML1Profiles() throws IOException {
+        final Path pathToRelyingPartyXML = pathToIdPHome.resolve(Paths.get("conf", "relying-party.xml"));
+
+        // Uncomment disabled by default AttributeQuery profile
+        final StringBuilder toUncomment = new StringBuilder();
+        toUncomment.append("\\<\\!--\\s+");
+        toUncomment.append("<bean parent=\"Shibboleth.SSO\" p:postAuthenticationFlows=\"attribute-release\" />");
+        toUncomment.append("\\s+");
+        toUncomment.append("<ref bean=\"SAML1.AttributeQuery\" />");
+        toUncomment.append("\\s+");
+        toUncomment.append("<ref bean=\"SAML1.ArtifactResolution\" />");
+        toUncomment.append("\\s+--\\>");
+
+        final StringBuilder commented = new StringBuilder();
+        commented.append("<bean parent=\"Shibboleth.SSO\" p:postAuthenticationFlows=\"attribute-release\" />");
+        commented.append(System.lineSeparator());
+        commented.append("<ref bean=\"SAML1.AttributeQuery\" />");
+        commented.append(System.lineSeparator());
+        commented.append("<ref bean=\"SAML1.ArtifactResolution\" />");
+
+        replaceFile(pathToRelyingPartyXML, toUncomment.toString(), commented.toString());
+    }
+
+    /**
      * Test SAML 1 SSO.
      * 
      * @param browserData browser/os/version triplet provided by data provider
@@ -98,6 +128,10 @@ public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
     public void testSSO(@Nullable final BrowserData browserData) throws Exception {
 
         startSeleniumClient(browserData);
+
+        if (!idpVersion.startsWith("3")) {
+            enableSAML1Profiles();
+        }
 
         enableCustomRelyingPartyConfiguration();
 
