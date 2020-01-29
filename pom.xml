@@ -395,7 +395,7 @@
         </profile>
 
         <!--
-        Latest Jetty included by Windows Installer
+        Version of Jetty included in latest Windows Installer release
         -->
         <profile>
             <id>jetty-9.4.18</id>
@@ -404,17 +404,13 @@
             </properties>
         </profile>
 
+        <!--
+        Version of Jetty targeted for next Windows Installer release
+        -->
         <profile>
-            <id>jetty-9.4.19</id>
+            <id>jetty-9.4.26</id>
             <properties>
-                 <jetty.version>9.4.19.v20190610</jetty.version>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>jetty-9.4.22</id>
-            <properties>
-                 <jetty.version>9.4.22.v20191022</jetty.version>
+                 <jetty.version>9.4.26.v20200117</jetty.version>
             </properties>
         </profile>
 
