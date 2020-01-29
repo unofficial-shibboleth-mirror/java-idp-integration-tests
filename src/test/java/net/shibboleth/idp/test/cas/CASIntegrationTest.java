@@ -49,11 +49,18 @@ public class CASIntegrationTest extends BaseIntegrationTest {
     @Nonnull final String expectedCASServiceResponse = "<cas:serviceresponse xmlns:cas=\"http://www.yale.edu/tp/cas\">"
             + "<cas:authenticationsuccess><cas:user>jdoe</cas:user></cas:authenticationsuccess></cas:serviceresponse>";
     
+    /** Expected, but incorrect, CAS service response with attributes for IdP V3. */
+    @Nonnull final String expectedCASServiceResponseWithAttributesV3 =
+            "<cas:serviceresponse xmlns:cas=\"http://www.yale.edu/tp/cas\"><cas:authenticationsuccess>"
+                    + "<cas:user>jdoe</cas:user><cas:attributes>"
+                    + "<cas:edupersonscopedaffiliation>member</cas:edupersonscopedaffiliation>"
+                    + "</cas:attributes></cas:authenticationsuccess></cas:serviceresponse>";
+
     /** Expected CAS service response with attributes. */
     @Nonnull final String expectedCASServiceResponseWithAttributes =
             "<cas:serviceresponse xmlns:cas=\"http://www.yale.edu/tp/cas\"><cas:authenticationsuccess>"
                     + "<cas:user>jdoe</cas:user><cas:attributes>"
-                    + "<cas:edupersonscopedaffiliation>member</cas:edupersonscopedaffiliation>"
+                    + "<cas:edupersonscopedaffiliation>member@example.org</cas:edupersonscopedaffiliation>"
                     + "</cas:attributes></cas:authenticationsuccess></cas:serviceresponse>";
 
     @BeforeClass
@@ -150,7 +157,11 @@ public class CASIntegrationTest extends BaseIntegrationTest {
 
         final String actualCASServiceResponse = getCASServiceResponse(driver.getPageSource());
 
-        Assert.assertEquals(actualCASServiceResponse, expectedCASServiceResponseWithAttributes);
+        if (idpVersion.startsWith("3")) {
+            Assert.assertEquals(actualCASServiceResponse, expectedCASServiceResponseWithAttributesV3);
+        } else {
+            Assert.assertEquals(actualCASServiceResponse, expectedCASServiceResponseWithAttributes);
+        }
     }
 
 }
