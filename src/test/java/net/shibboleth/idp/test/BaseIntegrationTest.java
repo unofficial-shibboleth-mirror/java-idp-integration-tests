@@ -1021,15 +1021,6 @@ public abstract class BaseIntegrationTest
         final Charset charset = StandardCharsets.UTF_8;
 
         String content = new String(Files.readAllBytes(pathToFile), charset);
-        
-        
-        Matcher m = Pattern.compile(regex).matcher(content);
-        if (m.find()) {
-            System.out.println("Matcher found " + m.group(0));
-        } else {
-            System.out.println("Matcher did not find");
-        }
-        
         content = content.replaceAll(regex, replacement);
         Files.write(pathToFile, content.getBytes(charset));
     }
