@@ -33,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -275,6 +276,9 @@ public abstract class BaseIntegrationTest
 
     /** Path to conf/ldap.properties. */
     @NonnullAfterInit protected Path pathToLDAPProperties;
+    
+    /** Path to system/messages/messages.properties.*/
+    @NonnullAfterInit protected Path pathToMessagesProperties;
 
     /** Path to jetty.base. */
     @Nullable protected Path pathToJettyBase;
@@ -408,6 +412,11 @@ public abstract class BaseIntegrationTest
         // Path to conf/ldap.properties
         pathToLDAPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "ldap.properties");
         Assert.assertTrue(pathToLDAPProperties.toFile().exists(), "Path to conf/ldap.properties not found");
+        
+        //Path to system/messages/message.properties
+        pathToMessagesProperties = pathToIdPHome.resolve(Paths.get("system", "messages","messages.properties"));
+        Assert.assertTrue(pathToMessagesProperties.toFile().exists(), "Path to message properties not found");
+        log.debug("Path to message properties '{}'", pathToMessagesProperties);
     }
 
     /**
@@ -909,6 +918,34 @@ public abstract class BaseIntegrationTest
         if (server != null) {
             server.stop();
         }
+    }
+    
+    /**
+     * Get a message value from the default <code>system/messages/messages.properties</code> file relating to the <code>key</code> argument.
+     * <p> Can NOT be used to get messages for different languages, only the default system message bundle.<p>
+     * 
+     * @param key the key used to lookup the value.
+     * @return the value to which the specified key is mapped, or {@literal null} if the key does not exist or the
+     *              value is not a {@link String}. 
+     * @throws IOException if there is an error loading the messages.properties file.
+     */
+    @Nullable
+    protected String getMessage(@Nonnull @NotEmpty final String key) throws IOException {
+        Constraint.isNotNull(StringSupport.trimOrNull(key), "Replacement property key cannot be null nor empty");
+
+        log.debug("Finding message property '{}' in file '{}'", key, pathToMessagesProperties);
+        
+        final FileSystemResource propertyResource =
+                new FileSystemResource(pathToMessagesProperties.toAbsolutePath().toString());
+
+        final Properties props = new Properties();
+        props.load(propertyResource.getInputStream());
+        Object propValueObject =  props.get(key);
+        if (propValueObject instanceof String) {
+            return (String)propValueObject;
+        }
+        return null;
+        
     }
 
     /**
