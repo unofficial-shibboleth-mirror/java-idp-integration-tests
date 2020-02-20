@@ -74,6 +74,7 @@ public class CSRFMitigationTest extends BaseIntegrationTest {
     /**
      * 
      * Check that a username/password login form submitted without an anti-csrf token renders the invalid CSRF token page.
+     * <p>Currently for v4 only</p>
      * 
      * @param browserData the browser data
      * @throws Exception on exception
@@ -81,18 +82,22 @@ public class CSRFMitigationTest extends BaseIntegrationTest {
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testCSRFTokenRemovedFromLoginPage(@Nullable final BrowserData browserData) throws Exception {
 
-        startSeleniumClient(browserData);
+        if (idpVersion.startsWith("4")) {
+         
+            startSeleniumClient(browserData);
+            
+            //make sure CSRF protection is enabled
+            replaceIdPProperty("idp.csrf.enabled", "true");
+            //make sure we are using the password flow
+            replaceIdPProperty("idp.authn.flows", "Password");
+            
+            startServer();
+            startFlow();
+            waitForLoginPage();
+            removeCSRFTokenAndlogin("jdoe","changeit");
+            checkCSRFErrorPage();
         
-        //make sure CSRF protection is enabled
-        replaceIdPProperty("idp.csrf.enabled", "true");
-        //make sure we are using the password flow
-        replaceIdPProperty("idp.authn.flows", "Password");
-        
-        startServer();
-        startFlow();
-        waitForLoginPage();
-        removeCSRFTokenAndlogin("jdoe","changeit");
-        checkCSRFErrorPage();
+        }
     }
 
     /**
