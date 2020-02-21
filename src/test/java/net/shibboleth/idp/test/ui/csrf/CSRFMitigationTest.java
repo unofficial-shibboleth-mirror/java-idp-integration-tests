@@ -74,15 +74,15 @@ public class CSRFMitigationTest extends BaseIntegrationTest {
     /**
      * 
      * Check that a username/password login form submitted without an anti-csrf token renders the invalid CSRF token page.
-     * <p>Currently for v4 only</p>
+     * <p>Only runs for IdP v4 or greater</p>
      * 
      * @param browserData the browser data
      * @throws Exception on exception
      */
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testCSRFTokenRemovedFromLoginPage(@Nullable final BrowserData browserData) throws Exception {
-
-        if (idpVersion.startsWith("4")) {
+        
+        if (getMajorIdPVersionAsInt() >= 4) {
          
             startSeleniumClient(browserData);
             
@@ -93,11 +93,31 @@ public class CSRFMitigationTest extends BaseIntegrationTest {
             
             startServer();
             startFlow();
-            waitForLoginPage();
+            waitForLoginPage(); 
             removeCSRFTokenAndlogin("jdoe","changeit");
             checkCSRFErrorPage();
         
         }
+    }
+    
+    /**
+     * Get the IdP Major version from <code>idpVersion</code> as an int.
+     * 
+     * @return the IdP major version as an int.
+     * 
+     * @throws Exception if it could not be converted.
+     */
+    private int getMajorIdPVersionAsInt() throws Exception{
+        
+        if (idpVersion!=null) {
+            String[] splitVersion = idpVersion.split("\\.");
+            if (splitVersion.length>0) {
+                String majorVersionString = splitVersion[0];
+                return Integer.parseInt(majorVersionString);               
+            }
+        }
+        throw new Exception("Could not get IdP major version as int");
+        
     }
 
     /**
