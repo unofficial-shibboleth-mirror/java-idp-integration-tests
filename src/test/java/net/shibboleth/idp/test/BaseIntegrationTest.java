@@ -1215,6 +1215,19 @@ public abstract class BaseIntegrationTest
     }
 
     /**
+     * Export uid via LDAP Connector.
+     * 
+     * @throws IOException ...
+     */
+    public void enableAttributeResolverLDAPExportUid() throws IOException {
+        final Path pathToAttributeResolverLdapXML = Paths.get("conf", "attribute-resolver-ldap.xml");
+        
+        final String oldText = "mail displayName sn givenName departmentNumber employeeNumber eduPersonEntitlement eduPersonAssurance";
+        final String newText = "mail displayName sn givenName departmentNumber employeeNumber eduPersonEntitlement eduPersonAssurance uid";
+        replaceIdPHomeFile(pathToAttributeResolverLdapXML, oldText, newText);
+    }
+
+    /**
      * Log unencrypted SAML.
      * 
      * @throws IOException ...

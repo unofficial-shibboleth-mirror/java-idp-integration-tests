@@ -776,6 +776,8 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         enableAttributeResolverLDAP();
 
+        enableAttributeResolverLDAPExportUid();
+
         startSeleniumClient(browserData);
 
         startServer();

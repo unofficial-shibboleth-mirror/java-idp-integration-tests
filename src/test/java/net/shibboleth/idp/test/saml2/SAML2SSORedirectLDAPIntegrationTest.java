@@ -91,6 +91,8 @@ public class SAML2SSORedirectLDAPIntegrationTest extends AbstractSAML2Integratio
 
         enableAttributeResolverLDAP();
 
+        enableAttributeResolverLDAPExportUid();
+
         startSeleniumClient(browserData);
 
         startServer();
