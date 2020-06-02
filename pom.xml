@@ -7,7 +7,7 @@
     <parent>
         <groupId>net.shibboleth</groupId>
         <artifactId>parent</artifactId>
-        <version>11.0.1-SNAPSHOT</version>
+        <version>11.0.1</version>
     </parent>
 
     <name>idp-integration-tests</name>
@@ -19,7 +19,7 @@
 
     <properties>
         <!-- IdP -->
-        <idp.version>4.0.1-SNAPSHOT</idp.version>
+        <idp.version>4.0.2-SNAPSHOT</idp.version>
 
         <!--  Version of IdP to be tested -->
         <idp-to-be-tested.version>${idp.version}</idp-to-be-tested.version>
@@ -40,7 +40,7 @@
 
         <!-- OpenSAML and Java support -->
         <java-support.version>8.0.1-SNAPSHOT</java-support.version>
-        <opensaml.version>4.0.1-SNAPSHOT</opensaml.version>
+        <opensaml.version>4.0.1</opensaml.version>
 
         <selenium.version>3.141.59</selenium.version>
         <selenium.htmlunit-driver.version>2.35.1</selenium.htmlunit-driver.version>
