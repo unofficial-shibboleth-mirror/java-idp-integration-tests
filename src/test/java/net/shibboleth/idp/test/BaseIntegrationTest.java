@@ -70,7 +70,9 @@ import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.io.UnmarshallerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.util.SocketUtils;
 import org.testng.Assert;
@@ -277,8 +279,8 @@ public abstract class BaseIntegrationTest
     /** Path to conf/ldap.properties. */
     @NonnullAfterInit protected Path pathToLDAPProperties;
     
-    /** Path to system/messages/messages.properties.*/
-    @NonnullAfterInit protected Path pathToMessagesProperties;
+    /** Resource to net/shibboleth/idp/messages/messages.properties.*/
+    @NonnullAfterInit protected Resource messagesPropertiesResource;
 
     /** Path to jetty.base. */
     @Nullable protected Path pathToJettyBase;
@@ -413,10 +415,10 @@ public abstract class BaseIntegrationTest
         pathToLDAPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "ldap.properties");
         Assert.assertTrue(pathToLDAPProperties.toFile().exists(), "Path to conf/ldap.properties not found");
         
-        //Path to system/messages/message.properties
-        pathToMessagesProperties = pathToIdPHome.resolve(Paths.get("system", "messages","messages.properties"));
-        Assert.assertTrue(pathToMessagesProperties.toFile().exists(), "Path to message properties not found");
-        log.debug("Path to message properties '{}'", pathToMessagesProperties);
+        //Classpath messages.properties resource
+        messagesPropertiesResource = new ClassPathResource("/net/shibboleth/idp/messages/messages.properties");
+        Assert.assertTrue(messagesPropertiesResource.exists(), "Path to message properties not found");
+        log.debug("Path to message properties '{}'", messagesPropertiesResource);
     }
 
     /**
@@ -933,13 +935,10 @@ public abstract class BaseIntegrationTest
     protected String getMessage(@Nonnull @NotEmpty final String key) throws IOException {
         Constraint.isNotNull(StringSupport.trimOrNull(key), "Replacement property key cannot be null nor empty");
 
-        log.debug("Finding message property '{}' in file '{}'", key, pathToMessagesProperties);
-        
-        final FileSystemResource propertyResource =
-                new FileSystemResource(pathToMessagesProperties.toAbsolutePath().toString());
+        log.debug("Finding message property '{}' in file '{}'", key, messagesPropertiesResource);
 
         final Properties props = new Properties();
-        props.load(propertyResource.getInputStream());
+        props.load(messagesPropertiesResource.getInputStream());
         Object propValueObject =  props.get(key);
         if (propValueObject instanceof String) {
             return (String)propValueObject;
