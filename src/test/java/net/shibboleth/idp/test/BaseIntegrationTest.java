@@ -279,7 +279,7 @@ public abstract class BaseIntegrationTest
     /** Path to conf/ldap.properties. */
     @NonnullAfterInit protected Path pathToLDAPProperties;
     
-    /** Resource to net/shibboleth/idp/messages/messages.properties.*/
+    /** Resource to messages.properties.*/
     @NonnullAfterInit protected Resource messagesPropertiesResource;
 
     /** Path to jetty.base. */
@@ -415,9 +415,16 @@ public abstract class BaseIntegrationTest
         pathToLDAPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "ldap.properties");
         Assert.assertTrue(pathToLDAPProperties.toFile().exists(), "Path to conf/ldap.properties not found");
         
-        //Classpath messages.properties resource
-        messagesPropertiesResource = new ClassPathResource("/net/shibboleth/idp/messages/messages.properties");
-        Assert.assertTrue(messagesPropertiesResource.exists(), "Path to message properties not found");
+        if (idpVersion.startsWith("3")) {
+            // Path to system/messages/message.properties
+            final Path messagesProperties = pathToIdPHome.resolve(Paths.get("system", "messages","messages.properties"));
+            Assert.assertTrue(messagesProperties.toFile().exists(), "Path system/messages/messages.properties not found");
+            messagesPropertiesResource = new FileSystemResource(messagesProperties.toAbsolutePath().toString());
+        } else {
+            // Classpath messages.properties
+            messagesPropertiesResource = new ClassPathResource("/net/shibboleth/idp/messages/messages.properties");
+            Assert.assertTrue(messagesPropertiesResource.exists(), "Classpath resource messages.properties not found");
+        }
         log.debug("Path to message properties '{}'", messagesPropertiesResource);
     }
 
@@ -923,7 +930,7 @@ public abstract class BaseIntegrationTest
     }
     
     /**
-     * Get a message value from the default <code>system/messages/messages.properties</code> file relating to the <code>key</code> argument.
+     * Get a message value from <code>messages.properties</code> relating to the <code>key</code> argument.
      * <p> Can NOT be used to get messages for different languages, only the default system message bundle.<p>
      * 
      * @param key the key used to lookup the value.
@@ -935,7 +942,7 @@ public abstract class BaseIntegrationTest
     protected String getMessage(@Nonnull @NotEmpty final String key) throws IOException {
         Constraint.isNotNull(StringSupport.trimOrNull(key), "Replacement property key cannot be null nor empty");
 
-        log.debug("Finding message property '{}' in file '{}'", key, messagesPropertiesResource);
+        log.debug("Finding message property '{}' in resource '{}'", key, messagesPropertiesResource);
 
         final Properties props = new Properties();
         props.load(messagesPropertiesResource.getInputStream());
