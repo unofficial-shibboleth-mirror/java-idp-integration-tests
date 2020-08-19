@@ -17,6 +17,8 @@
 
 package net.shibboleth.idp.test;
 
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -112,11 +114,23 @@ public class JettyServerProcess extends AbstractServerProcess {
 
         log.debug("Attempting to shutdown Jetty at '{}:{}'", hostname, port);
 
+        final int timeout = 5;
+
         try {
             try (final Socket s = new Socket(InetAddress.getByName(hostname), port)) {
+                s.setSoTimeout(timeout * 1000);
                 try (OutputStream out = s.getOutputStream()) {
                     out.write((password + "\r\nstop\r\n").getBytes());
                     out.flush();
+                    log.debug("Waiting {} seconds for jetty to stop", timeout);
+                    final LineNumberReader lin = new LineNumberReader(new InputStreamReader(s.getInputStream()));
+                    String response;
+                    while ((response = lin.readLine()) != null) {
+                       log.debug("Received '{}'", response);
+                       if ("Stopped".equals(response)) {
+                            log.debug("Server reports itself as Stopped");
+                        }
+                    }
                 }
             }
         } catch (SocketTimeoutException e) {
