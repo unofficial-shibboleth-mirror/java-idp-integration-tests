@@ -77,7 +77,6 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.util.SocketUtils;
 import org.testng.Assert;
 import org.testng.ITestResult;
-import org.testng.Reporter;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -395,7 +394,7 @@ public abstract class BaseIntegrationTest
         // Path to per-test idp.home
         final String timestamp = DateTimeFormatter.ofPattern(idpHomePattern).format(LocalDateTime.now());
         pathToIdPHome = pathToDistIdPHome.getParent().resolve(timestamp);
-        log.info("Path to idp.home '{}'", pathToIdPHome.toAbsolutePath());
+        log.debug("Path to idp.home '{}'", pathToIdPHome.toAbsolutePath());
         Assert.assertFalse(pathToIdPHome.toAbsolutePath().toFile().exists(), "Path to idp.home already exists");
 
         // Copy idp.home directory from distribution to new per test directory
@@ -634,16 +633,16 @@ public abstract class BaseIntegrationTest
         final Iterator<Integer> iterator = ports.iterator();
 
         port = iterator.next();
-        log.info("Selecting port '{}' for non-secure endpoints", port);
+        log.debug("Selecting port '{}' for non-secure endpoints", port);
 
         securePort = iterator.next();
-        log.info("Selecting port '{}' for secure endpoints", securePort);
+        log.debug("Selecting port '{}' for secure endpoints", securePort);
 
         backchannelPort = iterator.next();
-        log.info("Selecting port '{}' for backchannel endpoint", backchannelPort);
+        log.debug("Selecting port '{}' for backchannel endpoint", backchannelPort);
 
         ldapPort = iterator.next();
-        log.info("Selecting port '{}' for LDAP", ldapPort);
+        log.debug("Selecting port '{}' for LDAP", ldapPort);
         serverCommands.add("-D" + TEST_LDAP_PORT_PROPERTY + "=" + Integer.toString(ldapPort));
     }
 
@@ -657,14 +656,14 @@ public abstract class BaseIntegrationTest
         urlBuilder.setHost(address);
         urlBuilder.setPort(port);
         baseURL = urlBuilder.buildURL();
-        log.info("URL '{}' is the base URL which clients should connect to.", baseURL);
+        log.debug("URL '{}' is the base URL which clients should connect to.", baseURL);
 
         final URLBuilder secureUrlBuilder = new URLBuilder();
         secureUrlBuilder.setScheme("https");
         secureUrlBuilder.setHost(secureAddress);
         secureUrlBuilder.setPort(securePort);
         secureBaseURL = secureUrlBuilder.buildURL();
-        log.info("URL '{}' is the secure base URL which clients should connect to.", secureBaseURL);
+        log.debug("URL '{}' is the secure base URL which clients should connect to.", secureBaseURL);
     }
 
     /**
@@ -1344,7 +1343,6 @@ public abstract class BaseIntegrationTest
         }
 
         log.debug("Desired capabilities '{}'", desiredCapabilities);
-        Reporter.log("Desired capabilities '" + desiredCapabilities + "'", true);
     }
 
     /**
@@ -1423,7 +1421,7 @@ public abstract class BaseIntegrationTest
     public void setUpSauceLabsClientIPRange() {
         if (BaseIntegrationTest.isRemote()) {
             clientIPRange = SAUCE_LABS_IP_RANGE;
-            log.info("Setting client IP range to '{}'", clientIPRange);
+            log.debug("Setting client IP range to '{}'", clientIPRange);
         }
     }
 

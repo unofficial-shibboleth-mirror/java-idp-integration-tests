@@ -54,7 +54,7 @@ public class CustomSauceOnDemandTestListener extends SauceOnDemandTestListener {
     @Override
     public void onStart(ITestContext testContext) {
         if (!BaseIntegrationTest.isRemote()) {
-            log.info("Setting system property '{}' to 'true'", BaseIntegrationTest.SELENIUM_IS_LOCAL);
+            log.debug("Setting system property '{}' to 'true'", BaseIntegrationTest.SELENIUM_IS_LOCAL);
             System.setProperty(BaseIntegrationTest.SELENIUM_IS_LOCAL, "true");
         }
         super.onStart(testContext);
