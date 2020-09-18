@@ -31,9 +31,12 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,7 +45,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.shibboleth.idp.installer.PropertiesWithComments;
+import net.shibboleth.idp.module.IdPModule;
+import net.shibboleth.idp.module.ModuleContext;
+import net.shibboleth.idp.module.ModuleException;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
+import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.logic.Constraint;
@@ -391,6 +398,8 @@ public abstract class BaseIntegrationTest
             log.error("Unable to determine version of IdP");
         }
 
+        enableModules(Collections.singletonList("idp.authn.Password"), pathToDistIdPHome);
+        
         // Path to per-test idp.home
         final String timestamp = DateTimeFormatter.ofPattern(idpHomePattern).format(LocalDateTime.now());
         pathToIdPHome = pathToDistIdPHome.getParent().resolve(timestamp);
@@ -425,6 +434,26 @@ public abstract class BaseIntegrationTest
             Assert.assertTrue(messagesPropertiesResource.exists(), "Classpath resource messages.properties not found");
         }
         log.debug("Path to message properties '{}'", messagesPropertiesResource);
+    }
+    
+    /**
+     * Enable one or more modules.
+     * 
+     * @param modules modules to enable
+     * @param idpHome location of IdP
+     * 
+     * @throws ModuleException if an error occurs
+     */
+    protected void enableModules(@Nonnull @NonnullElements final Collection<String> modules,
+            @Nonnull final Path idpHome) throws ModuleException {
+        
+        final ModuleContext context = new ModuleContext(idpHome);
+        
+        for (final IdPModule module : ServiceLoader.load(IdPModule.class)) {
+            if (modules.contains(module.getId())) {
+                module.enable(context);
+            }
+        }
     }
 
     /**
