@@ -398,8 +398,6 @@ public abstract class BaseIntegrationTest
             log.error("Unable to determine version of IdP");
         }
 
-        enableModules(Collections.singletonList("idp.authn.Password"), pathToDistIdPHome);
-        
         // Path to per-test idp.home
         final String timestamp = DateTimeFormatter.ofPattern(idpHomePattern).format(LocalDateTime.now());
         pathToIdPHome = pathToDistIdPHome.getParent().resolve(timestamp);
@@ -432,6 +430,10 @@ public abstract class BaseIntegrationTest
             // Classpath messages.properties
             messagesPropertiesResource = new ClassPathResource("/net/shibboleth/idp/messages/messages.properties");
             Assert.assertTrue(messagesPropertiesResource.exists(), "Classpath resource messages.properties not found");
+            
+            // Enable modules
+            enableModules(Collections.singletonList("idp.authn.Password"), pathToIdPHome);
+            enableModules(Collections.singletonList("idp.intercept.Consent"), pathToIdPHome);
         }
         log.debug("Path to message properties '{}'", messagesPropertiesResource);
     }
@@ -446,11 +448,14 @@ public abstract class BaseIntegrationTest
      */
     protected void enableModules(@Nonnull @NonnullElements final Collection<String> modules,
             @Nonnull final Path idpHome) throws ModuleException {
-        
+
         final ModuleContext context = new ModuleContext(idpHome);
-        
+        log.trace("Module context {}", context);
+
         for (final IdPModule module : ServiceLoader.load(IdPModule.class)) {
+            log.trace("Found module {}", module);
             if (modules.contains(module.getId())) {
+                log.trace("Enabling module {}", module);
                 module.enable(context);
             }
         }
