@@ -1200,17 +1200,22 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Enable CAS protocol for the default relying party.
+     * Enable CAS for the default relying party.
      *
-     * @throws IOException ...
+     * @throws IOException if an error occurs replacing text in relying-party.xml
+     * @throws ModuleException if an error occurs
      */
-    public void enableCASProtocol() throws IOException {
+    public void enableCAS() throws IOException, ModuleException {
         final Path pathToRelyingPartyXML = Paths.get("conf", "relying-party.xml");
 
         final String regex = "<ref bean=\"Liberty.SSOS\" />";
         final String replacement = regex + "\n" + "<ref bean=\"CAS.LoginConfiguration\" />\n"
                 + "<ref bean=\"CAS.ProxyConfiguration\" />\n" + "<ref bean=\"CAS.ValidateConfiguration\" />";
         replaceIdPHomeFile(pathToRelyingPartyXML, regex, replacement);
+        
+        if (!idpVersion.startsWith("3")) {
+            enableModules(Collections.singletonList("idp.profile.CAS"), pathToIdPHome);
+        }
     }
 
     /**

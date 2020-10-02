@@ -105,7 +105,7 @@ public class CASIntegrationTest extends BaseIntegrationTest {
 
         enableLogout();
 
-        enableCASProtocol();
+        enableCAS();
 
         enableLocalhostCASServiceDefinition();
 
@@ -135,7 +135,7 @@ public class CASIntegrationTest extends BaseIntegrationTest {
 
         enableLogout();
 
-        enableCASProtocol();
+        enableCAS();
 
         enableLocalhostCASServiceDefinition();
 
