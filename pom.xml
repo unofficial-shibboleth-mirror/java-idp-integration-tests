@@ -374,9 +374,9 @@
         </profile>
 
         <profile>
-            <id>idp-4.0.0-SNAPSHOT</id>
+            <id>idp-4.0.1</id>
             <properties>
-                 <idp-to-be-tested.version>4.0.0-SNAPSHOT</idp-to-be-tested.version>
+                 <idp-to-be-tested.version>4.0.1</idp-to-be-tested.version>
             </properties>
         </profile>
 
