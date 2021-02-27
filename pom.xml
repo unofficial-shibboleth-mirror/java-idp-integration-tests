@@ -28,7 +28,7 @@
         <idp-jetty-base.version>9.4.1-SNAPSHOT</idp-jetty-base.version>
 
         <!-- Default version of Jetty to be tested -->
-        <jetty.version>9.4.36.v20210114</jetty.version>
+        <jetty.version>9.4.38.v20210224</jetty.version>
 
         <!-- Tomcat -->
         <idp-tomcat-base.version>8.5.0-SNAPSHOT</idp-tomcat-base.version>
