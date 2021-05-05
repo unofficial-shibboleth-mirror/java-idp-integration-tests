@@ -1276,7 +1276,7 @@ public abstract class BaseIntegrationTest
     public void enableAttributeResolverLDAP() throws IOException {
         final Path pathToServicesXML = Paths.get("conf", "services.xml");
         final String oldText = "<value>%\\{idp.home\\}/conf/attribute-resolver.xml</value>";
-        final String newText = "<value>%\\{idp.home\\}/conf/attribute-resolver-ldap.xml</value>";
+        final String newText = "<value>%\\{idp.home\\}/conf/examples/attribute-resolver-ldap.xml</value>";
         replaceIdPHomeFile(pathToServicesXML, oldText, newText);
     }
 
@@ -1286,7 +1286,7 @@ public abstract class BaseIntegrationTest
      * @throws IOException ...
      */
     public void enableAttributeResolverLDAPExportUid() throws IOException {
-        final Path pathToAttributeResolverLdapXML = Paths.get("conf", "attribute-resolver-ldap.xml");
+        final Path pathToAttributeResolverLdapXML = Paths.get("conf", "examples", "attribute-resolver-ldap.xml");
         
         final String oldText = "mail displayName sn givenName departmentNumber employeeNumber eduPersonEntitlement eduPersonAssurance";
         final String newText = "mail displayName sn givenName departmentNumber employeeNumber eduPersonEntitlement eduPersonAssurance uid";
