@@ -64,7 +64,7 @@ import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -885,11 +885,7 @@ public abstract class BaseIntegrationTest
             setUpSauceDriver();
         } else {
             log.debug("Setting up local web driver with desired capabilities '{}'", desiredCapabilities);
-            if (Boolean.getBoolean("firefox")) {
-                setUpFirefoxDriver();
-            } else {
-                setUpHtmlUnitDriver();
-            }
+            setUpFirefoxDriver();
         }
         log.debug("Started web driver '{}' with desired capabilities '{}'", driver, desiredCapabilities);
     }
@@ -1298,24 +1294,19 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Set up HtmlUnitDriver web driver.
-     * 
-     * @throws IOException ...
-     */
-    @BeforeMethod(enabled = false)
-    public void setUpHtmlUnitDriver() throws IOException {
-        driver = new HtmlUnitDriver();
-        ((HtmlUnitDriver) driver).setJavascriptEnabled(true);
-    }
-
-    /**
      * Set up Firefox web driver.
      * 
      * @throws IOException ...
      */
     @BeforeMethod(enabled = false)
     public void setUpFirefoxDriver() throws IOException {
-        driver = new FirefoxDriver();
+        final FirefoxOptions options = new FirefoxOptions();
+        options.setAcceptInsecureCerts(true);
+        options.setHeadless(true);
+        if (Boolean.getBoolean("no-headless")) {
+            options.setHeadless(false);
+        }
+        driver = new FirefoxDriver(options);
         driver.manage().window().setPosition(new Point(0, 0));
         driver.manage().window().setSize(new Dimension(1024, 768));
     }
@@ -1542,16 +1533,12 @@ public abstract class BaseIntegrationTest
     public String getPageSource() {
         String pageSource = null;
 
-        if (driver instanceof HtmlUnitDriver) {
-            pageSource = driver.getPageSource();
-        } else {
-            pageSource = driver.findElement(By.tagName("body")).getText();
-        }
+        pageSource = driver.findElement(By.tagName("body")).getText();
 
         if (isInternetExplorer()) {
             pageSource = cleanupPageSourceIE(pageSource);
         }
-
+        log.trace("get page source\n{}", pageSource);
         return pageSource;
     }
 

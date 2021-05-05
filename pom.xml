@@ -43,7 +43,6 @@
         <opensaml.version>4.1.1-SNAPSHOT</opensaml.version>
 
         <selenium.version>3.141.59</selenium.version>
-        <selenium.htmlunit-driver.version>2.35.1</selenium.htmlunit-driver.version>
         <sauce.version>2.1.20</sauce.version>
 
         <test-distributions.directory>${project.basedir}/test-distributions</test-distributions.directory>
@@ -183,12 +182,6 @@
             <artifactId>selenium-java</artifactId>
             <version>${selenium.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>htmlunit-driver</artifactId>
-            <version>${selenium.htmlunit-driver.version}</version>
-            <!-- Note : xalan and xerces are transitive dependencies -->
         </dependency>
         <dependency>
             <groupId>com.saucelabs</groupId>
