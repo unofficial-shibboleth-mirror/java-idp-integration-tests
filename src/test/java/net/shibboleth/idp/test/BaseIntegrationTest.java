@@ -1323,6 +1323,7 @@ public abstract class BaseIntegrationTest
         if (Boolean.getBoolean("no-headless")) {
             options.setHeadless(false);
         }
+        options.addPreference("devtools.jsonview.enabled", false);
         driver = new FirefoxDriver(options);
         driver.manage().window().setPosition(new Point(0, 0));
         driver.manage().window().setSize(new Dimension(1024, 768));
