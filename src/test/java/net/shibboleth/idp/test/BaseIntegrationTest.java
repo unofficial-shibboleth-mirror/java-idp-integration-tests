@@ -831,6 +831,23 @@ public abstract class BaseIntegrationTest
         replaceFile(pathToIdPWebXML, oldText, builder.toString());
     }
 
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpIdPPaths"})
+    public void setUpIdPWebApp() throws Exception {
+        final Path pathToIdPXML = pathToIdPHome.resolve(Paths.get("jetty-base", "webapps", "idp.xml"));
+        Assert.assertTrue(pathToIdPXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
+
+        final String oldText = "</Configure>";
+
+        final StringBuilder builder = new StringBuilder();
+        builder.append("  <Call name=\"setAttribute\">\n");
+        builder.append("    <Arg>org.eclipse.jetty.server.webapp.WebInfIncludeJarPattern</Arg>\n");
+        builder.append("    <Arg>none</Arg>\n");
+        builder.append("  </Call>\n");
+        builder.append("</Configure>\n");
+
+        replaceFile(pathToIdPXML, oldText, builder.toString());
+    }
+
     /**
      * Set the {@link #IDP_XML_SECURITY_MANAGER_PROP_NAME} property to {@link #IDP_XML_SECURITY_MANAGER_PROP_VALUE}.
      * Save the previous value.
