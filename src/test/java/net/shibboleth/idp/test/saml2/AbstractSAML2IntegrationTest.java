@@ -50,6 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -76,6 +77,23 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
     /** ID of transient ID input element to init logout. */
     @Nonnull public String logoutTransientIDInputID;
+
+    @BeforeClass
+    /**
+     * Enable consent to attribute release for IdP versions 4.1 and later.
+     * 
+     * Attribute consent was enabled by default for IdP versions 3 through 4.0.
+     * 
+     * @throws IOException if an I/O error occurs
+     */
+    public void setUpAttributeConsent() throws IOException {
+        if (idpVersion.startsWith("3") || idpVersion.startsWith("4.0")) {
+            log.debug("Not enabling attribute-release consent for IdP version '{}'", idpVersion);
+        } else {
+            log.debug("Enabling attribute-release consent for IdP version '{}'", idpVersion);
+            enableAttributeReleaseConsent();
+        }
+    }
 
     /**
      * Setup response validator.

@@ -1260,6 +1260,14 @@ public abstract class BaseIntegrationTest
         replaceIdPHomeFile(pathToLogbackXML, oldText, newText);
     }
 
+    public void enableAttributeReleaseConsent() throws IOException {
+        final Path pathToRelyingPartyXML = Paths.get("conf", "relying-party.xml");
+
+        final String oldText = "<bean parent=\"SAML2.SSO\" />";
+        final String newText = "<bean parent=\"SAML2.SSO\" p:postAuthenticationFlows=\"attribute-release\" />";
+        replaceIdPHomeFile(pathToRelyingPartyXML, oldText, newText);
+    }
+
     /**
      * Use attribute-resolver-ldap.xml instead of attribute-resolver.xml.
      * 

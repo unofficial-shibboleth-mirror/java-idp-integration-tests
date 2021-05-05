@@ -36,6 +36,7 @@ import org.opensaml.core.xml.io.UnmarshallingException;
 import org.opensaml.saml.saml1.core.AuthenticationStatement;
 import org.opensaml.saml.saml1.core.Response;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -102,21 +103,40 @@ public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
         // Uncomment disabled by default AttributeQuery profile
         final StringBuilder toUncomment = new StringBuilder();
         toUncomment.append("\\<\\!--\\s+");
+        if (idpVersion.startsWith("3") || idpVersion.startsWith("4.0")) {
         toUncomment.append("<bean parent=\"Shibboleth.SSO\" p:postAuthenticationFlows=\"attribute-release\" />");
+        } else {
+            toUncomment.append("<bean parent=\"Shibboleth.SSO\" />");    
+        }
         toUncomment.append("\\s+");
         toUncomment.append("<ref bean=\"SAML1.AttributeQuery\" />");
         toUncomment.append("\\s+");
         toUncomment.append("<ref bean=\"SAML1.ArtifactResolution\" />");
         toUncomment.append("\\s+--\\>");
 
-        final StringBuilder commented = new StringBuilder();
-        commented.append("<bean parent=\"Shibboleth.SSO\" p:postAuthenticationFlows=\"attribute-release\" />");
-        commented.append(System.lineSeparator());
-        commented.append("<ref bean=\"SAML1.AttributeQuery\" />");
-        commented.append(System.lineSeparator());
-        commented.append("<ref bean=\"SAML1.ArtifactResolution\" />");
+        final StringBuilder uncommented = new StringBuilder();
+        uncommented.append("<bean parent=\"Shibboleth.SSO\" p:postAuthenticationFlows=\"attribute-release\" />");
+        uncommented.append(System.lineSeparator());
+        uncommented.append("<ref bean=\"SAML1.AttributeQuery\" />");
+        uncommented.append(System.lineSeparator());
+        uncommented.append("<ref bean=\"SAML1.ArtifactResolution\" />");
 
-        replaceFile(pathToRelyingPartyXML, toUncomment.toString(), commented.toString());
+        replaceFile(pathToRelyingPartyXML, toUncomment.toString(), uncommented.toString());
+    }
+
+    /**
+     * Enable consent to attribute release for IdP versions 4.1 and later.
+     * 
+     * Attribute consent was enabled by default for IdP versions 3 through 4.0.
+     * 
+     * @throws IOException if an I/O error occurs
+     */
+    @BeforeClass
+    public void setUpAttributeConsent() throws IOException {
+        if (idpVersion.startsWith("3") || idpVersion.startsWith("4.0")) {
+        } else {
+            enableAttributeReleaseConsent();
+        }
     }
 
     /**
