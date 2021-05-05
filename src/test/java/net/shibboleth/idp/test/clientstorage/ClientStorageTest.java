@@ -103,6 +103,8 @@ public class ClientStorageTest extends BaseIntegrationTest {
         read.findElement(By.name("context")).sendKeys("context");
         read.findElement(By.name("key")).sendKeys("key");
         read.submit();
+
+        waitForPageURLContains("/idp/storage/read");
     }
 
     /**
@@ -125,6 +127,8 @@ public class ClientStorageTest extends BaseIntegrationTest {
         read.findElement(By.name("key")).sendKeys("key");
         read.findElement(By.name("value")).sendKeys("value");
         read.submit();
+
+        waitForPageURLContains("/idp/storage/create");
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")

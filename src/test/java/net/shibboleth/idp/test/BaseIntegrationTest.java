@@ -70,6 +70,7 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
@@ -1633,6 +1634,7 @@ public abstract class BaseIntegrationTest
      * @param user username
      */
     public void login(final @Nonnull String user) {
+        new WebDriverWait(driver, 10).until(driver -> driver.findElement(By.name("j_username")));
         final WebElement username = driver.findElement(By.name("j_username"));
         final WebElement password = driver.findElement(By.name("j_password"));
         username.sendKeys(user);
@@ -1707,6 +1709,16 @@ public abstract class BaseIntegrationTest
                 return d.getCurrentUrl().startsWith(prefix);
             }
         });
+    }
+
+    /**
+     * Wait for the page whose URL contains the given fraction.
+     * 
+     * @param fraction the fraction of the url
+     */
+    public void waitForPageURLContains(@Nonnull final String fraction) {
+        Assert.assertNotNull(fraction);
+        new WebDriverWait(driver, 10).until(ExpectedConditions.urlContains(fraction));
     }
 
     /**
