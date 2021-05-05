@@ -62,6 +62,9 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(SAML2AttributeQueryIntegrationTest.class);
 
+    /** Validator to use for empty responses. */
+    @Nullable private SAML2TestStatusResponseTypeValidator emptyValidator;
+
     /** Validator to use for error responses. */
     @Nullable private SAML2TestStatusResponseTypeValidator errorValidator;
 
@@ -104,6 +107,8 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         errorValidator = new SAML2TestResponseValidator();
         errorValidator.statusCode = StatusCode.REQUESTER;
+
+        emptyValidator = new SAML2TestResponseValidator();
 
         ssoValidator = new SAML2TestResponseValidator();
         ssoValidator.spCredential = getSPCredential();
@@ -296,9 +301,25 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
     }
 
     /**
+     * Validate 2 SSO {@link Response} with no assertions.
+     * 
+     * @throws Exception if the response is unable to be verified
+     */
+    protected void validateEmptyResponse() throws Exception {
+
+        log.debug("Empty response:\n{}", getPageSource());
+
+        final Response response = unmarshallResponse(getPageSource());
+
+        emptyValidator.validateResponse(response);
+
+        Assert.assertTrue(response.getAssertions().isEmpty());
+    }
+
+    /**
      * Validate SAML error response.
      * 
-     * @throws Exception if something bad happens
+     * @throws Exception if the response is unable to be verified
      */
     protected void validateErrorResponse() throws Exception {
         
@@ -312,7 +333,7 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
     /**
      * Validate SAML 2 SSO {@link Response}.
      * 
-     * @throws Exception if something bad happens
+     * @throws Exception if the response is unable to be verified
      */
     protected void validateSSOResponse() throws Exception {
         ssoValidator.validateResponse(super.unmarshallResponse(getPageSource()));
@@ -562,13 +583,9 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         setClientSigningPrivateKey(trustedSpKey);
 
-        // attribute query, should return an error since there are no consent storage records
-
         submitAttributeQueryForm();
 
-        errorValidator.statusCode = StatusCode.RESPONDER;
-
-        validateErrorResponse();
+        validateEmptyResponse();
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
@@ -588,13 +605,9 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         setClientSigningPrivateKey(trustedSpKey);
 
-        // attribute query, should return an error since there are no consent storage records
-
         submitAttributeQueryForm();
 
-        errorValidator.statusCode = StatusCode.RESPONDER;
-
-        validateErrorResponse();
+        validateEmptyResponse();
 
         // start SSO
 
@@ -618,15 +631,13 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         validateSSOResponse();
 
-        // attribute query, should return an error since there are no consent storage records
-
         getAndWaitForTestbedPage();
 
         adjustEndpointPort();
 
         submitAttributeQueryForm();
 
-        validateErrorResponse();
+        validateEmptyResponse();
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
@@ -646,13 +657,9 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         setClientSigningPrivateKey(trustedSpKey);
 
-        // attribute query, should return an error since there are no consent storage records
-
         submitAttributeQueryForm();
 
-        errorValidator.statusCode = StatusCode.RESPONDER;
-
-        validateErrorResponse();
+        validateEmptyResponse();
 
         // start SSO
 
@@ -704,13 +711,9 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         setClientSigningPrivateKey(trustedSpKey);
 
-        // attribute query, should return an error since there are no consent storage records
-
         submitAttributeQueryForm();
 
-        errorValidator.statusCode = StatusCode.RESPONDER;
-
-        validateErrorResponse();
+        validateEmptyResponse();
 
         // start SSO
 
@@ -764,13 +767,9 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         setClientSigningPrivateKey(trustedSpKey);
 
-        // attribute query, should return an error since there are no consent storage records
-
         submitAttributeQueryForm();
 
-        errorValidator.statusCode = StatusCode.RESPONDER;
-
-        validateErrorResponse();
+        validateEmptyResponse();
 
         // start SSO
 
