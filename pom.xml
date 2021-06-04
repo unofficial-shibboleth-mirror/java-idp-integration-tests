@@ -19,7 +19,7 @@
 
     <properties>
         <!-- IdP -->
-        <idp.version>4.1.3-SNAPSHOT</idp.version>
+        <idp.version>4.2.0-SNAPSHOT</idp.version>
 
         <!--  Version of IdP to be tested -->
         <idp-to-be-tested.version>${idp.version}</idp-to-be-tested.version>
