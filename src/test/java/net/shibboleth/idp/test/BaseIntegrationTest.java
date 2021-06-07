@@ -31,6 +31,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -185,7 +186,7 @@ public abstract class BaseIntegrationTest
     @Nonnull public final static String SELENIUM_IS_REMOTE = "SELENIUM_IS_REMOTE";
 
     /** IP range of Sauce Labs. */
-    @Nonnull public final static String SAUCE_LABS_IP_RANGE = "162.222.73.0/24";
+    @Nonnull public final static List<String> SAUCE_LABS_IP_RANGES = Arrays.asList("162.222.72.0/21", "66.85.48.0/21", "185.94.24.0/22");
 
     /** Name of property defining the port that the test directory server listens on. */
     @Nonnull public final static String TEST_LDAP_PORT_PROPERTY = "test.ldap.port";
@@ -275,7 +276,7 @@ public abstract class BaseIntegrationTest
     @Nonnull protected boolean useSecureBaseURL = true;
 
     /** Client IP range to allow access from. Defaults to "127.0.0.1/32". */
-    @Nonnull protected String clientIPRange = "127.0.0.1/32";
+    @Nonnull protected List<String> clientIPRanges = new ArrayList<>(Arrays.asList("127.0.0.1/32"));
 
     /** Path to idp.home. */
     @NonnullAfterInit protected Path pathToIdPHome;
@@ -718,9 +719,29 @@ public abstract class BaseIntegrationTest
 
         // Access control from non-localhost.
 
-        if (!clientIPRange.equalsIgnoreCase("127.0.0.1/32")) {
-            replaceIdPHomeFile(Paths.get("conf", "access-control.xml"), "127\\.0\\.0\\.1/32", clientIPRange);
+        // Add public server addresses if not localhost
+        if (address != "localhost") {
+            clientIPRanges.add(address + "/32");
         }
+        if (secureAddress != "localhost") {
+            clientIPRanges.add(secureAddress + "/32");
+        }
+        // Add private server addresses if not localhost
+        if (privateAddress != "localhost") {
+            clientIPRanges.add(privateAddress + "/32");
+        }
+        if (privateSecureAddress != "localhost") {
+            clientIPRanges.add(privateSecureAddress + "/32");
+        }
+
+        final List<String> escapedClientIPRanges = new ArrayList<>();
+        for(final String clientIPRange : clientIPRanges) {
+            escapedClientIPRanges.add("'" + clientIPRange + "'");
+        }
+        String newClientIPRange = String.join(" , ", escapedClientIPRanges);
+
+        log.debug("setUpEndpoints newClientIPRange {}", newClientIPRange);
+        replaceIdPHomeFile(Paths.get("conf", "access-control.xml"), "'127\\.0\\.0\\.1/32'", newClientIPRange);
 
         // LDAP port.
         replaceLDAPProperty("idp.authn.LDAP.ldapURL", "ldap://localhost:" + ldapPort);
@@ -1477,8 +1498,8 @@ public abstract class BaseIntegrationTest
     @BeforeClass(enabled = true)
     public void setUpSauceLabsClientIPRange() {
         if (BaseIntegrationTest.isRemote()) {
-            clientIPRange = SAUCE_LABS_IP_RANGE;
-            log.debug("Setting client IP range to '{}'", clientIPRange);
+            clientIPRanges.addAll(SAUCE_LABS_IP_RANGES);
+            log.debug("Setting client IP range to '{}'", clientIPRanges);
         }
     }
 

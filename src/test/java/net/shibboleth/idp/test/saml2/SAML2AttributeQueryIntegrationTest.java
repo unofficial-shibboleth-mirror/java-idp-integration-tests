@@ -114,7 +114,9 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
         ssoValidator.spCredential = getSPCredential();
         ssoValidator.authnContextClassRef = AuthnContext.PPT_AUTHN_CTX;
         if (BaseIntegrationTest.isRemote()) {
-            ssoValidator.subjectConfirmationDataAddressRange = IPRange.parseCIDRBlock(SAUCE_LABS_IP_RANGE);
+            for (final String ipRange : SAUCE_LABS_IP_RANGES) {
+                ssoValidator.subjectConfirmationDataAddressRanges.add(IPRange.parseCIDRBlock(ipRange));
+            }
         }
     }
 
