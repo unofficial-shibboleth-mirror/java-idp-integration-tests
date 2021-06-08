@@ -53,11 +53,19 @@ import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterI
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
+import net.shibboleth.utilities.java.support.httpclient.HttpClientBuilder;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.net.URLBuilder;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Platform;
@@ -639,6 +647,16 @@ public abstract class BaseIntegrationTest
 
         final String envPublicServerAddress = System.getProperty(SERVER_ADDRESS_PROPERTY);
         log.debug("System property '{}' is '{}'", SERVER_ADDRESS_PROPERTY, envPublicServerAddress);
+
+        if (Boolean.getBoolean("EC2")) {
+            final String publicIPV4address = getEC2PublicIPV4();
+            address = publicIPV4address;
+            secureAddress = publicIPV4address;
+
+            final String privateIPV4address = getEC2PrivateIPV4();
+            privateAddress = privateIPV4address;
+            privateSecureAddress = privateIPV4address;
+        }
 
         if (envPublicServerAddress != null) {
             address = envPublicServerAddress;
@@ -1821,6 +1839,68 @@ public abstract class BaseIntegrationTest
      */
     public void submitForm() {
         driver.findElement(By.name(SUBMIT_FORM_INPUT_NAME)).click();
+    }
+
+    /**
+     * Get EC2 metadata.
+     * 
+     * @return EC2 metadata or null
+     */
+    @Nullable
+    public String getEC2Metadata(@Nonnull final String url) {
+        log.debug("Get EC2 metadata '{}'", url);
+        final HttpGet httpget = new HttpGet(url);
+        final HttpClientBuilder builder = new HttpClientBuilder();
+        try {
+            final HttpClient httpClient = builder.buildClient();
+            final HttpResponse response = httpClient.execute(httpget);
+            log.trace("EC2 metadata response '{}'", response);
+            try {
+                final HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    long len = entity.getContentLength();
+                    if (len != -1) {
+                        final String metadata = EntityUtils.toString(entity);
+                        log.info("EC2 '{}'='{}'", url, metadata);
+                        return metadata;
+                    }
+                }
+            } finally {
+                if (response instanceof CloseableHttpResponse) {
+                    ((CloseableHttpResponse) response).close();
+                }
+                if (httpClient instanceof CloseableHttpClient) {
+                    ((CloseableHttpClient) httpClient).close();
+                }
+            }
+        } catch (Exception e) {
+            log.error("Status page response error '{}'", e);
+        }
+        return null;
+    }
+
+    /**
+     * Get EC2 private IPV4 address.
+     * 
+     * @return EC2 private IPV4 address or null
+     */
+    @Nullable
+    public String getEC2PrivateIPV4() {
+        log.info("Attempting to get private IPV4 address from EC2");
+        final String url = "http://169.254.169.254/latest/meta-data/local-ipv4";
+        return getEC2Metadata(url);
+    }
+
+    /**
+     * Get EC2 public IPV4 address.
+     * 
+     * @return EC2 public IPV4 address or null
+     */
+    @Nullable
+    public String getEC2PublicIPV4() {
+        log.info("Attempting to get public IPV4 address from EC2");
+        final String url = "http://169.254.169.254/latest/meta-data/public-ipv4";
+        return getEC2Metadata(url);
     }
 
 }
