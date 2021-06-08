@@ -1430,6 +1430,8 @@ public abstract class BaseIntegrationTest
             desiredCapabilities.merge(overrideCapabilities);
         }
 
+        desiredCapabilities.setAcceptInsecureCerts(true);
+
         log.debug("Desired capabilities '{}'", desiredCapabilities);
     }
 
