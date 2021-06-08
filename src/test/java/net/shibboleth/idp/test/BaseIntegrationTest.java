@@ -1374,7 +1374,7 @@ public abstract class BaseIntegrationTest
         final SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication();
         final String username = authentication.getUsername();
         final String accesskey = authentication.getAccessKey();
-        final URL url = new URL("http://" + username + ":" + accesskey + "@ondemand.saucelabs.com:80/wd/hub");
+        final URL url = new URL("https://" + username + ":" + accesskey + "@ondemand.us-west-1.saucelabs.com:443/wd/hub");
         final RemoteWebDriver remoteWebDriver = new RemoteWebDriver(url, desiredCapabilities);
         threadLocalWebDriver.set(remoteWebDriver);
         driver = threadLocalWebDriver.get();
