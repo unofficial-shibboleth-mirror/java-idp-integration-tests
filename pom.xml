@@ -43,7 +43,7 @@
         <opensaml.version>4.1.2-SNAPSHOT</opensaml.version>
 
         <selenium.version>3.141.59</selenium.version>
-        <sauce.version>2.1.20</sauce.version>
+        <sauce.version>2.1.25</sauce.version>
 
         <test-distributions.directory>${project.basedir}/test-distributions</test-distributions.directory>
         <idp-to-be-tested.directory>${test-distributions.directory}/shibboleth-identity-provider-${idp-to-be-tested.version}</idp-to-be-tested.directory>
