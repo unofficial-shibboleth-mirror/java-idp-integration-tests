@@ -67,6 +67,10 @@ public class CustomSauceOnDemandTestListener extends SauceOnDemandTestListener {
      */
     @Override
     public void onTestSuccess(ITestResult tr) {
+        if (!BaseIntegrationTest.isRemote()) {
+            return;
+        }
+
         super.onTestSuccess(tr);
 
         if (printPublicJobLinkOnSuccess && BaseIntegrationTest.isRemote()) {
