@@ -1427,6 +1427,12 @@ public abstract class BaseIntegrationTest
             }
         }
 
+        if (desiredCapabilities.getBrowserName() == BrowserType.FIREFOX) {
+            final FirefoxOptions options = new FirefoxOptions();
+            options.addPreference("devtools.jsonview.enabled", false);
+            desiredCapabilities.merge(options);
+        }
+
         // Override desired capabilities.
         if (overrideCapabilities != null) {
             log.debug("Override desired capabilities with '{}'", overrideCapabilities);
