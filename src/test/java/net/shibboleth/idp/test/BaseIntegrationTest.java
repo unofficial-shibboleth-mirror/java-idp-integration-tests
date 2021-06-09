@@ -641,9 +641,10 @@ public abstract class BaseIntegrationTest
      * If the {@link #SERVER_ADDRESS_PROPERTY} system property exists but {@link #PRIVATE_SERVER_ADDRESS_PROPERTY} does
      * not, use it as both the non-secure and secure (1) server and (2) private server address.
      * </p>
+     * @throws Exception if unable to retrieve IP addresses from EC2
      */
     @BeforeClass
-    public void setUpAddresses() {
+    public void setUpAddresses() throws Exception {
         final String envPrivateServerAddress = System.getProperty(PRIVATE_SERVER_ADDRESS_PROPERTY);
         log.debug("System property '{}' is '{}'", PRIVATE_SERVER_ADDRESS_PROPERTY, envPrivateServerAddress);
 
@@ -1841,9 +1842,10 @@ public abstract class BaseIntegrationTest
      * Get EC2 metadata.
      * 
      * @return EC2 metadata or null
+     * @throws Exception if unable to retrieve metadata from EC2
      */
     @Nullable
-    public String getEC2Metadata(@Nonnull final String url) {
+    public String getEC2Metadata(@Nonnull final String url) throws Exception {
         log.debug("Get EC2 metadata '{}'", url);
         final HttpGet httpget = new HttpGet(url);
         final HttpClientBuilder builder = new HttpClientBuilder();
@@ -1871,6 +1873,7 @@ public abstract class BaseIntegrationTest
             }
         } catch (Exception e) {
             log.error("Status page response error '{}'", e);
+            throw e;
         }
         return null;
     }
@@ -1879,9 +1882,10 @@ public abstract class BaseIntegrationTest
      * Get EC2 private IPV4 address.
      * 
      * @return EC2 private IPV4 address or null
+     * @throws Exception if unable to determine private IPV4 address
      */
     @Nullable
-    public String getEC2PrivateIPV4() {
+    public String getEC2PrivateIPV4() throws Exception {
         log.info("Attempting to get private IPV4 address from EC2");
         final String url = "http://169.254.169.254/latest/meta-data/local-ipv4";
         return getEC2Metadata(url);
@@ -1891,9 +1895,10 @@ public abstract class BaseIntegrationTest
      * Get EC2 public IPV4 address.
      * 
      * @return EC2 public IPV4 address or null
+     * @throws Exception if unable to determine public IPV4 address
      */
     @Nullable
-    public String getEC2PublicIPV4() {
+    public String getEC2PublicIPV4() throws Exception {
         log.info("Attempting to get public IPV4 address from EC2");
         final String url = "http://169.254.169.254/latest/meta-data/public-ipv4";
         return getEC2Metadata(url);
