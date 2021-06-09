@@ -35,9 +35,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -284,7 +286,7 @@ public abstract class BaseIntegrationTest
     @Nonnull protected boolean useSecureBaseURL = true;
 
     /** Client IP range to allow access from. Defaults to "127.0.0.1/32". */
-    @Nonnull protected List<String> clientIPRanges = new ArrayList<>(Arrays.asList("127.0.0.1/32"));
+    @Nonnull protected Set<String> clientIPRanges = new LinkedHashSet(Arrays.asList("127.0.0.1/32"));
 
     /** Path to idp.home. */
     @NonnullAfterInit protected Path pathToIdPHome;
