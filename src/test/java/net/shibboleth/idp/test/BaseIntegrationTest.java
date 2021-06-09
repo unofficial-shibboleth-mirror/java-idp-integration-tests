@@ -1271,14 +1271,38 @@ public abstract class BaseIntegrationTest
      * 
      * @throws IOException ...
      */
-    public void enableLocalhostCASServiceDefinition() throws IOException {
+    public void enableCASServiceDefinition() throws IOException {
         final Path pathToCASProtocolXML = Paths.get("conf", "cas-protocol.xml");
 
         final String regex = "</list>";
-        final String replacement = "<bean class=\"net.shibboleth.idp.cas.service.ServiceDefinition\"\n"
-                + "c:regex=\"https?://localhost(:\\\\d+)?/.*\"\n" + "p:group=\"test-services\"\n"
-                + "p:authorizedToProxy=\"false\" />\n" + "</list>";
-        replaceIdPHomeFile(pathToCASProtocolXML, regex, replacement);
+
+        final String serviceDefintiion = 
+                  "<bean class=\"net.shibboleth.idp.cas.service.ServiceDefinition\"\n"
+                + "c:regex=\"https?://localhost(:\\\\d+)?/.*\"\n"
+                + "p:group=\"test-services\"\n"
+                + "p:authorizedToProxy=\"false\" />\n";
+
+        final StringBuilder replacement = new StringBuilder();
+
+        // localhost
+        replacement.append(serviceDefintiion);
+
+        // Add public server addresses if not localhost
+        final Set<String> addresses = new LinkedHashSet();
+        addresses.add(address);
+        addresses.add(secureAddress);
+        addresses.add(privateAddress);
+        addresses.add(privateSecureAddress);
+        for (final String addr : addresses) {
+            if (addr == "localhost") {
+                continue;
+            }
+            replacement.append(serviceDefintiion.replaceFirst("localhost", addr));
+        }
+
+        replacement.append(regex);
+
+        replaceIdPHomeFile(pathToCASProtocolXML, "[ \t]*" + regex, replacement.toString());
     }
 
     /**
@@ -1286,12 +1310,32 @@ public abstract class BaseIntegrationTest
      * 
      * @throws IOException ...
      */
-    public void enableLocalhostCASAttributes() throws IOException {
-        final Path pathToLogbackXML = Paths.get("conf", "attribute-filter.xml");
+    public void enableCASAttributes() throws IOException {
+        final Path pathToAttributeFilterXML = Paths.get("conf", "attribute-filter.xml");
 
         final String oldText = "<Rule xsi:type=\"Requester\" value=\"https://another.example.org/shibboleth\" />";
-        final String newText = "<Rule xsi:type=\"RequesterRegex\" regex=\"https?://localhost(:\\\\d+)?/.*\" />";
-        replaceIdPHomeFile(pathToLogbackXML, oldText, newText);
+        
+        final String requesterRegex = "<Rule xsi:type=\"RequesterRegex\" regex=\"https?://localhost(:\\\\d+)?/.*\" />\n";
+
+        final StringBuilder replacement = new StringBuilder();
+
+        // localhost
+        replacement.append(requesterRegex);
+
+        // Add public server addresses if not localhost
+        final Set<String> addresses = new LinkedHashSet();
+        addresses.add(address);
+        addresses.add(secureAddress);
+        addresses.add(privateAddress);
+        addresses.add(privateSecureAddress);
+        for (final String addr : addresses) {
+            if (addr == "localhost") {
+                continue;
+            }
+            replacement.append(requesterRegex.replaceFirst("localhost", addr));
+        }
+
+        replaceIdPHomeFile(pathToAttributeFilterXML, oldText, replacement.toString());
     }
 
     public void enableAttributeReleaseConsent() throws IOException {

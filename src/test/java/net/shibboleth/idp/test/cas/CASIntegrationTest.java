@@ -107,7 +107,7 @@ public class CASIntegrationTest extends BaseIntegrationTest {
 
         enableCAS();
 
-        enableLocalhostCASServiceDefinition();
+        enableCASServiceDefinition();
 
         startServer();
 
@@ -137,9 +137,9 @@ public class CASIntegrationTest extends BaseIntegrationTest {
 
         enableCAS();
 
-        enableLocalhostCASServiceDefinition();
+        enableCASServiceDefinition();
 
-        enableLocalhostCASAttributes();
+        enableCASAttributes();
 
         startServer();
 
