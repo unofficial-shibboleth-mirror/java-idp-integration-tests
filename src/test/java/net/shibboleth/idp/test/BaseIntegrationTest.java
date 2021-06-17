@@ -797,6 +797,37 @@ public abstract class BaseIntegrationTest
     }
 
     /**
+     * If system property 'no-secure' is 'true', use non-secure port (default 8080).
+     * 
+     * Otherwise, use secure port (default 8443).
+     * 
+     * @throws IOException if unable to set up non-secure port
+     */
+    @BeforeClass(dependsOnMethods = {"setUpEndpoints"})
+    public void setUpNonSecurePort() throws IOException {
+        if (!Boolean.getBoolean("no-secure")) {
+            return;
+        }
+
+        // Add http module to Jetty
+        final Path pathToIdPMod = Paths.get("jetty-base", "modules", "idp.mod");
+        replaceIdPHomeFile(pathToIdPMod, "https", "http\nhttps");
+
+        // Set HTTP port used by Jetty
+        final Path pathToIdpIni = Paths.get("jetty-base", "start.d", "idp.ini");
+        replaceIdPHomeFile(pathToIdpIni, "\\z", System.lineSeparator() + "jetty.http.port=" + port);
+
+        // Set secure container session cookie to false
+        final Path pathToIdPWebXML = Paths.get("webapp", "WEB-INF", "web.xml");
+        replaceIdPHomeFile(pathToIdPWebXML, "<secure>true</secure>", "<secure>false</secure>");
+
+        // Set secure cookies to false
+        replaceIdPProperty("idp.cookie.secure", "false");
+
+        useSecureBaseURL = false;
+    }
+
+    /**
      * Set up debug logging for the IdP.
      * 
      * @throws Exception if something bad happens
