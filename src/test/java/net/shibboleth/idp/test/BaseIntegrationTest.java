@@ -1519,6 +1519,10 @@ public abstract class BaseIntegrationTest
             if (browserData.getOS() != null) {
                 desiredCapabilities.setCapability("platform", browserData.getOS());
             }
+            // browser device
+            if (browserData.getDevice() != null) {
+                desiredCapabilities.setCapability("deviceName", browserData.getDevice());
+            }
         }
 
         if (desiredCapabilities.getBrowserName() == BrowserType.FIREFOX) {
@@ -1592,9 +1596,11 @@ public abstract class BaseIntegrationTest
             log.trace("System property SELENIUM_PLATFORM      '{}'", System.getProperty("SELENIUM_PLATFORM"));
             log.trace("System property SELENIUM_BROWSER       '{}'", System.getProperty("SELENIUM_BROWSER"));
             log.trace("System property SELENIUM_VERSION       '{}'", System.getProperty("SELENIUM_VERSION"));
+            log.trace("System property SELENIUM_DEVICE        '{}'", System.getProperty("SELENIUM_DEVICE"));
             log.trace("Environment variable SELENIUM_PLATFORM '{}'", System.getenv("SELENIUM_PLATFORM"));
             log.trace("Environment variable SELENIUM_BROWSER  '{}'", System.getenv("SELENIUM_BROWSER"));
             log.trace("Environment variable SELENIUM_VERSION  '{}'", System.getenv("SELENIUM_VERSION"));
+            log.trace("Environment variable SELENIUM_DEVICE   '{}'", System.getenv("SELENIUM_DEVICE"));
 
             final String platform = System.getProperty("SELENIUM_PLATFORM", System.getenv("SELENIUM_PLATFORM"));
             log.debug("Found SELENIUM_PLATFORM '{}'", platform);
@@ -1604,6 +1610,9 @@ public abstract class BaseIntegrationTest
 
             final String version = System.getProperty("SELENIUM_VERSION", System.getenv("SELENIUM_VERSION"));
             log.debug("Found SELENIUM_VERSION  '{}'", version);
+
+            final String device = System.getProperty("SELENIUM_DEVICE", System.getenv("SELENIUM_DEVICE"));
+            log.debug("Found SELENIUM_DEVICE   '{}'", device);
 
             final BrowserData browserData = new BrowserData();
 
@@ -1626,6 +1635,10 @@ public abstract class BaseIntegrationTest
 
             if (version != null) {
                 browserData.setVersion(version);
+            }
+
+            if (device != null) {
+                browserData.setDevice(device);
             }
 
             data.add(new Object[] {browserData});
