@@ -1554,7 +1554,13 @@ public abstract class BaseIntegrationTest
             final BrowserData browserData = new BrowserData();
 
             if (platform != null) {
-                browserData.setOS(platform);
+                // hack macOS
+                if (platform.equalsIgnoreCase("Mac 11")) {
+                    log.debug("Rewriting platform 'Mac 11' as 'macOS 11'");
+                    browserData.setOS("macOS 11");
+                } else {
+                    browserData.setOS(platform);
+                }
             }
 
             if (browser != null) {
