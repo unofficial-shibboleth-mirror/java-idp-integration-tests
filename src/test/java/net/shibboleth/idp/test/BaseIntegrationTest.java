@@ -1580,6 +1580,10 @@ public abstract class BaseIntegrationTest
      * Prefers {@link SauceBrowserDataProvider#SAUCE_ONDEMAND_BROWSERS} over SELENIUM_PLATFORM, SELENIUM_BROWSER, and
      * SELENIUM_VERSION. Defaults to Firefox.
      * 
+     * Rewrites 'Mac 11' platform as 'macOS 11' as a workaround when using Sauce Labs.
+     * 
+     * Populates browser data with SELENIUM_DEVICE if it exists, used to select iOS devices.
+     * 
      * Wraps {@link SauceBrowserDataProvider#sauceBrowserDataProvider(Method)} to avoid the IllegalArgumentException
      * when the environment does not contain the desired property/variable.
      * 
