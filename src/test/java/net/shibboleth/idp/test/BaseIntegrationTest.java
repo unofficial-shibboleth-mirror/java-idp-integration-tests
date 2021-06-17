@@ -80,6 +80,7 @@ import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -947,18 +948,23 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * Start the web driver.
+     * Start the web driver (browser).
      * 
-     * If the test is remote, as defined by {@link #isRemote()}, then start a
-     * {@link RemoteWebDriver} on Sauce Labs.
-     * Otherwise, start a {@link HtmlUnitDriver}.
+     * If test is remote, as defined by {@link #isRemote()}, then start a {@link RemoteWebDriver} on Sauce Labs.
+     * 
+     * If test is local and 'SELENIUM_BROWSER' system property is 'safari', start a Safari web driver.
+     * 
+     * If test is local and 'SELENIUM_BROWSER' system property is 'chrome', throw an IllegalArgumentException.
+     * 
+     * Otherwise, start a Firefox web driver.
      * 
      * <p>
      * Note : this method must be called in each test.
      * </p>
      * 
-     * @param browserData the browser data
+     * @param browserData the platform+browser+version triplet
      * 
+     * @throws IllegalArgumentException if browser is chrome
      * @throws Exception if an error occurs
      */
     public void startSeleniumClient(@Nullable final BrowserData browserData) throws Exception {
@@ -966,8 +972,13 @@ public abstract class BaseIntegrationTest
         if (BaseIntegrationTest.isRemote()) {
             log.debug("Setting up remote web driver with desired capabilities '{}'", desiredCapabilities);
             setUpSauceDriver();
+        } else if (browserData.getBrowser().equalsIgnoreCase("chrome")) {
+            throw new IllegalArgumentException("Chrome web driver not supported");
+        } else if (browserData.getBrowser().equalsIgnoreCase("safari")) {
+            log.debug("Setting up local Safari web driver with desired capabilities '{}'", desiredCapabilities);
+            setUpSafariDriver();
         } else {
-            log.debug("Setting up local web driver with desired capabilities '{}'", desiredCapabilities);
+            log.debug("Setting up local Firefox web driver with desired capabilities '{}'", desiredCapabilities);
             setUpFirefoxDriver();
         }
         log.debug("Started web driver '{}' with desired capabilities '{}'", driver, desiredCapabilities);
@@ -1445,6 +1456,15 @@ public abstract class BaseIntegrationTest
         driver = new FirefoxDriver(options);
         driver.manage().window().setPosition(new Point(0, 0));
         driver.manage().window().setSize(new Dimension(1024, 768));
+    }
+
+    /**
+     * Set up Safari web driver.
+     * 
+     * Note that Safari does not support running headless.
+     */
+    public void setUpSafariDriver() {
+        driver = new SafariDriver();
     }
 
     /**
