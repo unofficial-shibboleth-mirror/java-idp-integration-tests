@@ -990,6 +990,7 @@ public abstract class BaseIntegrationTest
     @AfterMethod(enabled = true)
     public void stopSeleniumClient() {
         if (driver != null) {
+            log.debug("Stopping Selenium client");
             driver.quit();
         }
     }
