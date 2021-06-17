@@ -1556,7 +1556,9 @@ public abstract class BaseIntegrationTest
             desiredCapabilities.merge(overrideCapabilities);
         }
 
-        if (browserData != null && browserData.getBrowser().equalsIgnoreCase("safari")) {
+        if (browserData != null && (browserData.getBrowser().equalsIgnoreCase("safari")
+                || browserData.getBrowser().equalsIgnoreCase("ipad")
+                || browserData.getBrowser().equalsIgnoreCase("iphone"))) {
             log.warn("Safari does not support accepting insecure certs");
             try {
                 setUpNonSecurePort();
