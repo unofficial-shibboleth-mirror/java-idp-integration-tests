@@ -1489,11 +1489,13 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * A data provider which supplies {@link BrowserData} to test methods.
+     * A TestNG {@link DataProvider} which provides platform/browser/version triplets in the form of {@link BrowserData}
+     * to test methods.
      * 
-     * Prefer browser/OS/version triplets as provided by Jenkins via
-     * {@link SauceBrowserDataProvider#SAUCE_ONDEMAND_BROWSERS} in the environment, if not present, defaults to
-     * 'firefox'.
+     * Prefers system properties over environment variables.
+     * 
+     * Prefers {@link SauceBrowserDataProvider#SAUCE_ONDEMAND_BROWSERS} over SELENIUM_PLATFORM, SELENIUM_BROWSER, and
+     * SELENIUM_VERSION. Defaults to Firefox.
      * 
      * Wraps {@link SauceBrowserDataProvider#sauceBrowserDataProvider(Method)} to avoid the IllegalArgumentException
      * when the environment does not contain the desired property/variable.
@@ -1503,9 +1505,15 @@ public abstract class BaseIntegrationTest
      */
     @DataProvider(name = "sauceOnDemandBrowserDataProvider", parallel = false)
     public static Iterator<Object[]> sauceOnDemandBrowserDataProvider(@Nonnull final Method testMethod) {
+
+        final Logger log = LoggerFactory.getLogger(BaseIntegrationTest.class);
+
         final List<Object[]> data = new ArrayList<Object[]>();
 
         try {
+            // multiple platform/browser/version triplets
+            log.debug("Attempting to find '{}' in system properties or environment",
+                    SauceBrowserDataProvider.SAUCE_ONDEMAND_BROWSERS);
             final Iterator<Object[]> iterator = SauceBrowserDataProvider.sauceBrowserDataProvider(testMethod);
             while (iterator.hasNext()) {
                 final BrowserData browserData = new BrowserData();
@@ -1522,10 +1530,45 @@ public abstract class BaseIntegrationTest
                 data.add(new Object[] {browserData});
             }
         } catch (IllegalArgumentException e) {
-            LoggerFactory.getLogger(BaseIntegrationTest.class).debug(
-                    "Browser data provider did not find '{}' in environment, defaulting to 'firefox'",
+            // single platform/browser/version triplet
+            log.debug("Did not find '{}' in system properties or environment",
                     SauceBrowserDataProvider.SAUCE_ONDEMAND_BROWSERS);
-            data.add(new Object[] {new BrowserData().setBrowser("firefox")});
+
+            // prefer system properties to environment variable
+            log.trace("System property SELENIUM_PLATFORM      '{}'", System.getProperty("SELENIUM_PLATFORM"));
+            log.trace("System property SELENIUM_BROWSER       '{}'", System.getProperty("SELENIUM_BROWSER"));
+            log.trace("System property SELENIUM_VERSION       '{}'", System.getProperty("SELENIUM_VERSION"));
+            log.trace("Environment variable SELENIUM_PLATFORM '{}'", System.getenv("SELENIUM_PLATFORM"));
+            log.trace("Environment variable SELENIUM_BROWSER  '{}'", System.getenv("SELENIUM_BROWSER"));
+            log.trace("Environment variable SELENIUM_VERSION  '{}'", System.getenv("SELENIUM_VERSION"));
+
+            final String platform = System.getProperty("SELENIUM_PLATFORM", System.getenv("SELENIUM_PLATFORM"));
+            log.debug("Found SELENIUM_PLATFORM '{}'", platform);
+
+            final String browser = System.getProperty("SELENIUM_BROWSER", System.getenv("SELENIUM_BROWSER"));
+            log.debug("Found SELENIUM_BROWSER  '{}'", browser);
+
+            final String version = System.getProperty("SELENIUM_VERSION", System.getenv("SELENIUM_VERSION"));
+            log.debug("Found SELENIUM_VERSION  '{}'", version);
+
+            final BrowserData browserData = new BrowserData();
+
+            if (platform != null) {
+                browserData.setOS(platform);
+            }
+
+            if (browser != null) {
+                browserData.setBrowser(browser);
+            } else {
+                log.debug("No SELENIUM_BROWSER found, defaulting to Firefox");
+                browserData.setBrowser("firefox");
+            }
+
+            if (version != null) {
+                browserData.setVersion(version);
+            }
+
+            data.add(new Object[] {browserData});
         }
         for (final Object[] array : data) {
             LoggerFactory.getLogger(BaseIntegrationTest.class).debug("Browser data provider '{}'", array);
