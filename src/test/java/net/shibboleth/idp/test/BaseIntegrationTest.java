@@ -1472,7 +1472,7 @@ public abstract class BaseIntegrationTest
     /**
      * Set up the desired capabilities.
      * 
-     * Prefer capabilities as provided by Jenkins, defaults to Firefox.
+     * Prefer capabilities as provided by the data provider {@link sauceOnDemandBrowserDataProvider}.
      * 
      * Sets the test name to be displayed by Sauce Labs at
      * <a href="https://saucelabs.com/tests">https://saucelabs.com/tests</a>.
@@ -1497,8 +1497,7 @@ public abstract class BaseIntegrationTest
             }
             // browser OS
             if (browserData.getOS() != null) {
-                desiredCapabilities.setCapability(CapabilityType.PLATFORM,
-                        Platform.extractFromSysProperty(browserData.getOS()));
+                desiredCapabilities.setCapability("platform", browserData.getOS());
             }
         }
 
