@@ -590,7 +590,7 @@ public abstract class BaseIntegrationTest
      * 
      * @throws IOException ...
      */
-    @BeforeClass(enabled = true, dependsOnMethods = {"setUpEndpoints"}) // must run after setUpEndpoints
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpEndpoints", "setUpNonSecurePort"}) // must run after setUpEndpoints
     public void setUpJettyTestbed() throws IOException {
 
         if (pathToJettyBase == null) {
