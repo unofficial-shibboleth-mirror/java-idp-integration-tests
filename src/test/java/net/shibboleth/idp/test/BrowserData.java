@@ -39,6 +39,9 @@ public class BrowserData {
     /** Browser operating system. */
     private String browserOS;
 
+    /** Browser device. */
+    private String browserDevice;
+
     /**
      * Get the browser name.
      * 
@@ -64,6 +67,15 @@ public class BrowserData {
      */
     @Nullable public String getOS() {
         return browserOS;
+    }
+
+    /**
+     * Get the browser device.
+     * 
+     * @return the browser device
+     */
+    @Nullable public String getDevice() {
+        return browserDevice;
     }
 
     /**
@@ -102,9 +114,27 @@ public class BrowserData {
         return this;
     }
 
+    /**
+     * Set the browser device.
+     * 
+     * @param device the browser device
+     * 
+     * @return the {@link BrowserData}
+     */
+    public BrowserData setDevice(@Nonnull @NotEmpty final String device) {
+        browserDevice = Constraint.isNotNull(StringSupport.trimOrNull(device), "Device cannot be null nor empty");
+        return this;
+    }
+
     /** {@inheritDoc} */
     @Override public String toString() {
-        return "BrowserData [browser=" + browserName + ", version=" + browserVersion + ", OS=" + browserOS + "]";
+        final StringBuilder stringForm = new StringBuilder("BrowserData {");
+        stringForm.append("platform:").append(browserOS).append(", ");
+        stringForm.append("browser:").append(browserName).append(", ");
+        stringForm.append("version:").append(browserVersion).append(", ");
+        stringForm.append("device:").append(browserDevice);
+        stringForm.append("}");
+        return stringForm.toString();
     }
 
 }
