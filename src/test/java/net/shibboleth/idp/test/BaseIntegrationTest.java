@@ -1513,7 +1513,11 @@ public abstract class BaseIntegrationTest
             desiredCapabilities.merge(overrideCapabilities);
         }
 
-        desiredCapabilities.setAcceptInsecureCerts(true);
+        if (browserData != null && browserData.getBrowser().equalsIgnoreCase("safari")) {
+            log.warn("Safari does not support accepting insecure certs");
+        } else {
+            desiredCapabilities.setAcceptInsecureCerts(true);
+        }
 
         log.debug("Desired capabilities '{}'", desiredCapabilities);
     }
