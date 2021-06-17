@@ -798,18 +798,16 @@ public abstract class BaseIntegrationTest
     }
 
     /**
-     * If system property 'no-secure' is 'true', use non-secure port (default 8080).
+     * Use non-secure port (default 8080) rather than secure port (default 8443).
      * 
-     * Otherwise, use secure port (default 8443).
+     * Enables Jetty http module.
+     * Sets jetty.http.port to non-secure port.
+     * Disable session cookie security.
+     * Sets idp.cookie.secure to false.
      * 
      * @throws IOException if unable to set up non-secure port
      */
-    @BeforeClass(dependsOnMethods = {"setUpEndpoints"})
     public void setUpNonSecurePort() throws IOException {
-        if (!Boolean.getBoolean("no-secure")) {
-            return;
-        }
-
         // Add http module to Jetty
         final Path pathToIdPMod = Paths.get("jetty-base", "modules", "idp.mod");
         replaceIdPHomeFile(pathToIdPMod, "https", "http\nhttps");
@@ -826,6 +824,20 @@ public abstract class BaseIntegrationTest
         replaceIdPProperty("idp.cookie.secure", "false");
 
         useSecureBaseURL = false;
+    }
+
+    /**
+     * If system property 'no-secure' is 'true', use non-secure port.
+     * 
+     * @see #setUpNonSecurePort()
+     * 
+     * @throws IOException if unable to set up non-secure port
+     */
+    @BeforeClass(dependsOnMethods = {"setUpEndpoints"})
+    public void setUpNonSecurePortFromSystemProperties() throws IOException {
+        if (Boolean.getBoolean("no-secure")) {
+            setUpNonSecurePort();
+        }
     }
 
     /**
@@ -1500,6 +1512,12 @@ public abstract class BaseIntegrationTest
      * 
      * The desired capabilities will be overridden by the {@link #overrideCapabilities} if non-null.
      * 
+     * Disables JSON view when using Firefox.
+     * 
+     * Accepts insecure certs when using browsers other than Safari.
+     * 
+     * Use non-secure port when using Safari.
+     * 
      * @param browserData the browser data
      */
     public void setUpDesiredCapabilities(@Nullable final BrowserData browserData) {
@@ -1540,6 +1558,12 @@ public abstract class BaseIntegrationTest
 
         if (browserData != null && browserData.getBrowser().equalsIgnoreCase("safari")) {
             log.warn("Safari does not support accepting insecure certs");
+            try {
+                setUpNonSecurePort();
+            } catch (IOException e) {
+                log.error("Unable to set up non-secure port {}", e);
+                throw new RuntimeException(e);
+            }
         } else {
             desiredCapabilities.setAcceptInsecureCerts(true);
         }
