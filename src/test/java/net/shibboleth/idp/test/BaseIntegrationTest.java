@@ -1510,7 +1510,7 @@ public abstract class BaseIntegrationTest
         if (browserData != null) {
             // browser name
             if (browserData.getBrowser() != null) {
-                desiredCapabilities.setBrowserName(browserData.getBrowser());
+                desiredCapabilities.setCapability("browserName", browserData.getBrowser());
             }
             // browser version
             if (browserData.getVersion() != null) {
