@@ -1544,7 +1544,8 @@ public abstract class BaseIntegrationTest
             }
         }
 
-        if (desiredCapabilities.getBrowserName() == BrowserType.FIREFOX) {
+        if (desiredCapabilities.getBrowserName().equalsIgnoreCase("firefox")) {
+            log.debug("Disabling Firefox JSON view");
             final FirefoxOptions options = new FirefoxOptions();
             options.addPreference("devtools.jsonview.enabled", false);
             desiredCapabilities.merge(options);
