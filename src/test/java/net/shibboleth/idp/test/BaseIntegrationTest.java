@@ -413,7 +413,9 @@ public abstract class BaseIntegrationTest
 
         // Path to per-test idp.home
         final String timestamp = DateTimeFormatter.ofPattern(idpHomePattern).format(LocalDateTime.now());
-        pathToIdPHome = pathToDistIdPHome.getParent().resolve(timestamp);
+        final String perTestDirectoryName = String.join("-", timestamp, getClass().getSimpleName());
+        log.debug("Per-test idp.home directory name '{}'", perTestDirectoryName);
+        pathToIdPHome = pathToDistIdPHome.getParent().resolve(perTestDirectoryName);
         log.debug("Path to idp.home '{}'", pathToIdPHome.toAbsolutePath());
         Assert.assertFalse(pathToIdPHome.toAbsolutePath().toFile().exists(), "Path to idp.home already exists");
 
