@@ -35,18 +35,6 @@ public class TestNameLogger implements ITestListener {
     private final Logger log = LoggerFactory.getLogger(TestNameLogger.class);
 
     /** {@inheritDoc} */
-    public void onStart(ITestContext context) {
-        ITestListener.super.onStart(context);
-        log.info("Test start class {}", context.getAllTestMethods()[0].getTestClass().getName());
-    }
-
-    /** {@inheritDoc} */
-    public void onFinish(ITestContext context) {
-        ITestListener.super.onFinish(context);
-        log.info("Test finish class {}", context.getAllTestMethods()[0].getTestClass().getName());
-    }
-
-    /** {@inheritDoc} */
     public void onTestStart(ITestResult result) {
         ITestListener.super.onTestStart(result);
         log.info("Test start {}", result.getMethod().getQualifiedName());
