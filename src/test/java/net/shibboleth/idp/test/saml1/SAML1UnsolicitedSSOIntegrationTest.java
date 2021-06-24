@@ -22,7 +22,6 @@ import javax.annotation.Nullable;
 
 import net.shibboleth.idp.test.BrowserData;
 
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -42,8 +41,18 @@ public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1Integration
     /** Target. */
     @Nonnull public final String target = "MyRelayState";
 
-    @BeforeClass(dependsOnMethods = {"setUpEndpoints"})
-    public void setUpURLs() throws Exception {
+    /**
+     * Set up URLs.
+     * 
+     * Do not use secure URLs if browser is Safari.
+     * 
+     * @param browserData platform/browser/version triplet
+     */
+    public void setUpURLs(@Nullable final BrowserData browserData) {
+
+        if (isSafari(browserData)) {
+            useSecureBaseURL = false;
+        }
 
         final String shire = getBaseURL() + shirePath;
 
@@ -57,11 +66,12 @@ public class SAML1UnsolicitedSSOIntegrationTest extends AbstractSAML1Integration
     /**
      * Test SAML 1 unsolicited SSO.
      * 
-     * @param browserData browser/os/version triplet provided by data provider
+     * @param browserData platform/browser/version triplet provided by data provider
      * @throws Exception if an error occurs
      */
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSAML1UnsolicitedSSO(@Nullable final BrowserData browserData) throws Exception {
+        setUpURLs(browserData);
         super.testSSO(browserData);
     }
 }

@@ -22,7 +22,6 @@ import javax.annotation.Nullable;
 
 import net.shibboleth.idp.test.BrowserData;
 
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /** SAML 2 unsolicited SSO test. */
@@ -40,8 +39,18 @@ public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2Integration
     /** Target. */
     @Nonnull public final String target = "MyRelayState";
 
-    @BeforeClass(dependsOnMethods = {"setUpEndpoints"})
-    public void setUpURLs() throws Exception {
+    /**
+     * Set up URLs.
+     * 
+     * Do not use secure URLs if browser is Safari.
+     * 
+     * @param browserData platform/browser/version triplet
+     */
+    public void setUpURLs(@Nullable final BrowserData browserData) throws Exception {
+
+        if (isSafari(browserData)) {
+            useSecureBaseURL = false;
+        }
 
         final String shire = getBaseURL() + shirePath;
 
@@ -54,26 +63,31 @@ public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2Integration
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSSOReleaseAllAttributes(@Nullable final BrowserData browserData) throws Exception {
+        setUpURLs(browserData);
         super.testSSOReleaseAllAttributes(browserData);
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSSOReleaseOneAttribute(@Nullable final BrowserData browserData) throws Exception {
+        setUpURLs(browserData);
         super.testSSOReleaseOneAttribute(browserData);
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSSODoNotRememberConsent(@Nullable final BrowserData browserData) throws Exception {
+        setUpURLs(browserData);
         super.testSSODoNotRememberConsent(browserData);
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSSOGlobalConsent(@Nullable final BrowserData browserData) throws Exception {
+        setUpURLs(browserData);
         super.testSSOGlobalConsent(browserData);
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSSOTermsOfUse(@Nullable final BrowserData browserData) throws Exception {
+        setUpURLs(browserData);
         super.testSSOTermsOfUse(browserData);
     }
 }
