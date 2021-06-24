@@ -300,6 +300,7 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
     protected void submitAttributeQueryForm() {
         driver.findElement(By.id("saml2-attribute-query")).submit();
         waitForPageURLContains("/sp/SAML2/AttributeQuery");
+        waitForPageBodyStartsWith("<?xml");
     }
 
     /**
@@ -532,7 +533,7 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
         // attribute query, should have attributes
 
         submitAttributeQueryForm();
-
+        
         validateResponse();
 
         // start SSO

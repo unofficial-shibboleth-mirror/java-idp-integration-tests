@@ -119,9 +119,13 @@ public class CASIntegrationTest extends BaseIntegrationTest {
 
         waitForPageWithURL(getBaseURL() + spServicePageURLPath);
 
+        waitForPageBodyStartsWith("CAS Service Validate");
+        
         driver.findElement(By.id("cas-service-validate")).click();
 
         waitForPageWithURL(getBaseURL() + idpServiceValidatePageURLPath);
+
+        waitForPageBodyContains("jdoe");
 
         final String actualCASServiceResponse = getCASServiceResponse(driver.getPageSource());
 
@@ -151,9 +155,13 @@ public class CASIntegrationTest extends BaseIntegrationTest {
 
         waitForPageWithURL(getBaseURL() + spServicePageURLPath);
 
+        waitForPageBodyStartsWith("CAS Service Validate");
+
         driver.findElement(By.id("cas-service-validate")).click();
 
         waitForPageWithURL(getBaseURL() + idpServiceValidatePageURLPath);
+
+        waitForPageBodyContains("jdoe");
 
         final String actualCASServiceResponse = getCASServiceResponse(driver.getPageSource());
 

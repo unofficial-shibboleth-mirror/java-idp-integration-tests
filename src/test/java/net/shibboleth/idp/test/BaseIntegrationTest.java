@@ -1707,6 +1707,26 @@ public abstract class BaseIntegrationTest
     }
 
     /**
+     * Whether the browser is Safari on macOS or iOS.
+     * 
+     * @return whether the browser is Safari.
+     */
+    public boolean isSafari(@Nullable final BrowserData browserData) {
+        if (browserData != null) {
+            if (browserData.getBrowser().equalsIgnoreCase("safari")) {
+                return true;
+            }
+            if (browserData.getBrowser().equalsIgnoreCase("iphone")) {
+                return true;
+            }
+            if (browserData.getBrowser().equalsIgnoreCase("ipad")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Set up the client IP range used in conf/access-control.xml to Sauce Labs {@link #SAUCE_LABS_IP_RANGE} if Selenium
      * is not local.
      */
@@ -1963,6 +1983,34 @@ public abstract class BaseIntegrationTest
     public void waitForPageURLContains(@Nonnull final String fraction) {
         Assert.assertNotNull(fraction);
         new WebDriverWait(driver, 10).until(ExpectedConditions.urlContains(fraction));
+    }
+
+    /**
+     * Wait for page whose body has text that starts with the given text.
+     * 
+     * @param prefix the prefix of the page body text
+     */
+    public void waitForPageBodyStartsWith(@Nonnull final String prefix) {
+        Assert.assertNotNull(prefix);
+        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            public Boolean apply(WebDriver d) {
+                return d.findElement(By.tagName("body")).getText().startsWith(prefix);
+            }
+        });
+    }
+
+    /**
+     * Wait for page whose body contains the given text.
+     * 
+     * @param fraction the fraction of the page body text
+     */
+    public void waitForPageBodyContains(@Nonnull final String fraction) {
+        Assert.assertNotNull(fraction);
+        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            public Boolean apply(WebDriver d) {
+                return d.findElement(By.tagName("body")).getText().contains(fraction);
+            }
+        });
     }
 
     /**
