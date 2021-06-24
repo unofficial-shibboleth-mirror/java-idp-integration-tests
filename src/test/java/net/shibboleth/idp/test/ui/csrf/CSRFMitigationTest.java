@@ -144,9 +144,10 @@ public class CSRFMitigationTest extends BaseIntegrationTest {
                 return d.getTitle().equals(errorPageTitle+" - "+errorPageSubtitle);
             }
         });
+
         Assert.assertTrue(driver.getPageSource()!=null);
         WebElement contentElement = driver.findElement(By.xpath("//div[contains(@class,'content')]"));
-        String contentText = contentElement.getText();
+        String contentText = contentElement.getText().trim();
         Assert.assertTrue(csrfErrorMessage.equals(contentText));
     }
 
