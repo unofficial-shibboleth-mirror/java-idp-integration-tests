@@ -72,6 +72,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.Point;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -1988,15 +1989,26 @@ public abstract class BaseIntegrationTest
     /**
      * Wait for page whose body has text that starts with the given text.
      * 
+     * Attempts to workaround {@link StaleElementReferenceException} by retrieving the body text a second time.
+     * 
      * @param prefix the prefix of the page body text
      */
     public void waitForPageBodyStartsWith(@Nonnull final String prefix) {
         Assert.assertNotNull(prefix);
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-            public Boolean apply(WebDriver d) {
-                return d.findElement(By.tagName("body")).getText().startsWith(prefix);
-            }
-        });
+        try {
+            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.tagName("body")).getText().startsWith(prefix);
+                }
+            });
+        } catch (final StaleElementReferenceException e) {
+            log.debug("Caught StaleElementReferenceException, will try again...", e);
+            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.tagName("body")).getText().startsWith(prefix);
+                }
+            });
+        }
     }
 
     /**
