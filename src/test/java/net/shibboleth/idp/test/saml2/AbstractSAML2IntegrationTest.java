@@ -110,6 +110,11 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
                 validator.subjectConfirmationDataAddressRanges.add(IPRange.parseCIDRBlock(ipRange));
             }
         }
+
+        if (idpVersion.startsWith("4.1")) {
+            log.debug("Will not expect schacHomeOrganization attribute for IdP version 4.1");
+            validator.expectedAttributes.remove(validator.homeOrgAttribute);
+        }
     }
 
     /**
