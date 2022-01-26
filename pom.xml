@@ -28,7 +28,7 @@
         <idp-jetty-base.version>9.4.1-SNAPSHOT</idp-jetty-base.version>
 
         <!-- Default version of Jetty to be tested -->
-        <jetty.version> 9.4.44.v20210927</jetty.version>
+        <jetty.version>9.4.44.v20210927</jetty.version>
 
         <!-- Tomcat -->
         <idp-tomcat-base.version>8.5.0-SNAPSHOT</idp-tomcat-base.version>
@@ -401,7 +401,7 @@
                 </dependency>
                 <dependency>
                     <groupId>org.eclipse.jetty</groupId>
-                    <artifactId>jetty-distribution</artifactId>
+                    <artifactId>jetty-home</artifactId>
                     <version>${jetty.version}</version>
                     <scope>test</scope>
                     <type>zip</type>
@@ -419,9 +419,9 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions>
-                            <!-- Unpack jetty-distribution to test-distributions directory. -->
+                            <!-- Unpack jetty-home to test-distributions directory. -->
                             <execution>
-                                <id>unpack-jetty-distribution</id>
+                                <id>unpack-jetty-home</id>
                                 <phase>compile</phase>
                                 <goals>
                                     <goal>unpack</goal>
@@ -430,7 +430,7 @@
                                     <artifactItems>
                                         <artifactItem>
                                             <groupId>org.eclipse.jetty</groupId>
-                                            <artifactId>jetty-distribution</artifactId>
+                                            <artifactId>jetty-home</artifactId>
                                             <version>${jetty.version}</version>
                                             <type>zip</type>
                                         </artifactItem>

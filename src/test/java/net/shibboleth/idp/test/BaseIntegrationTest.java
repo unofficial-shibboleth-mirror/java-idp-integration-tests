@@ -550,7 +550,7 @@ public abstract class BaseIntegrationTest
         Assert.assertTrue(buildPath.toAbsolutePath().toFile().exists(), "Path to build directory not found");
 
         // Path to Jetty distribution
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*jetty-distribution-*")) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*jetty-home-*")) {
             for (Path entry : stream) {
                 pathToJettyHome = entry;
                 break;
