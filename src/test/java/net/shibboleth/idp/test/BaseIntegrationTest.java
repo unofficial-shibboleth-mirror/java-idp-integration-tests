@@ -370,6 +370,9 @@ public abstract class BaseIntegrationTest
 
     /** IdP version determined from distribution name. **/
     @Nullable protected String idpVersion;
+    
+    /** Jetty version determined from distribution name. **/
+    @Nullable protected String jettyVersion;
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(BaseIntegrationTest.class);
@@ -564,6 +567,17 @@ public abstract class BaseIntegrationTest
             log.debug("Path to jetty.home '{}'", pathToJettyHome.toAbsolutePath());
             Assert.assertTrue(pathToJettyHome.toAbsolutePath().toFile().exists(), "Path to jetty.home not found");
 
+            // Determine Jetty version from distribution name
+            final Pattern pattern = Pattern.compile("jetty-home-(.*)");
+            final Matcher matcher = pattern.matcher(pathToJettyHome.getFileName().toString());
+            if (matcher.find()) {
+                jettyVersion = matcher.group(1);
+            }
+            log.debug("Testing Jetty version '{}'", jettyVersion);
+            if (jettyVersion == null || jettyVersion.isBlank()) {
+                log.error("Unable to determine version of Jetty");
+            }
+
             // Path to jetty.base
             pathToJettyBase = pathToIdPHome.resolve(Paths.get("jetty-base"));
             log.debug("Path to jetty.base '{}'", pathToJettyBase.toAbsolutePath());
@@ -577,6 +591,26 @@ public abstract class BaseIntegrationTest
             serverCommands.add("-Djava.io.tmpdir=" + pathToJettyBase.resolve("tmp").toAbsolutePath());
         } else {
             Assert.fail("Unable to find jetty.home");
+        }
+    }
+
+    /**
+     * Disable SNI host check by adding jetty.ssl.sniHostCheck=false to idp.ini for Jetty after version 9.
+     * 
+     * @throws IOException
+     */
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpJettyPaths"})
+    public void setUpJettySNI() throws IOException {
+        if (jettyVersion.startsWith("9")) {
+            return;
+        } ;
+        final Path idpIni = pathToJettyBase.resolve(Paths.get("start.d", "idp.ini"));
+        log.debug("Path to idp.ini '{}'", idpIni.toAbsolutePath());
+        if (idpIni.toAbsolutePath().toFile().exists()) {
+            log.debug("Disabling Jetty SNI host check for version '{}'", jettyVersion);
+            replaceFile(idpIni, "\\z", System.lineSeparator() + "jetty.ssl.sniHostCheck=false");
+        } else {
+            Assert.fail("Unable to find idp.ini");
         }
     }
 
