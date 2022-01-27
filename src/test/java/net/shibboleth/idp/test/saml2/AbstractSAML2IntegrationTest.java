@@ -310,6 +310,9 @@ public abstract class AbstractSAML2IntegrationTest extends BaseIntegrationTest {
 
         validator.expectedAttributes.clear();
         validator.expectedAttributes.add(validator.mailAttribute);
+        if (!idpVersion.startsWith("4.1")) {
+            validator.expectedAttributes.add(validator.homeOrgAttribute);
+        }
 
         validateResponse();
 

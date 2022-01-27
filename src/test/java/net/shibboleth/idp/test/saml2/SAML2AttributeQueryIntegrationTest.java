@@ -802,6 +802,9 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         ssoValidator.expectedAttributes.clear();
         ssoValidator.expectedAttributes.add(validator.mailAttribute);
+        if (!idpVersion.startsWith("4.1")) {
+            ssoValidator.expectedAttributes.add(validator.homeOrgAttribute);
+        }
 
         validateSSOResponse();
 
@@ -815,6 +818,9 @@ public class SAML2AttributeQueryIntegrationTest extends AbstractSAML2Integration
 
         validator.expectedAttributes.clear();
         validator.expectedAttributes.add(validator.mailAttribute);
+        if (!idpVersion.startsWith("4.1")) {
+            validator.expectedAttributes.add(validator.homeOrgAttribute);
+        }
 
         validateResponse();
     }
