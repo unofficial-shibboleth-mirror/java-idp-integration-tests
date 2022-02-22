@@ -138,6 +138,13 @@ public class TomcatServerProcess extends AbstractServerProcess {
         } catch (IOException e) {
             log.error("A Telnet I/O error occurred", e);
         }
+
+        // wait half a second for server to shutdown
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            log.error("Unable to sleep", e);
+        }
     }
 
     /** {@inheritDoc} */

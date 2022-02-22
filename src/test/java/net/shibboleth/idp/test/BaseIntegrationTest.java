@@ -601,6 +601,10 @@ public abstract class BaseIntegrationTest
      */
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpJettyPaths"})
     public void setUpJettySNI() throws IOException {
+        if (Boolean.getBoolean("tomcat")) {
+            log.debug("Not setting up Jetty WebInfIncludeJarPattern because system property 'tomcat' is true");
+            return;
+        }
         if (jettyVersion.startsWith("9")) {
             return;
         } ;
@@ -949,6 +953,11 @@ public abstract class BaseIntegrationTest
 
     @BeforeClass(enabled = true, dependsOnMethods = {"setUpIdPPaths"})
     public void setUpIdPWebApp() throws Exception {
+        if (Boolean.getBoolean("tomcat")) {
+            log.debug("Not setting up Jetty WebInfIncludeJarPattern because system property 'tomcat' is true");
+            return;
+        }
+
         final Path pathToIdPXML = pathToIdPHome.resolve(Paths.get("jetty-base", "webapps", "idp.xml"));
         Assert.assertTrue(pathToIdPXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
 
