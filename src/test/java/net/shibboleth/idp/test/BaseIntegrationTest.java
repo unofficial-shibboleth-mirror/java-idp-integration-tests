@@ -898,7 +898,7 @@ public abstract class BaseIntegrationTest
         logUnencryptedSAML();
 
         // Add logging when starting the server.
-        serverCommands.add("-Dlogback.configurationFile=" + pathToIdPHome.resolve(pathToLogbackXML).toAbsolutePath().toString());
+        // serverCommands.add("-Dlogback.configurationFile=" + pathToIdPHome.resolve(pathToLogbackXML).toAbsolutePath().toString());
     }
 
     /**
