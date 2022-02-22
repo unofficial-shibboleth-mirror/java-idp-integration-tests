@@ -31,8 +31,8 @@
         <jetty.version>9.4.44.v20210927</jetty.version>
 
         <!-- Tomcat -->
-        <idp-tomcat-base.version>8.5.0-SNAPSHOT</idp-tomcat-base.version>
-        <tomcat.version>8.5.34</tomcat.version>
+        <idp-tomcat-base.version>9.0.0-SNAPSHOT</idp-tomcat-base.version>
+        <tomcat.version>9.0.58</tomcat.version>
 
         <!-- Testbed -->
         <testbed.version>0.8.0-SNAPSHOT</testbed.version>
