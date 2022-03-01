@@ -70,6 +70,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -77,6 +78,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -1322,7 +1324,7 @@ public abstract class BaseIntegrationTest
                 "<bean parent=\"SAML2.SSO\" p:postAuthenticationFlows=\"#{ {'terms-of-use', 'attribute-release'} }\" />";
         replaceIdPHomeFile(pathToRelyingPartyXML, oldPostAuthenticationFlowsText, newPostAuthenticationFlowsText);
     }
-
+    
     /**
      * Disable Local Storage in conf/idp.properties.
      * 
@@ -2085,22 +2087,22 @@ public abstract class BaseIntegrationTest
     public void releaseEmailAttributeOnly() {
         final WebElement email = driver.findElement(By.id(EMAIL_ID));
         if (!email.isSelected()) {
-            email.click();
+            clickWorkaround(email);
         }
 
         final WebElement eduPersonAffiliation = driver.findElement(By.id(EDU_PERSON_AFFILIATION_ID));
         if (eduPersonAffiliation.isSelected()) {
-            eduPersonAffiliation.click();
+            clickWorkaround(eduPersonAffiliation);
         }
 
         final WebElement eduPersonPrincipalName = driver.findElement(By.id(EDU_PERSON_PRINCIPAL_NAME_ID));
         if (eduPersonPrincipalName.isSelected()) {
-            eduPersonPrincipalName.click();
+            clickWorkaround(eduPersonPrincipalName);
         }
 
         final WebElement uid = driver.findElement(By.id(UID_ID));
         if (uid.isSelected()) {
-            uid.click();
+            clickWorkaround(uid);
         }
     }
 
@@ -2110,7 +2112,7 @@ public abstract class BaseIntegrationTest
     public void rememberConsent() {
         final WebElement element = driver.findElement(By.id(REMEMBER_CONSENT_ID));
         if (!element.isSelected()) {
-            element.click();
+            clickWorkaround(element);
         }
     }
 
@@ -2120,7 +2122,7 @@ public abstract class BaseIntegrationTest
     public void doNotRememberConsent() {
         final WebElement element = driver.findElement(By.id(DO_NOT_REMEMBER_CONSENT_ID));
         if (!element.isSelected()) {
-            element.click();
+            clickWorkaround(element);
         }
     }
 
@@ -2130,7 +2132,7 @@ public abstract class BaseIntegrationTest
     public void globalConsent() {
         final WebElement element = driver.findElement(By.id(GLOBAL_CONSENT_ID));
         if (!element.isSelected()) {
-            element.click();
+            clickWorkaround(element);
         }
     }
 
@@ -2205,6 +2207,23 @@ public abstract class BaseIntegrationTest
         log.info("Attempting to get public IPV4 address from EC2");
         final String url = "http://169.254.169.254/latest/meta-data/public-ipv4";
         return getEC2Metadata(url);
+    }
+
+    /**
+     * Workaround being unable to click an element because of accessibility changes.
+     * 
+     * Catch {@link ElementClickInterceptedException} and click via {@link Actions}.
+     * 
+     * @param element element to be clicked
+     */
+    public void clickWorkaround(final WebElement element) {
+        try {
+            element.click();
+        } catch (ElementClickInterceptedException e) {
+            log.trace("Unable to click element {}, will try again", element);
+            final Actions action = new Actions(driver);
+            action.moveToElement(element).click().build().perform();
+        }
     }
 
 }
