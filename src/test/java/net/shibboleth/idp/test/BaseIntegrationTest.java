@@ -1969,7 +1969,7 @@ public abstract class BaseIntegrationTest
     public void acceptTermsOfUse() {
         final WebElement element = driver.findElement(By.name(CONSENT_IDS_INPUT_NAME));
         if (!element.isSelected()) {
-            element.click();
+            clickWorkaround(element);
         }
     }
 
