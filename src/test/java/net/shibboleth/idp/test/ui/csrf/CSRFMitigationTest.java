@@ -137,18 +137,10 @@ public class CSRFMitigationTest extends BaseIntegrationTest {
         Assert.assertNotNull(errorPageTitle);
         final String errorPageSubtitle = getMessage(CSRF_ERROR_PAGE_TITLE_PROPERTY);
         Assert.assertNotNull(errorPageSubtitle);
-        
-        
-        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
-            public Boolean apply(WebDriver d) {
-                return d.getTitle().equals(errorPageTitle+" - "+errorPageSubtitle);
-            }
-        });
-
         Assert.assertTrue(driver.getPageSource()!=null);
-        WebElement contentElement = driver.findElement(By.xpath("//div[contains(@class,'content')]"));
-        String contentText = contentElement.getText().trim();
-        Assert.assertTrue(csrfErrorMessage.equals(contentText));
+        final String pageSource = driver.getPageSource();
+        Assert.assertTrue(pageSource.contains(csrfErrorMessage));
+        Assert.assertTrue(pageSource.contains(errorPageTitle + " - " + errorPageSubtitle));
     }
 
     /**

@@ -17,12 +17,10 @@
 
 package net.shibboleth.idp.test.saml2;
 
-import java.util.List;
-
 import javax.annotation.Nullable;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.NoSuchElementException;
 import org.opensaml.core.xml.XMLObjectBuilder;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.schema.XSAny;
@@ -108,14 +106,15 @@ public class SAML2SSORedirectLDAPIntegrationTest extends AbstractSAML2Integratio
         waitForAttributeReleasePage();
 
         // fail if mail attribute is displayed
-
-        final WebElement table = driver.findElement(By.tagName("table"));
-        final List<WebElement> tds = table.findElements(By.tagName("td"));
-        for (final WebElement td : tds) {
-            Assert.assertNotEquals("mail", td.getText(), "Emtpy mail attribute should not be displayed");
-            Assert.assertNotEquals("ZERO_LENGTH_VALUE", td.getText(), "Emtpy attributes should not be displayed");
-            Assert.assertNotEquals("NULL_VALUE", td.getText(), "Emtpy attributes should not be displayed");
+        try {
+            driver.findElement(By.id("mail"));
+            Assert.fail("Mail attribute should not be released");
+        } catch (NoSuchElementException e) {
+            // expected to not be found
         }
+
+        // fail if uid attribute is not released, will throw exception if not found
+        driver.findElement(By.id("uid"));
 
         releaseAllAttributes();
 
