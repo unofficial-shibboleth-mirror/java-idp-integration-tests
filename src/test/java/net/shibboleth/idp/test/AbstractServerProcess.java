@@ -18,6 +18,7 @@
 package net.shibboleth.idp.test;
 
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
 import java.net.ConnectException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -268,6 +269,9 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
             processBuilder.command(buildCommands());
             log.debug("Will start server using command '{}'", processBuilder.command());
             final Stopwatch stopwatch = Stopwatch.createStarted();
+            // Workaround Maven Surefire Plugin freeze if Jetty 10 writes to stdout or stderr
+            processBuilder.redirectOutput(Redirect.INHERIT);
+            processBuilder.redirectError(Redirect.INHERIT);
             log.debug("Starting the server process");
             process = processBuilder.start();
             waitForStatusPage();
