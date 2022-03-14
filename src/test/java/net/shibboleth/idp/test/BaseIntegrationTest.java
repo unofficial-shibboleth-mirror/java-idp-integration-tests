@@ -17,8 +17,10 @@
 
 package net.shibboleth.idp.test;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -295,6 +297,9 @@ public abstract class BaseIntegrationTest
     /** Path to idp.home. */
     @NonnullAfterInit protected Path pathToIdPHome;
 
+    /** Path to idp distribution. */
+    @NonnullAfterInit protected Path pathToIdPDist;
+
     /** Path to conf/idp.properties. */
     @NonnullAfterInit protected Path pathToIdPProperties;
 
@@ -392,23 +397,22 @@ public abstract class BaseIntegrationTest
         log.debug("Path to build directory '{}'", buildPath.toAbsolutePath());
         Assert.assertTrue(buildPath.toAbsolutePath().toFile().exists(), "Path to build directory not found");
 
-        // Path to idp.home from distribution.
-        Path pathToDistIdPHome = null;
+        // Path to idp distribution.
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, "*shibboleth-identity-provider-*")) {
             for (Path entry : stream) {
-                pathToDistIdPHome = entry;
+                pathToIdPDist = entry;
                 break;
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        log.debug("Path to distribution idp.home '{}'", pathToDistIdPHome.toAbsolutePath());
-        Assert.assertNotNull(pathToDistIdPHome, "Path to distribution idp.home not found");
-        Assert.assertTrue(pathToDistIdPHome.toAbsolutePath().toFile().exists(), "Path to dist idp.home not found");
+        log.debug("Path to idp distribution '{}'", pathToIdPDist.toAbsolutePath());
+        Assert.assertNotNull(pathToIdPDist, "IdP distribution not found");
+        Assert.assertTrue(pathToIdPDist.toAbsolutePath().toFile().exists(), "IdP distribution does not exist");
 
         // Determine IdP version from distribution name
         final Pattern pattern = Pattern.compile("shibboleth-identity-provider-(.*)");
-        final Matcher matcher = pattern.matcher(pathToDistIdPHome.getFileName().toString());
+        final Matcher matcher = pattern.matcher(pathToIdPDist.getFileName().toString());
         if (matcher.find()) {
             idpVersion = matcher.group(1);
         }
@@ -421,15 +425,71 @@ public abstract class BaseIntegrationTest
         final String timestamp = DateTimeFormatter.ofPattern(idpHomePattern).format(LocalDateTime.now());
         final String perTestDirectoryName = String.join("-", timestamp, getClass().getSimpleName());
         log.debug("Per-test idp.home directory name '{}'", perTestDirectoryName);
-        pathToIdPHome = pathToDistIdPHome.getParent().resolve(perTestDirectoryName);
+        pathToIdPHome = pathToIdPDist.getParent().resolve(perTestDirectoryName);
         log.debug("Path to idp.home '{}'", pathToIdPHome.toAbsolutePath());
-        Assert.assertFalse(pathToIdPHome.toAbsolutePath().toFile().exists(), "Path to idp.home already exists");
+        final File idpHome = pathToIdPHome.toAbsolutePath().toFile();
+        Assert.assertFalse(idpHome.exists(), "Path to idp.home already exists");
+        // Create empty idp.home directory
+        Files.createDirectory(pathToIdPHome.toAbsolutePath());
+        Assert.assertTrue(idpHome.exists(), "Path to idp.home not found");
 
-        // Copy idp.home directory from distribution to new per test directory
-        final File sourceDir = pathToDistIdPHome.toAbsolutePath().toFile();
-        final File destinationDir = pathToIdPHome.toAbsolutePath().toFile();
-        FileSystemUtils.copyRecursively(sourceDir, destinationDir);
-        Assert.assertTrue(destinationDir.exists(), "Path to idp.home not found");
+        // Run installer from idp distribution directory
+        final ProcessBuilder installerBuilder = new ProcessBuilder();
+        installerBuilder.directory(pathToIdPDist.toFile());
+        installerBuilder.redirectErrorStream();
+        final List<String> installerCommands = new ArrayList();
+        if (isWindows()) {
+            final Path pathToInstallBat = pathToIdPDist.resolve(Paths.get("bin", "install.bat"));
+            Assert.assertTrue(pathToInstallBat.toFile().exists());
+            installerCommands.add(pathToInstallBat.toAbsolutePath().toString());
+        } else {
+            installerCommands.add("bin/install.sh");
+            
+        }
+        // installerCommands.add("-h");
+        installerCommands.add("-Didp.src.dir=" + pathToIdPDist.toAbsolutePath());
+        installerCommands.add("-Didp.target.dir=" + pathToIdPHome.toAbsolutePath());
+        installerCommands.add("-Didp.host.name=idp");
+        installerCommands.add("-Didp.scope=example.org");
+        installerCommands.add("-Didp.entityID=https://idp.example.org");
+        installerCommands.add("-Didp.keystore.password=password");
+        installerCommands.add("-Didp.sealer.password=password");
+        installerBuilder.command(installerCommands);
+        // Run installer
+        final Process installerProcess = installerBuilder.start();
+        logProcess(installerProcess, "install :");
+
+        // List and enable modules
+        if (isWindows()) {
+            final Path pathToModuleBat = pathToIdPHome.resolve(Paths.get("bin", "module.bat"));
+            Assert.assertTrue(pathToModuleBat.toFile().exists());
+            final String moduleBat = pathToModuleBat.toAbsolutePath().toString();
+            logProcess(Runtime.getRuntime().exec(moduleBat + " -l", null, idpHome), "module :");
+            logProcess(Runtime.getRuntime().exec(moduleBat + " -e idp.intercept.Consent", null, idpHome),"module :");
+            logProcess(Runtime.getRuntime().exec(moduleBat + " -e idp.profile.CAS", null, idpHome), "module :");
+            logProcess(Runtime.getRuntime().exec(moduleBat + " -l", null, idpHome), "module :");
+        } else {
+            logProcess(Runtime.getRuntime().exec("bin/module.sh -l", null, idpHome), "module :");
+            logProcess(Runtime.getRuntime().exec("bin/module.sh -e idp.intercept.Consent", null, idpHome),"module :");
+            logProcess(Runtime.getRuntime().exec("bin/module.sh -e idp.profile.CAS", null, idpHome), "module :");
+            logProcess(Runtime.getRuntime().exec("bin/module.sh -l", null, idpHome), "module :");
+        }
+
+        // Expand idp.war to webapp/ directory (so web.xml can be modified later if need be)
+        final Path pathToWebappDir = pathToIdPHome.resolve("webapp").toAbsolutePath();
+        log.debug("Path to webapp dir '{}'", pathToWebappDir);
+        Files.createDirectory(pathToWebappDir);
+        Assert.assertTrue(pathToWebappDir.toFile().exists());
+        if (isWindows()) {
+            logProcess(Runtime.getRuntime().exec("jar -xvf ..\\war\\idp.war", null, pathToWebappDir.toFile()), "jar :");
+        } else {
+            logProcess(Runtime.getRuntime().exec("jar -xvf ../war/idp.war", null, pathToWebappDir.toFile()), "jar :");
+        }
+
+        // Copy directories from idp distribution to idp home
+        copyFromIdPDistToIdPHome("metadata");
+        copyFromIdPDistToIdPHome("credentials");
+        copyFromIdPDistToIdPHome("testbed-war");
 
         // Set idp.home system property, replace '\' with '/' for Windows
         System.setProperty("idp.home", pathToIdPHome.toAbsolutePath().toString().replace('\\', '/'));
@@ -442,20 +502,9 @@ public abstract class BaseIntegrationTest
         pathToLDAPProperties = Paths.get(pathToIdPHome.toAbsolutePath().toString(), "conf", "ldap.properties");
         Assert.assertTrue(pathToLDAPProperties.toFile().exists(), "Path to conf/ldap.properties not found");
         
-        if (idpVersion.startsWith("3")) {
-            // Path to system/messages/message.properties
-            final Path messagesProperties = pathToIdPHome.resolve(Paths.get("system", "messages","messages.properties"));
-            Assert.assertTrue(messagesProperties.toFile().exists(), "Path system/messages/messages.properties not found");
-            messagesPropertiesResource = new FileSystemResource(messagesProperties.toAbsolutePath().toString());
-        } else {
-            // Classpath messages.properties
-            messagesPropertiesResource = new ClassPathResource("/net/shibboleth/idp/messages/messages.properties");
-            Assert.assertTrue(messagesPropertiesResource.exists(), "Classpath resource messages.properties not found");
-            
-            // Enable modules
-            enableModules(Collections.singletonList("idp.authn.Password"), pathToIdPHome);
-            enableModules(Collections.singletonList("idp.intercept.Consent"), pathToIdPHome);
-        }
+        // Classpath messages.properties
+        messagesPropertiesResource = new ClassPathResource("/net/shibboleth/idp/messages/messages.properties");
+        Assert.assertTrue(messagesPropertiesResource.exists(), "Classpath resource messages.properties not found");
         log.debug("Path to message properties '{}'", messagesPropertiesResource);
     }
     
@@ -509,6 +558,9 @@ public abstract class BaseIntegrationTest
         if (pathToTomcatHome != null) {
             log.debug("Path to tomcat.home '{}'", pathToTomcatHome.toAbsolutePath());
             Assert.assertTrue(pathToTomcatHome.toAbsolutePath().toFile().exists(), "Path to tomcat.home not found");
+
+            // Copy tomcat-base
+            copyFromIdPDistToIdPHome("tomcat-base");
 
             // Path to tomcat.base
             pathToTomcatBase = pathToIdPHome.resolve(Paths.get("tomcat-base"));
@@ -583,6 +635,9 @@ public abstract class BaseIntegrationTest
             // Path to jetty.base
             pathToJettyBase = pathToIdPHome.resolve(Paths.get("jetty-base"));
             log.debug("Path to jetty.base '{}'", pathToJettyBase.toAbsolutePath());
+
+            // Copy jetty-base
+            copyFromIdPDistToIdPHome("jetty-base");
             Assert.assertNotNull(pathToJettyBase, "Path to jetty.base not found");
             Assert.assertTrue(pathToJettyBase.toAbsolutePath().toFile().exists(), "Path to jetty.base not found");
 
@@ -953,7 +1008,7 @@ public abstract class BaseIntegrationTest
         replaceFile(pathToIdPWebXML, oldText, builder.toString());
     }
 
-    @BeforeClass(enabled = true, dependsOnMethods = {"setUpIdPPaths"})
+    @BeforeClass(enabled = true, dependsOnMethods = {"setUpIdPPaths", "setUpJettyPaths"})
     public void setUpIdPWebApp() throws Exception {
         if (Boolean.getBoolean("tomcat")) {
             log.debug("Not setting up Jetty WebInfIncludeJarPattern because system property 'tomcat' is true");
@@ -2224,6 +2279,45 @@ public abstract class BaseIntegrationTest
             final Actions action = new Actions(driver);
             action.moveToElement(element).click().build().perform();
         }
+    }
+
+    /**
+     * Log output of process.
+     * 
+     * @param process the process to be logged
+     * @param prefix the prefix of the message to be logged
+     * @throws IOException
+     */
+    public void logProcess(@Nonnull final Process process, @Nullable final String prefix) throws IOException {
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line = "";
+        while ((line = reader.readLine()) != null) {
+            log.debug("{} {}", prefix, line);
+        }
+    }
+
+    /**
+     * Copy IdP distribution directory to IdP home.
+     *
+     * @param directory files to be copied from IdP distribution to IdP home
+     * @throws IOException if an error occurs
+     */
+    public void copyFromIdPDistToIdPHome(@Nonnull final String directory) throws IOException {
+        final File idpDistDirectory = pathToIdPDist.resolve(directory).toAbsolutePath().toFile();
+        final File idpHomeDirectory = pathToIdPHome.resolve(directory).toAbsolutePath().toFile();
+        if (!idpHomeDirectory.exists()) {
+            Files.createDirectory(idpHomeDirectory.toPath());
+        }
+        FileSystemUtils.copyRecursively(idpDistDirectory, idpHomeDirectory);
+    }
+
+    /**
+     * Return true if os.name system property starts with "windows", ignoring case.
+     * 
+     * @return true if os.name system property starts with "windows", ignoring case
+     */
+    public static boolean isWindows() {
+        return System.getProperty("os.name").toLowerCase().startsWith("windows");
     }
 
 }
