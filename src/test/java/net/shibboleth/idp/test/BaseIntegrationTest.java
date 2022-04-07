@@ -2320,4 +2320,13 @@ public abstract class BaseIntegrationTest
         return System.getProperty("os.name").toLowerCase().startsWith("windows");
     }
 
+    /**
+     * Disable OIDC dynamic response header filter because the testbed is not properly configured as an OP.
+     */
+    @BeforeClass
+    public void disableRegisterFilterServletContextInitializer() {
+        serverCommands
+                .add("-Dnet.shibboleth.idp.plugin.oidc.op.servlet.RegisterFilterServletContextInitializer=disabled");
+    }
+
 }
