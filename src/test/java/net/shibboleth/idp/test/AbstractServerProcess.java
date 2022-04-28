@@ -489,7 +489,7 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
             }
             log.warn("Server did not stop.");
         } catch (final ConnectException e) {
-            if (e.getMessage().endsWith("Connection refused (Connection refused)")) {
+            if (e.getMessage().endsWith("Connection refused")) {
                 log.debug("Server appears to be stopped.");
             } else {
                 log.warn("Server might be stopped", e);
