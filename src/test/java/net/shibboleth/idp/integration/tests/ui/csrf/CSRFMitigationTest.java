@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.test.ui.csrf;
+package net.shibboleth.idp.integration.tests.ui.csrf;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -36,8 +36,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import net.shibboleth.idp.test.BaseIntegrationTest;
-import net.shibboleth.idp.test.BrowserData;
+import net.shibboleth.idp.integration.tests.BaseIntegrationTest;
+import net.shibboleth.idp.integration.tests.BrowserData;
 
 /**
  * Test the anti-csrf token is required when submitting the username and password form.

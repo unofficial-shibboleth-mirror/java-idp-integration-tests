@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.test;
+package net.shibboleth.idp.integration.tests;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

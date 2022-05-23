@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.test.saml2;
+package net.shibboleth.idp.integration.tests.saml2;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -46,8 +46,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import net.shibboleth.idp.test.BaseIntegrationTest;
-import net.shibboleth.idp.test.BrowserData;
+import net.shibboleth.idp.integration.tests.BaseIntegrationTest;
+import net.shibboleth.idp.integration.tests.BrowserData;
 import net.shibboleth.idp.test.flows.saml2.SAML2TestResponseValidator;
 import net.shibboleth.idp.test.flows.saml2.SAML2TestStatusResponseTypeValidator;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;

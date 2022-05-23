@@ -14,8 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * Test integration flows for CSRF mitigation.
- */
 
-package net.shibboleth.idp.test.ui.csrf;
+package net.shibboleth.idp.integration.tests;
+
+import javax.annotation.Nullable;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+/**
+ * Status test.
+ */
+public class StatusTest extends BaseIntegrationTest {
+
+    /** Path to status page. */
+    public final static String statusPath = "/idp/status";
+
+    /** Initial text of status page . */
+    public final static String STARTS_WITH = "### Operating Environment Information";
+
+    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
+    public void testStatus(@Nullable final BrowserData browserData) throws Exception {
+
+        startSeleniumClient(browserData);
+
+        startServer();
+
+        driver.get(getBaseURL() + statusPath);
+
+        Assert.assertTrue(getPageSource().startsWith(STARTS_WITH));
+    }
+
+}

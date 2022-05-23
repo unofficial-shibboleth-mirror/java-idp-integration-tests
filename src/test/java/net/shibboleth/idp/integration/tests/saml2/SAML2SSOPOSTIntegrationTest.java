@@ -15,36 +15,36 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.test.saml2;
+package net.shibboleth.idp.integration.tests.saml2;
 
 import javax.annotation.Nullable;
 
-import net.shibboleth.idp.test.BrowserData;
+import net.shibboleth.idp.integration.tests.BrowserData;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-/** SAML 2 HTTP Redirect binding test. */
-public class SAML2SSORedirectIntegrationTest extends AbstractSAML2IntegrationTest {
+/** SAML 2 HTTP POST binding test. */
+public class SAML2SSOPOSTIntegrationTest extends AbstractSAML2IntegrationTest {
 
     @BeforeClass
     public void setUpURLs() throws Exception {
 
-        startFlowURLPath = "/sp/SAML2/InitSSO/Redirect";
+        startFlowURLPath = "/sp/SAML2/InitSSO/POST";
 
-        loginPageURLPath = "/idp/profile/SAML2/Redirect/SSO";
+        loginPageURLPath = "/idp/profile/SAML2/POST/SSO";
 
         responsePageURLPath = "/sp/SAML2/POST/ACS";
 
-        isPassiveRequestURLPath = "/sp/SAML2/InitSSO/Passive";
+        isPassiveRequestURLPath = "/sp/SAML2/InitSSO/POST/Passive";
 
-        forceAuthnRequestURLPath = "/sp/SAML2/InitSSO/ForceAuthn";
+        forceAuthnRequestURLPath = "/sp/SAML2/InitSSO/POST/ForceAuthn";
 
-        idpLogoutURLPath = "/idp/profile/SAML2/Redirect/SLO";
+        idpLogoutURLPath = "/idp/profile/SAML2/POST/SLO";
 
         spLogoutURLPath = "/sp/SAML2/Redirect/SLO";
 
-        logoutTransientIDInputID = "InitSLO_Redirect";
+        logoutTransientIDInputID = "InitSLO_POST";
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
@@ -70,16 +70,6 @@ public class SAML2SSORedirectIntegrationTest extends AbstractSAML2IntegrationTes
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSSOTermsOfUse(@Nullable final BrowserData browserData) throws Exception {
         super.testSSOTermsOfUse(browserData);
-    }
-
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
-    public void testSSOTermsOfUsePassive(@Nullable final BrowserData browserData) throws Exception {
-        super.testSSOTermsOfUsePassive(browserData);
-    }
-
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
-    public void testSSOTermsOfUsePassiveNoConsent(@Nullable final BrowserData browserData) throws Exception {
-        super.testSSOTermsOfUsePassiveNoConsent(browserData);
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")

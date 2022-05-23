@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.test.cas;
+package net.shibboleth.idp.integration.tests.cas;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,8 +27,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import net.shibboleth.idp.test.BaseIntegrationTest;
-import net.shibboleth.idp.test.BrowserData;
+import net.shibboleth.idp.integration.tests.BaseIntegrationTest;
+import net.shibboleth.idp.integration.tests.BrowserData;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 /**

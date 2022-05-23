@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.test.saml2;
+package net.shibboleth.idp.integration.tests.saml2;
 
 import javax.annotation.Nullable;
 
@@ -31,7 +31,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import net.shibboleth.idp.test.BrowserData;
+import net.shibboleth.idp.integration.tests.BrowserData;
 
 /** SAML 2 HTTP Redirect binding test with attributes from LDAP. */
 public class SAML2SSORedirectLDAPIntegrationTest extends AbstractSAML2IntegrationTest {

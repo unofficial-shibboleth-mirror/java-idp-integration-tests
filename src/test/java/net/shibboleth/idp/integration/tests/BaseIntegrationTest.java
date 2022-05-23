@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.test;
+package net.shibboleth.idp.integration.tests;
 
 import java.io.BufferedReader;
 import java.io.File;

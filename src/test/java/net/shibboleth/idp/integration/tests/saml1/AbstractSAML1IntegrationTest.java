@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.test.saml1;
+package net.shibboleth.idp.integration.tests.saml1;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -26,8 +26,8 @@ import java.nio.file.Paths;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import net.shibboleth.idp.test.BaseIntegrationTest;
-import net.shibboleth.idp.test.BrowserData;
+import net.shibboleth.idp.integration.tests.BaseIntegrationTest;
+import net.shibboleth.idp.integration.tests.BrowserData;
 import net.shibboleth.idp.test.flows.saml1.SAML1TestResponseValidator;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
 

@@ -15,86 +15,79 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.test.saml2;
+package net.shibboleth.idp.integration.tests.saml2;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import net.shibboleth.idp.test.BrowserData;
+import net.shibboleth.idp.integration.tests.BrowserData;
 
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-/** SAML 2 HTTP POST binding test. */
-public class SAML2SSOPOSTIntegrationTest extends AbstractSAML2IntegrationTest {
+/** SAML 2 unsolicited SSO test. */
+public class SAML2UnsolicitedSSOIntegrationTest extends AbstractSAML2IntegrationTest {
 
-    @BeforeClass
-    public void setUpURLs() throws Exception {
+    /** IdP endpoint. */
+    @Nonnull public final String idpEndpointPath = "/idp/profile/SAML2/Unsolicited/SSO";
 
-        startFlowURLPath = "/sp/SAML2/InitSSO/POST";
+    /** Provider ID. */
+    @Nonnull public final String providerID = "https://sp.example.org";
 
-        loginPageURLPath = "/idp/profile/SAML2/POST/SSO";
+    /** SHIRE. */
+    @Nonnull public final String shirePath = "/sp/SAML2/POST/ACS";
 
-        responsePageURLPath = "/sp/SAML2/POST/ACS";
+    /** Target. */
+    @Nonnull public final String target = "MyRelayState";
 
-        isPassiveRequestURLPath = "/sp/SAML2/InitSSO/POST/Passive";
+    /**
+     * Set up URLs.
+     * 
+     * Do not use secure URLs if browser is Safari.
+     * 
+     * @param browserData platform/browser/version triplet
+     */
+    public void setUpURLs(@Nullable final BrowserData browserData) throws Exception {
 
-        forceAuthnRequestURLPath = "/sp/SAML2/InitSSO/POST/ForceAuthn";
+        if (isSafari(browserData)) {
+            useSecureBaseURL = false;
+        }
 
-        idpLogoutURLPath = "/idp/profile/SAML2/POST/SLO";
+        final String shire = getBaseURL() + shirePath;
 
-        spLogoutURLPath = "/sp/SAML2/Redirect/SLO";
+        startFlowURLPath = idpEndpointPath + "?providerId=" + providerID + "&shire=" + shire + "&target=" + target;
 
-        logoutTransientIDInputID = "InitSLO_POST";
+        loginPageURLPath = idpEndpointPath;
+
+        responsePageURLPath = shirePath;
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSSOReleaseAllAttributes(@Nullable final BrowserData browserData) throws Exception {
+        setUpURLs(browserData);
         super.testSSOReleaseAllAttributes(browserData);
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSSOReleaseOneAttribute(@Nullable final BrowserData browserData) throws Exception {
+        setUpURLs(browserData);
         super.testSSOReleaseOneAttribute(browserData);
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSSODoNotRememberConsent(@Nullable final BrowserData browserData) throws Exception {
+        setUpURLs(browserData);
         super.testSSODoNotRememberConsent(browserData);
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSSOGlobalConsent(@Nullable final BrowserData browserData) throws Exception {
+        setUpURLs(browserData);
         super.testSSOGlobalConsent(browserData);
     }
 
     @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
     public void testSSOTermsOfUse(@Nullable final BrowserData browserData) throws Exception {
+        setUpURLs(browserData);
         super.testSSOTermsOfUse(browserData);
     }
-
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
-    public void testSSOForceAuthn(@Nullable final BrowserData browserData) throws Exception {
-        super.testSSOForceAuthn(browserData);
-    }
-
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
-    public void testSSOPassiveWithoutSession(@Nullable final BrowserData browserData) throws Exception {
-        super.testSSOPassiveWithoutSession(browserData);
-    }
-
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
-    public void testSSOPassiveWithSession(@Nullable final BrowserData browserData) throws Exception {
-        super.testSSOPassiveWithSession(browserData);
-    }
-
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider")
-    public void testSSOPassiveWithSessionNoConsent(@Nullable final BrowserData browserData) throws Exception {
-        super.testSSOPassiveWithSessionNoConsent(browserData);
-    }
-
-    @Test(dataProvider = "sauceOnDemandBrowserDataProvider", enabled = false)
-    public void testSLO(@Nullable final BrowserData browserData) throws Exception {
-        super.testSLO(browserData);
-    }
-
 }
