@@ -7,7 +7,7 @@
     <parent>
         <groupId>net.shibboleth</groupId>
         <artifactId>parent</artifactId>
-        <version>11.3.0-SNAPSHOT</version>
+        <version>11.3.4-SNAPSHOT</version>
     </parent>
 
     <name>idp-integration-tests</name>
@@ -28,7 +28,7 @@
         <idp-jetty-base.version>9.4.1-SNAPSHOT</idp-jetty-base.version>
 
         <!-- Default version of Jetty to be tested -->
-        <jetty.version>9.4.44.v20210927</jetty.version>
+        <jetty.version>9.4.46.v20220331</jetty.version>
 
         <!-- Tomcat -->
         <idp-tomcat-base.version>9.0.0-SNAPSHOT</idp-tomcat-base.version>
