@@ -25,10 +25,10 @@
         <idp-to-be-tested.version>${idp.version}</idp-to-be-tested.version>
 
         <!-- Version of Jetty Base to be tested -->
-        <idp-jetty-base.version>9.4.1-SNAPSHOT</idp-jetty-base.version>
+        <idp-jetty-base.version>10.0.0-SNAPSHOT</idp-jetty-base.version>
 
         <!-- Default version of Jetty to be tested -->
-        <jetty.version>9.4.46.v20220331</jetty.version>
+        <jetty.version>10.0.9</jetty.version>
 
         <!-- Tomcat -->
         <idp-tomcat-base.version>9.0.0-SNAPSHOT</idp-tomcat-base.version>
@@ -247,6 +247,7 @@
                                     <type>test-jar</type>
                                     <classifier>tests</classifier>
                                     <includes>**/credentials/*</includes>
+                                    <excludes>**/credentials/idp-userfacing.p12</excludes>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${idp-to-be-tested.directory}</outputDirectory>
@@ -454,12 +455,12 @@
                                             <type>tar.gz</type>
                                         </artifactItem>
                                     </artifactItems>
-                                    <outputDirectory>${idp-to-be-tested.directory}</outputDirectory>
+                                    <outputDirectory>${test-distributions.directory}</outputDirectory>
                                 </configuration>
                             </execution>
-                            <!-- Copy testbed deployment descriptor from testbed jar to Jetty. -->
+                            <!-- Copy credentials to jetty-base. -->
                             <execution>
-                                <id>copy-testbed-deployment-descriptor-jetty</id>
+                                <id>copy-idp-userfacing.p12</id>
                                 <phase>compile</phase>
                                 <goals>
                                     <goal>unpack</goal>
@@ -468,18 +469,41 @@
                                     <artifactItems>
                                         <artifactItem>
                                             <groupId>net.shibboleth.idp</groupId>
-                                            <artifactId>idp-testbed</artifactId>
-                                            <version>${testbed.version}</version>
+                                            <artifactId>idp-conf</artifactId>
+                                            <version>${idp-to-be-tested.version}</version>
                                             <type>jar</type>
-                                            <classifier>${testbed.classifier}</classifier>
-                                            <includes>etc/testbed.xml</includes>
+                                            <classifier>tests</classifier>
+                                            <includes>credentials/idp-userfacing.p12,credentials/idp-backchannel.p12</includes>
                                         </artifactItem>
                                     </artifactItems>
-                                    <outputDirectory>${idp-to-be-tested.directory}/jetty-base/</outputDirectory>
+                                    <outputDirectory>${test-distributions.directory}/jetty-base/</outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
+
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <!-- Copy testbed deployment descriptor. -->
+                            <execution>
+                                <id>copy-resources</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${test-distributions.directory}/jetty-base/</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/test/jetty-base/</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
                 </plugins>
             </build>
         </profile>

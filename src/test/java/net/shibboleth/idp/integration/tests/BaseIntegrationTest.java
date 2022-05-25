@@ -306,6 +306,9 @@ public abstract class BaseIntegrationTest
     /** Path to conf/ldap.properties. */
     @NonnullAfterInit protected Path pathToLDAPProperties;
     
+    /** Path to directory containing idp.home and jetty-base for each test. */
+    @NonnullAfterInit protected Path pathToPerTestDirectory;
+
     /** Resource to messages.properties.*/
     @NonnullAfterInit protected Resource messagesPropertiesResource;
 
@@ -424,13 +427,15 @@ public abstract class BaseIntegrationTest
         // Path to per-test idp.home
         final String timestamp = DateTimeFormatter.ofPattern(idpHomePattern).format(LocalDateTime.now());
         final String perTestDirectoryName = String.join("-", timestamp, getClass().getSimpleName());
-        log.debug("Per-test idp.home directory name '{}'", perTestDirectoryName);
-        pathToIdPHome = pathToIdPDist.getParent().resolve(perTestDirectoryName);
+        log.debug("Per-test directory name '{}'", perTestDirectoryName);
+        pathToPerTestDirectory = buildPath.resolve(perTestDirectoryName); 
+        log.debug("Per-test directory '{}'", pathToPerTestDirectory);
+        pathToIdPHome = pathToPerTestDirectory.resolve("shibboleth-idp");
         log.debug("Path to idp.home '{}'", pathToIdPHome.toAbsolutePath());
         final File idpHome = pathToIdPHome.toAbsolutePath().toFile();
         Assert.assertFalse(idpHome.exists(), "Path to idp.home already exists");
         // Create empty idp.home directory
-        Files.createDirectory(pathToIdPHome.toAbsolutePath());
+        Files.createDirectories(pathToIdPHome.toAbsolutePath());
         Assert.assertTrue(idpHome.exists(), "Path to idp.home not found");
 
         // Run installer from idp distribution directory
@@ -633,18 +638,23 @@ public abstract class BaseIntegrationTest
             }
 
             // Path to jetty.base
-            pathToJettyBase = pathToIdPHome.resolve(Paths.get("jetty-base"));
+            pathToJettyBase = pathToIdPHome.getParent().resolve(Paths.get("jetty-base"));
             log.debug("Path to jetty.base '{}'", pathToJettyBase.toAbsolutePath());
 
             // Copy jetty-base
-            copyFromIdPDistToIdPHome("jetty-base");
+            final Path pathToJettyBaseDist = buildPath.resolve("jetty-base");
+            FileSystemUtils.copyRecursively(pathToJettyBaseDist, pathToJettyBase);
             Assert.assertNotNull(pathToJettyBase, "Path to jetty.base not found");
             Assert.assertTrue(pathToJettyBase.toAbsolutePath().toFile().exists(), "Path to jetty.base not found");
 
             // Make tmp directories exist
             Assert.assertTrue(pathToJettyBase.resolve("tmp").toFile().exists(), "Path to jetty.base/tmp/ not found");
             
+            // set idp.home system property
             serverCommands.add(0, "-Didp.home=" + System.getProperty("idp.home"));
+            // set idp.war.path system property to webapp directory
+            serverCommands.add("-Didp.war.path=" + pathToIdPHome.resolve("webapp").toAbsolutePath());
+            // set tmp directory system property
             serverCommands.add("-Djava.io.tmpdir=" + pathToJettyBase.resolve("tmp").toAbsolutePath());
         } else {
             Assert.fail("Unable to find jetty.home");
@@ -712,11 +722,6 @@ public abstract class BaseIntegrationTest
         } else {
             Assert.fail("Unable to find start.ini or idp.ini");
         }
-
-        // Jetty 9.4 point IdP webapp to /webapp rather than /war/idp.war
-        final Path pathToIdpXML = pathToJettyBase.resolve(Paths.get("webapps", "idp.xml"));
-        Assert.assertTrue(pathToIdpXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
-        replaceFile(pathToIdpXML, "/war/idp.war", "/webapp/");
     }
  
     /**
@@ -907,12 +912,12 @@ public abstract class BaseIntegrationTest
      */
     public void setUpNonSecurePort() throws IOException {
         // Add http module to Jetty
-        final Path pathToIdPMod = Paths.get("jetty-base", "modules", "idp.mod");
-        replaceIdPHomeFile(pathToIdPMod, "https", "http\nhttps");
+        final Path pathToIdPMod = pathToJettyBase.resolve(Paths.get("modules", "idp.mod"));
+        replaceFile(pathToIdPMod, "https", "http\nhttps");
 
         // Set HTTP port used by Jetty
-        final Path pathToIdpIni = Paths.get("jetty-base", "start.d", "idp.ini");
-        replaceIdPHomeFile(pathToIdpIni, "\\z", System.lineSeparator() + "jetty.http.port=" + port);
+        final Path pathToIdpIni = pathToJettyBase.resolve(Paths.get("start.d", "idp.ini"));
+        replaceFile(pathToIdpIni, "\\z", System.lineSeparator() + "jetty.http.port=" + port);
 
         // Set secure container session cookie to false
         final Path pathToIdPWebXML = Paths.get("webapp", "WEB-INF", "web.xml");
@@ -1015,7 +1020,7 @@ public abstract class BaseIntegrationTest
             return;
         }
 
-        final Path pathToIdPXML = pathToIdPHome.resolve(Paths.get("jetty-base", "webapps", "idp.xml"));
+        final Path pathToIdPXML = pathToJettyBase.resolve(Paths.get("webapps", "idp.xml"));
         Assert.assertTrue(pathToIdPXML.toAbsolutePath().toFile().exists(), "Path to idp.xml not found");
 
         final String oldText = "</Configure>";
@@ -1866,10 +1871,10 @@ public abstract class BaseIntegrationTest
     public void deletePerTestIdPHomeDirectory() {
         if (testClassFailed) {
             log.debug("There was a test class failure, not deleting per-test idp.home directory '{}'",
-                    pathToIdPHome.toAbsolutePath());
+                    pathToPerTestDirectory.toAbsolutePath());
         } else if (!Boolean.getBoolean("keepTests")) {
-            log.debug("Deleting per-test idp.home directory '{}'", pathToIdPHome.toAbsolutePath());
-            FileSystemUtils.deleteRecursively(pathToIdPHome.toAbsolutePath().toFile());
+            log.debug("Deleting per-test idp.home directory '{}'", pathToPerTestDirectory.toAbsolutePath());
+            FileSystemUtils.deleteRecursively(pathToPerTestDirectory.toAbsolutePath().toFile());
         }
     }
 
