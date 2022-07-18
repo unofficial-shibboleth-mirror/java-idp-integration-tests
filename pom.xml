@@ -16,10 +16,9 @@
     <packaging>jar</packaging>
     <version>0.0.1-SNAPSHOT</version>
 
-
     <properties>
         <!-- IdP -->
-        <idp.version>4.2.2-SNAPSHOT</idp.version>
+        <idp.version>4.3.0-SNAPSHOT</idp.version>
 
         <!--  Version of IdP to be tested -->
         <idp-to-be-tested.version>${idp.version}</idp-to-be-tested.version>
