@@ -39,7 +39,7 @@
 
         <!-- OpenSAML and Java support -->
         <java-support.version>8.3.2-SNAPSHOT</java-support.version>
-        <opensaml.version>4.2.1-SNAPSHOT</opensaml.version>
+        <opensaml.version>4.3.0-SNAPSHOT</opensaml.version>
 
         <selenium.version>3.141.59</selenium.version>
         <sauce.version>2.1.25</sauce.version>
