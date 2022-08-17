@@ -1503,8 +1503,12 @@ public abstract class BaseIntegrationTest
 
     public void enableAttributeReleaseConsent() throws IOException {
         final Path pathToRelyingPartyXML = Paths.get("conf", "relying-party.xml");
-
-        final String oldText = "<bean parent=\"SAML2.SSO\" />";
+        String oldText;
+        if (idpVersion.startsWith("4.1") || idpVersion.startsWith("4.2")) {
+            oldText = "<bean parent=\"SAML2.SSO\" />";
+        } else {
+            oldText = "<ref bean=\"SAML2.SSO\" />";
+        }
         final String newText = "<bean parent=\"SAML2.SSO\" p:postAuthenticationFlows=\"attribute-release\" />";
         replaceIdPHomeFile(pathToRelyingPartyXML, oldText, newText);
     }

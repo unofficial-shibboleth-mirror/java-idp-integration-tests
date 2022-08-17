@@ -104,9 +104,11 @@ public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
         final StringBuilder toUncomment = new StringBuilder();
         toUncomment.append("\\<\\!--\\s+");
         if (idpVersion.startsWith("3") || idpVersion.startsWith("4.0")) {
-        toUncomment.append("<bean parent=\"Shibboleth.SSO\" p:postAuthenticationFlows=\"attribute-release\" />");
+            toUncomment.append("<bean parent=\"Shibboleth.SSO\" p:postAuthenticationFlows=\"attribute-release\" />");
+        } else if (idpVersion.startsWith("4.1") || idpVersion.startsWith("4.2")) {
+            toUncomment.append("<bean parent=\"Shibboleth.SSO\" />");
         } else {
-            toUncomment.append("<bean parent=\"Shibboleth.SSO\" />");    
+            toUncomment.append("<ref bean=\"Shibboleth.SSO\" />");
         }
         toUncomment.append("\\s+");
         toUncomment.append("<ref bean=\"SAML1.AttributeQuery\" />");
@@ -115,7 +117,7 @@ public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
         toUncomment.append("\\s+--\\>");
 
         final StringBuilder uncommented = new StringBuilder();
-        uncommented.append("<bean parent=\"Shibboleth.SSO\" p:postAuthenticationFlows=\"attribute-release\" />");
+        uncommented.append("<bean parent=\"Shibboleth.SSO\" p:includeAttributeStatement=\"true\" p:postAuthenticationFlows=\"attribute-release\" />");
         uncommented.append(System.lineSeparator());
         uncommented.append("<ref bean=\"SAML1.AttributeQuery\" />");
         uncommented.append(System.lineSeparator());
@@ -152,8 +154,6 @@ public class AbstractSAML1IntegrationTest extends BaseIntegrationTest {
         if (!idpVersion.startsWith("3")) {
             enableSAML1Profiles();
         }
-
-        enableCustomRelyingPartyConfiguration();
 
         startServer();
 
