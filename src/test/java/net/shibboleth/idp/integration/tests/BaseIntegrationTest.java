@@ -22,6 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -40,9 +43,11 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -99,7 +104,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.util.FileSystemUtils;
-import org.springframework.util.SocketUtils;
 import org.testng.Assert;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterClass;
@@ -790,7 +794,7 @@ public abstract class BaseIntegrationTest
             return;
         }
         
-        final SortedSet<Integer> ports = SocketUtils.findAvailableTcpPorts(4, 20000, 30000);
+        final SortedSet<Integer> ports = findAvailablePorts(4);
         final Iterator<Integer> iterator = ports.iterator();
 
         port = iterator.next();
@@ -2336,6 +2340,48 @@ public abstract class BaseIntegrationTest
     public void disableRegisterFilterServletContextInitializer() {
         serverCommands
                 .add("-Dnet.shibboleth.idp.plugin.oidc.op.servlet.RegisterFilterServletContextInitializer=disabled");
+    }
+
+    /**
+     * Attempt to find available ports.
+     * 
+     * Range is between 20000 and 30000 as configured in EC2 Security Group.
+     * 
+     * @param numberOfPorts number of available ports to find
+     * @return available ports
+     * @throws IllegalStateException if the requested number of available ports could not be found
+     */
+    public SortedSet<Integer> findAvailablePorts(@Nonnull final int numberOfPorts) {
+        final Random random = new Random(System.nanoTime());
+        final SortedSet<Integer> availablePorts = new TreeSet<>();
+        int attemptCount = 0;
+        int portRangeMin = 20000; // configured in EC2 Security Group
+        int portRangeMax = 30000; // configured in EC2 Security Group
+        while ((++attemptCount <= numberOfPorts + 100) && availablePorts.size() < numberOfPorts) {
+            final int candidatePort = portRangeMin + random.nextInt((portRangeMax - portRangeMin) + 1);
+            if (isPortAvailable(candidatePort)) {
+                availablePorts.add(candidatePort);
+            }
+        }
+        if (availablePorts.size() != numberOfPorts) {
+            throw new IllegalStateException("Could not find available ports");
+        }
+        return availablePorts;
+    }
+
+    /**
+     * Check if port is available on the local host.
+     * 
+     * @param port port to check availability
+     * @return whether the given port is available on the local host
+     */
+    public boolean isPortAvailable(@Nonnull final int port) {
+        try (final Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(InetAddress.getLocalHost(), port), 20);
+            return false;
+        } catch (final Throwable e) {
+            return true;
+        }
     }
 
 }
