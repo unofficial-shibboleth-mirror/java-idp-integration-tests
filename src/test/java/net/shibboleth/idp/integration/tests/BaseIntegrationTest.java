@@ -1417,7 +1417,7 @@ public abstract class BaseIntegrationTest {
     public void enableCAS() throws IOException, ModuleException {
         final Path pathToRelyingPartyXML = Paths.get("conf", "relying-party.xml");
 
-        final String regex = "<ref bean=\"Liberty.SSOS\" />";
+        final String regex = "<ref bean=\"SAML2.ArtifactResolution\" />";
         final String replacement = regex + "\n" + "<ref bean=\"CAS.LoginConfiguration\" />\n"
                 + "<ref bean=\"CAS.ProxyConfiguration\" />\n" + "<ref bean=\"CAS.ValidateConfiguration\" />";
         replaceIdPHomeFile(pathToRelyingPartyXML, regex, replacement);
