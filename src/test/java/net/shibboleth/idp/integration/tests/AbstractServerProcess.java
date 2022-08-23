@@ -91,6 +91,9 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
     /** Whether the server process is running. */
     @Nonnull private boolean isRunning = false;
 
+    /** Port to use to shutdown Servlet Container. Defaults to 8005. */
+    @Nonnull private int shutdownPort = 8005;
+
     /**
      * Build the commands used to create the server process. Appends additional commands.
      * 
@@ -209,6 +212,15 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
     }
 
     /**
+     * Get port to use to shutdown Servlet container.
+     * 
+     * @return port to use to shutdown Servlet container
+     */
+    public int getShutdownPort() {
+        return shutdownPort;
+    }
+
+    /**
      * Set additional commands to start the server process.
      * 
      * @param commands additional commands
@@ -260,6 +272,15 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         statusPageURL = Constraint.isNotNull(StringSupport.trimOrNull(URL), "Status page URL cannot be null nor empty");
         return this;
+    }
+
+    /**
+     * Set port to use to shutdown Servlet container.
+     * 
+     * @param port to use to shutdown Servlet container
+     */
+    public void setShutdownPort(@Nonnull int port) {
+        shutdownPort = port;
     }
 
     /** {@inheritDoc} */

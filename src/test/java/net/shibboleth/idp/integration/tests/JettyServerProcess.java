@@ -31,7 +31,6 @@ import javax.annotation.Nonnull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.SocketUtils;
 
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
@@ -42,9 +41,6 @@ public class JettyServerProcess extends AbstractServerProcess {
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(JettyServerProcess.class);
-
-    /** Port to use to shutdown Jetty. Defaults to 8005. */
-    @Nonnull private int shutdownPort = 8005;
 
     /** Passphrase to use to shutdown Jetty. Defaults to SHUTDOWN. */
     @Nonnull private String shutdownKey = "SHUTDOWN";
@@ -65,8 +61,7 @@ public class JettyServerProcess extends AbstractServerProcess {
         getCommands().add("-jar");
         getCommands().add(getServletContainerHomePath().toAbsolutePath().toString() + "/start.jar");
         getCommands().add("STOP.KEY=" + shutdownKey);
-        nextAvailableShutdownPort();
-        getCommands().add("STOP.PORT=" + Integer.toString(shutdownPort));
+        getCommands().add("STOP.PORT=" + Integer.toString(getShutdownPort()));
     }
 
     /**
@@ -79,24 +74,6 @@ public class JettyServerProcess extends AbstractServerProcess {
     @Nonnull
     public void setShutdownKey(@Nonnull @NotEmpty final String key) {
         shutdownKey = key;
-    }
-
-    /**
-     * Configure the next available port in the range 20000-30000 to shutdown Jetty.
-     * 
-     * @return the next available port to use to shutdown Tomcat, by default '8005' if the '8080' system property is
-     *         <code>true</code>
-     * @throws ComponentInitializationException if catalina.properties cannot be modified
-     */
-    @Nonnull
-    public int nextAvailableShutdownPort() throws ComponentInitializationException {
-        if (Boolean.getBoolean("8080")) {
-            log.debug("System property '8080' is true, using default shutdown port {}", shutdownPort);
-            return shutdownPort;
-        }
-        shutdownPort = SocketUtils.findAvailableTcpPort(20000, 30000);
-        log.debug("Selecting Jetty shutdown port {}", shutdownPort);
-        return shutdownPort;
     }
 
     /**
@@ -145,7 +122,7 @@ public class JettyServerProcess extends AbstractServerProcess {
     /** {@inheritDoc} */
     @Override
     public void stop() {
-        shutdown("127.0.0.1", shutdownPort, shutdownKey);
+        shutdown("127.0.0.1", getShutdownPort(), shutdownKey);
         super.stop();
     }
 }

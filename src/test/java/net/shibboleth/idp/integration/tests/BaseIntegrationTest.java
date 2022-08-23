@@ -280,6 +280,9 @@ public abstract class BaseIntegrationTest
     /** Port that the test LDAP server listens on. Defaults to 10389. */
     @Nonnull protected Integer ldapPort = 10389;
 
+    /** Port to shutdown Servlet Container. Defaults to 8005. */
+    @Nonnull protected Integer shutdownPort = 8005;
+
     /** Non-secure address that clients should connect to. Defaults to "localhost". */
     @Nonnull protected String address = "localhost";
 
@@ -793,8 +796,8 @@ public abstract class BaseIntegrationTest
         if (Boolean.getBoolean("8080")) {
             return;
         }
-        
-        final SortedSet<Integer> ports = findAvailablePorts(4);
+
+        final SortedSet<Integer> ports = findAvailablePorts(5);
         final Iterator<Integer> iterator = ports.iterator();
 
         port = iterator.next();
@@ -809,6 +812,9 @@ public abstract class BaseIntegrationTest
         ldapPort = iterator.next();
         log.debug("Selecting port '{}' for LDAP", ldapPort);
         serverCommands.add("-D" + TEST_LDAP_PORT_PROPERTY + "=" + Integer.toString(ldapPort));
+        
+        shutdownPort = iterator.next();
+        log.debug("Selecting port '{}' to shutdown Servlet container", securePort);
     }
 
     /**
@@ -1148,6 +1154,7 @@ public abstract class BaseIntegrationTest
         server.setServletContainerHomePath(pathToJettyHome);
         server.setAdditionalCommands(serverCommands);
         server.setStatusPageURL(getBaseURL() + StatusTest.statusPath);
+        server.setShutdownPort(shutdownPort);
         server.initialize();
         server.start();
     }
@@ -1163,6 +1170,7 @@ public abstract class BaseIntegrationTest
         server.setServletContainerHomePath(pathToTomcatHome);
         server.setAdditionalCommands(serverCommands);
         server.setStatusPageURL(getBaseURL() + StatusTest.statusPath);
+        server.setShutdownPort(shutdownPort);
         server.initialize();
         server.start();
     }

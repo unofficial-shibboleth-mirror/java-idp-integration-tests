@@ -27,7 +27,6 @@ import javax.annotation.Nonnull;
 import org.apache.commons.net.telnet.TelnetClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.SocketUtils;
 import org.testng.Assert;
 
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
@@ -38,9 +37,6 @@ public class TomcatServerProcess extends AbstractServerProcess {
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(TomcatServerProcess.class);
-
-    /** Port to use to shutdown Tomcat. Defaults to 8005. */
-    @Nonnull private int shutdownPort = 8005;
 
     /** {@inheritDoc} */
     @Override
@@ -81,25 +77,18 @@ public class TomcatServerProcess extends AbstractServerProcess {
         getCommands().add(pathToStartup.toAbsolutePath().toString());
 
         // Configure Tomcat's shutdown port
-        nextAvailableShutdownPort();
+        setUpShutdownPort();
     }
 
     /**
-     * Configure the next available port in the range 20000-30000 to shutdown Tomcat.
+     * Configure port to shutdown Tomcat.
      * 
-     * @return the next available port to use to shutdown Tomcat, by default '8005' if the '8080' system property is
-     *         <code>true</code>
      * @throws ComponentInitializationException if catalina.properties cannot be modified
      */
     @Nonnull
-    public int nextAvailableShutdownPort() throws ComponentInitializationException {
+    public void setUpShutdownPort() throws ComponentInitializationException {
 
-        if (Boolean.getBoolean("8080")) {
-            log.debug("System property '8080' is true, using default shutdown port {}", shutdownPort);
-            return shutdownPort;
-        }
-
-        shutdownPort = SocketUtils.findAvailableTcpPort(20000, 30000);
+        final int shutdownPort = getShutdownPort();
         log.debug("Selecting Tomcat shutdown port {}", shutdownPort);
 
         final Path pathToCatalinaProp = getServletContainerBasePath().resolve(Paths.get("conf", "catalina.properties"));
@@ -110,8 +99,6 @@ public class TomcatServerProcess extends AbstractServerProcess {
             log.error("Unable to replace file '{}'", pathToCatalinaProp, e);
             throw new ComponentInitializationException(e);
         }
-
-        return shutdownPort;
     }
 
     /**
@@ -150,7 +137,7 @@ public class TomcatServerProcess extends AbstractServerProcess {
     /** {@inheritDoc} */
     @Override
     public void stop() {
-        shutdown("127.0.0.1", shutdownPort, "SHUTDOWN");
+        shutdown("127.0.0.1", getShutdownPort(), "SHUTDOWN");
         super.stop();
     }
 
