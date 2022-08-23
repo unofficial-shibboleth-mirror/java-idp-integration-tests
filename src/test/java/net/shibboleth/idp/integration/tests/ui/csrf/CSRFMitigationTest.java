@@ -19,6 +19,7 @@ package net.shibboleth.idp.integration.tests.ui.csrf;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -26,9 +27,7 @@ import javax.annotation.Nullable;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,7 +154,7 @@ public class CSRFMitigationTest extends BaseIntegrationTest {
 
 
         //wait for page to load for max 3 seconds.
-        WebDriverWait wait = new WebDriverWait(driver, 3);
+        final WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(3));
         wait.until(x -> x.findElement(By.name("j_username")));
 
         //check the token input exists - fail if not.

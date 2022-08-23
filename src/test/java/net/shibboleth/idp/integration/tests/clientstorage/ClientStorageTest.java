@@ -17,6 +17,8 @@
 
 package net.shibboleth.idp.integration.tests.clientstorage;
 
+import java.time.Duration;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -96,7 +98,7 @@ public class ClientStorageTest extends BaseIntegrationTest {
 
         getAndWaitForTestbedPage();
 
-        final WebDriverWait wait = new WebDriverWait(driver, 10);
+        final WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("client-storage-read")));
 
         final WebElement read = driver.findElement(By.id("client-storage-read"));

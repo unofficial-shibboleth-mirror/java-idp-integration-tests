@@ -33,15 +33,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.ServiceLoader;
@@ -78,7 +81,6 @@ import org.apache.http.util.EntityUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.ElementClickInterceptedException;
-import org.openqa.selenium.Platform;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
@@ -86,8 +88,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.remote.BrowserType;
-import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
@@ -113,10 +113,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Listeners;
 
-import com.saucelabs.common.SauceOnDemandAuthentication;
-import com.saucelabs.common.SauceOnDemandSessionIdProvider;
-import com.saucelabs.testng.SauceBrowserDataProvider;
-import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
 
 /**
  * Abstract integration test which tests the IdP via the testbed using Selenium.
@@ -186,9 +182,8 @@ import com.saucelabs.testng.SauceOnDemandAuthenticationProvider;
  * See {@link org.openqa.selenium.Platform}. Or, configure a new TestNG data provider.
  * </p>
  */
-@Listeners({TestNameLogger.class, CustomSauceOnDemandTestListener.class})
-public abstract class BaseIntegrationTest
-        implements SauceOnDemandSessionIdProvider, SauceOnDemandAuthenticationProvider {
+@Listeners({TestNameLogger.class})
+public abstract class BaseIntegrationTest {
 
     /** Name of property defining the address that the web server listens on. */
     @Nonnull public final static String PRIVATE_SERVER_ADDRESS_PROPERTY = "server.address.private";
@@ -340,12 +335,6 @@ public abstract class BaseIntegrationTest
     /** XMLObject unmarshaller factory */
     @NonnullAfterInit protected UnmarshallerFactory unmarshallerFactory;
 
-    /** Desired capabilities of the web driver. */
-    @Nonnull protected DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
-
-    /** Override desired capabilities of the web driver. */
-    @Nullable protected DesiredCapabilities overrideCapabilities;
-
     /** Web driver. */
     @Nonnull protected WebDriver driver;
 
@@ -375,9 +364,6 @@ public abstract class BaseIntegrationTest
 
     /** URL path of SP single logout service endpoint. */
     @Nullable protected String spLogoutURLPath;
-
-    /** Sauce Labs authentication. */
-    @Nonnull protected SauceOnDemandAuthentication sauceOnDemandAuthentication = new SauceOnDemandAuthentication();
 
     /** Name of test class concatenated with the test method. **/
     @Nullable protected String testName;
@@ -1098,20 +1084,20 @@ public abstract class BaseIntegrationTest
      * @throws Exception if an error occurs
      */
     public void startSeleniumClient(@Nullable final BrowserData browserData) throws Exception {
-        setUpDesiredCapabilities(browserData);
         if (BaseIntegrationTest.isRemote()) {
-            log.debug("Setting up remote web driver with desired capabilities '{}'", desiredCapabilities);
-            setUpSauceDriver();
+            log.debug("Setting up remote Sauce Labs web driver");
+            final DesiredCapabilities desiredCapabilities = setUpDesiredCapabilities(browserData);
+            setUpSauceDriver(desiredCapabilities);
         } else if (browserData.getBrowser().equalsIgnoreCase("chrome")) {
             throw new IllegalArgumentException("Chrome web driver not supported");
         } else if (browserData.getBrowser().equalsIgnoreCase("safari")) {
-            log.debug("Setting up local Safari web driver with desired capabilities '{}'", desiredCapabilities);
+            log.debug("Setting up local Safari web driver");
             setUpSafariDriver();
         } else {
-            log.debug("Setting up local Firefox web driver with desired capabilities '{}'", desiredCapabilities);
+            log.debug("Setting up local Firefox web driver");
             setUpFirefoxDriver();
         }
-        log.debug("Started web driver '{}' with desired capabilities '{}'", driver, desiredCapabilities);
+        log.debug("Started web driver '{}'", driver);
     }
 
     /**
@@ -1608,19 +1594,24 @@ public abstract class BaseIntegrationTest
      * Set up remote web driver to Sauce Labs.
      * 
      * <p>
-     * Prefers credentials from system properties/environment variables as provided by Jenkins over ~/.sauce-ondemand,
-     * see {@link SauceOnDemandAuthentication}.
+     * Prefers credentials from environment variables, as provided by Jenkins Sauce OnDemand Plugin.
      * </p>
      * 
      * @throws IOException ...
      */
-    @BeforeMethod(enabled = false, dependsOnMethods = {"setUpTestName"})
-    public void setUpSauceDriver() throws IOException {
-        final SauceOnDemandAuthentication authentication = new SauceOnDemandAuthentication();
-        final String username = authentication.getUsername();
-        final String accesskey = authentication.getAccessKey();
-        final URL url = new URL("https://" + username + ":" + accesskey + "@ondemand.us-west-1.saucelabs.com:443/wd/hub");
-        final RemoteWebDriver remoteWebDriver = new RemoteWebDriver(url, desiredCapabilities);
+    public void setUpSauceDriver(@Nonnull final DesiredCapabilities capabilities) throws IOException {
+        log.info("Set up Sauce Labs");
+        log.debug("Sauce Labs user '{}'", System.getenv("SAUCE_USERNAME"));
+
+        final Map<String, Object> sauceOptions = new HashMap<>();
+        sauceOptions.put("username", System.getenv("SAUCE_USERNAME"));
+        sauceOptions.put("accessKey", System.getenv("SAUCE_ACCESS_KEY"));
+        sauceOptions.put("name", testName);
+        capabilities.setCapability("sauce:options", sauceOptions);
+
+        final URL url = new URL("https://ondemand.us-west-1.saucelabs.com/wd/hub");
+        final RemoteWebDriver remoteWebDriver = new RemoteWebDriver(url, capabilities);
+
         threadLocalWebDriver.set(remoteWebDriver);
         driver = threadLocalWebDriver.get();
         threadLocalSessionId.set(remoteWebDriver.getSessionId().toString());
@@ -1644,8 +1635,10 @@ public abstract class BaseIntegrationTest
      * 
      * @param browserData the browser data
      */
-    public void setUpDesiredCapabilities(@Nullable final BrowserData browserData) {
+    public DesiredCapabilities setUpDesiredCapabilities(@Nullable final BrowserData browserData) {
 
+        final DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
+        
         // name of test displayed on Sauce Labs
         desiredCapabilities.setCapability("name", testName);
 
@@ -1656,11 +1649,11 @@ public abstract class BaseIntegrationTest
             }
             // browser version
             if (browserData.getVersion() != null) {
-                desiredCapabilities.setCapability("version", browserData.getVersion());
+                desiredCapabilities.setCapability("browserVersion", browserData.getVersion());
             }
             // browser OS
             if (browserData.getOS() != null) {
-                desiredCapabilities.setCapability("platform", browserData.getOS());
+                desiredCapabilities.setCapability("platformName", browserData.getOS());
             }
             // browser device
             if (browserData.getDevice() != null) {
@@ -1673,12 +1666,6 @@ public abstract class BaseIntegrationTest
             final FirefoxOptions options = new FirefoxOptions();
             options.addPreference("devtools.jsonview.enabled", false);
             desiredCapabilities.merge(options);
-        }
-
-        // Override desired capabilities.
-        if (overrideCapabilities != null) {
-            log.debug("Override desired capabilities with '{}'", overrideCapabilities);
-            desiredCapabilities.merge(overrideCapabilities);
         }
 
         if (browserData != null && (browserData.getBrowser().equalsIgnoreCase("safari")
@@ -1696,109 +1683,81 @@ public abstract class BaseIntegrationTest
         }
 
         log.debug("Desired capabilities '{}'", desiredCapabilities);
+        return desiredCapabilities;
     }
 
     /**
-     * A TestNG {@link DataProvider} which provides platform/browser/version triplets in the form of {@link BrowserData}
-     * to test methods.
+     * A TestNG {@link DataProvider} which provides platform/browser/version triplets in the form of {@link BrowserData}.
      * 
-     * Prefers system properties over environment variables.
-     * 
-     * Prefers {@link SauceBrowserDataProvider#SAUCE_ONDEMAND_BROWSERS} over SELENIUM_PLATFORM, SELENIUM_BROWSER, and
-     * SELENIUM_VERSION. Defaults to Firefox.
+     * The browser to be tested is determined from the SELENIUM_PLATFORM, SELENIUM_VERSION, SELENIUM_BROWSER, and SELENIUM_DRIVER environment
+     * variables.
      * 
      * Rewrites 'Mac 11' platform as 'macOS 11' as a workaround when using Sauce Labs.
      * 
      * Populates browser data with SELENIUM_DEVICE if it exists, used to select iOS devices.
      * 
-     * Wraps {@link SauceBrowserDataProvider#sauceBrowserDataProvider(Method)} to avoid the IllegalArgumentException
-     * when the environment does not contain the desired property/variable.
-     * 
      * @param testMethod the test method
      * @return data provider which supplies {@link BrowserData} to test methods
      */
     @DataProvider(name = "sauceOnDemandBrowserDataProvider", parallel = false)
-    public static Iterator<Object[]> sauceOnDemandBrowserDataProvider(@Nonnull final Method testMethod) {
+    public static Iterator<Object[]> sauceOnDemandBrowserDataProvider(@Nonnull
+    final Method testMethod) {
 
         final Logger log = LoggerFactory.getLogger(BaseIntegrationTest.class);
 
+        log.trace("System property      SAUCE_ONDEMAND_BROWSERS  '{}'", System.getProperty("SAUCE_ONDEMAND_BROWSERS"));
+        log.trace("System property      SELENIUM_PLATFORM        '{}'", System.getProperty("SELENIUM_PLATFORM"));
+        log.trace("System property      SELENIUM_BROWSER         '{}'", System.getProperty("SELENIUM_BROWSER"));
+        log.trace("System property      SELENIUM_VERSION         '{}'", System.getProperty("SELENIUM_VERSION"));
+        log.trace("System property      SELENIUM_DEVICE          '{}'", System.getProperty("SELENIUM_DEVICE"));
+        log.trace("Environment variable SAUCE_ONDEMAND_BROWSERS  '{}'", System.getenv("SAUCE_ONDEMAND_BROWSERS"));
+        log.trace("Environment variable SELENIUM_PLATFORM        '{}'", System.getenv("SELENIUM_PLATFORM"));
+        log.trace("Environment variable SELENIUM_BROWSER         '{}'", System.getenv("SELENIUM_BROWSER"));
+        log.trace("Environment variable SELENIUM_VERSION         '{}'", System.getenv("SELENIUM_VERSION"));
+        log.trace("Environment variable SELENIUM_DEVICE          '{}'", System.getenv("SELENIUM_DEVICE"));
+
+        // prefer system properties to environment variable
+        final String platform = System.getProperty("SELENIUM_PLATFORM", System.getenv("SELENIUM_PLATFORM"));
+        final String browser = System.getProperty("SELENIUM_BROWSER", System.getenv("SELENIUM_BROWSER"));
+        final String version = System.getProperty("SELENIUM_VERSION", System.getenv("SELENIUM_VERSION"));
+        final String device = System.getProperty("SELENIUM_DEVICE", System.getenv("SELENIUM_DEVICE"));
+
+        log.debug("SELENIUM_PLATFORM '{}'", platform);
+        log.debug("SELENIUM_BROWSER  '{}'", browser);
+        log.debug("SELENIUM_VERSION  '{}'", version);
+        log.debug("SELENIUM_DEVICE   '{}'", device);
+        
+        final BrowserData browserData = new BrowserData();
+
+        if (platform != null) {
+            // hack macOS
+            if (platform.equalsIgnoreCase("Mac 11")) {
+                log.debug("Rewriting platform 'Mac 11' as 'macOS 11'");
+                browserData.setOS("macOS 11");
+            } else {
+                browserData.setOS(platform);
+            }
+        }
+
+        if (browser != null) {
+            browserData.setBrowser(browser);
+        } else {
+            log.debug("No SELENIUM_BROWSER found, defaulting to Firefox");
+            browserData.setBrowser("firefox");
+        }
+
+        if (version != null) {
+            browserData.setVersion(version);
+        }
+
+        if (device != null) {
+            browserData.setDevice(device);
+        }
+
         final List<Object[]> data = new ArrayList<Object[]>();
 
-        try {
-            // multiple platform/browser/version triplets
-            log.debug("Attempting to find '{}' in system properties or environment",
-                    SauceBrowserDataProvider.SAUCE_ONDEMAND_BROWSERS);
-            final Iterator<Object[]> iterator = SauceBrowserDataProvider.sauceBrowserDataProvider(testMethod);
-            while (iterator.hasNext()) {
-                final BrowserData browserData = new BrowserData();
-                final Object[] array = iterator.next();
-                if (array[0] != null) {
-                    browserData.setBrowser(array[0].toString());
-                }
-                if (array[1] != null) {
-                    browserData.setVersion(array[1].toString());
-                }
-                if (array[2] != null) {
-                    browserData.setOS(array[2].toString());
-                }
-                data.add(new Object[] {browserData});
-            }
-        } catch (IllegalArgumentException e) {
-            // single platform/browser/version triplet
-            log.debug("Did not find '{}' in system properties or environment",
-                    SauceBrowserDataProvider.SAUCE_ONDEMAND_BROWSERS);
+        data.add(new Object[] {browserData});
 
-            // prefer system properties to environment variable
-            log.trace("System property SELENIUM_PLATFORM      '{}'", System.getProperty("SELENIUM_PLATFORM"));
-            log.trace("System property SELENIUM_BROWSER       '{}'", System.getProperty("SELENIUM_BROWSER"));
-            log.trace("System property SELENIUM_VERSION       '{}'", System.getProperty("SELENIUM_VERSION"));
-            log.trace("System property SELENIUM_DEVICE        '{}'", System.getProperty("SELENIUM_DEVICE"));
-            log.trace("Environment variable SELENIUM_PLATFORM '{}'", System.getenv("SELENIUM_PLATFORM"));
-            log.trace("Environment variable SELENIUM_BROWSER  '{}'", System.getenv("SELENIUM_BROWSER"));
-            log.trace("Environment variable SELENIUM_VERSION  '{}'", System.getenv("SELENIUM_VERSION"));
-            log.trace("Environment variable SELENIUM_DEVICE   '{}'", System.getenv("SELENIUM_DEVICE"));
-
-            final String platform = System.getProperty("SELENIUM_PLATFORM", System.getenv("SELENIUM_PLATFORM"));
-            log.debug("Found SELENIUM_PLATFORM '{}'", platform);
-
-            final String browser = System.getProperty("SELENIUM_BROWSER", System.getenv("SELENIUM_BROWSER"));
-            log.debug("Found SELENIUM_BROWSER  '{}'", browser);
-
-            final String version = System.getProperty("SELENIUM_VERSION", System.getenv("SELENIUM_VERSION"));
-            log.debug("Found SELENIUM_VERSION  '{}'", version);
-
-            final String device = System.getProperty("SELENIUM_DEVICE", System.getenv("SELENIUM_DEVICE"));
-            log.debug("Found SELENIUM_DEVICE   '{}'", device);
-
-            final BrowserData browserData = new BrowserData();
-
-            if (platform != null) {
-                // hack macOS
-                if (platform.equalsIgnoreCase("Mac 11")) {
-                    log.debug("Rewriting platform 'Mac 11' as 'macOS 11'");
-                    browserData.setOS("macOS 11");
-                } else {
-                    browserData.setOS(platform);
-                }
-            }
-
-            if (browser != null) {
-                browserData.setBrowser(browser);
-            } else {
-                log.debug("No SELENIUM_BROWSER found, defaulting to Firefox");
-                browserData.setBrowser("firefox");
-            }
-
-            if (version != null) {
-                browserData.setVersion(version);
-            }
-
-            if (device != null) {
-                browserData.setDevice(device);
-            }
-
-            data.add(new Object[] {browserData});
-        }
         for (final Object[] array : data) {
             LoggerFactory.getLogger(BaseIntegrationTest.class).debug("Browser data provider '{}'", array);
         }
@@ -1816,16 +1775,6 @@ public abstract class BaseIntegrationTest
      */
     public static boolean isRemote() {
         return (System.getProperty(SELENIUM_IS_REMOTE, "false").equalsIgnoreCase("true")) ? true : false;
-    }
-
-    /**
-     * Whether the driver is Internet Explorer. Looks for desired capabilities with browser name of
-     * {@link BrowserType#IE}.
-     * 
-     * @return whether the driver is Internet Explorer.
-     */
-    public boolean isInternetExplorer() {
-        return desiredCapabilities.getBrowserName().equals(BrowserType.IE);
     }
 
     /**
@@ -1895,11 +1844,6 @@ public abstract class BaseIntegrationTest
     }
 
     /** {@inheritDoc} */
-    public SauceOnDemandAuthentication getAuthentication() {
-        return sauceOnDemandAuthentication;
-    }
-
-    /** {@inheritDoc} */
     public String getSessionId() {
         return threadLocalSessionId.get();
     }
@@ -1930,19 +1874,11 @@ public abstract class BaseIntegrationTest
     /**
      * Get the source of the last page loaded.
      * 
-     * Handle Internet Explorer via {@link #cleanupPageSourceIE(String)}.
-     * 
      * @return the source of the last page loaded or <code>null</code>
      */
     @Nullable
     public String getPageSource() {
-        String pageSource = null;
-
-        pageSource = driver.findElement(By.tagName("body")).getText();
-
-        if (isInternetExplorer()) {
-            pageSource = cleanupPageSourceIE(pageSource);
-        }
+        final String pageSource = driver.findElement(By.tagName("body")).getText();
         log.trace("get page source\n{}", pageSource);
         return pageSource;
     }
@@ -1980,7 +1916,7 @@ public abstract class BaseIntegrationTest
      * Wait for the login page at the URL composed of {@link #getBaseURL()} and {@link #loginPageURLPath}.
      */
     public void waitForLoginPage() {
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+        (new WebDriverWait(driver, Duration.ofSeconds(10))).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.getCurrentUrl().startsWith(getBaseURL() + loginPageURLPath);
             }
@@ -1991,7 +1927,7 @@ public abstract class BaseIntegrationTest
      * Wait for page containing SAML response at URL composed of {@link #getBaseURL()} and {@link #responsePageURLPath}.
      */
     public void waitForResponsePage() {
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+        (new WebDriverWait(driver, Duration.ofSeconds(10))).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.getCurrentUrl().equals(getBaseURL() + responsePageURLPath);
             }
@@ -2020,7 +1956,7 @@ public abstract class BaseIntegrationTest
      * @param user username
      */
     public void login(final @Nonnull String user) {
-        new WebDriverWait(driver, 10).until(driver -> driver.findElement(By.name("j_username")));
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(driver -> driver.findElement(By.name("j_username")));
         final WebElement username = driver.findElement(By.name("j_username"));
         final WebElement password = driver.findElement(By.name("j_password"));
         username.sendKeys(user);
@@ -2032,7 +1968,7 @@ public abstract class BaseIntegrationTest
      * Wait for page with title {@link #TERMS_OF_USE_PAGE_TITLE}.
      */
     public void waitForTermsOfUsePage() {
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+        (new WebDriverWait(driver, Duration.ofSeconds(10))).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.getTitle().equals(TERMS_OF_USE_PAGE_TITLE);
             }
@@ -2053,7 +1989,7 @@ public abstract class BaseIntegrationTest
      * Wait for page with title {@link #ATTRIBUTE_RELEASE_PAGE_TITLE}.
      */
     public void waitForAttributeReleasePage() {
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+        (new WebDriverWait(driver, Duration.ofSeconds(10))).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.getTitle().equals(ATTRIBUTE_RELEASE_PAGE_TITLE);
             }
@@ -2065,7 +2001,7 @@ public abstract class BaseIntegrationTest
      */
     public void getAndWaitForTestbedPage() {
         driver.get(getBaseURL());
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+        (new WebDriverWait(driver, Duration.ofSeconds(10))).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.getCurrentUrl().equals(getBaseURL() + "/");
             }
@@ -2076,7 +2012,7 @@ public abstract class BaseIntegrationTest
      * Wait for IdP logout page at URL composed of {@link #getBaseURL()} and {@link #idpLogoutURLPath}.
      */
     public void waitForLogoutPage() {
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+        (new WebDriverWait(driver, Duration.ofSeconds(10))).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.getCurrentUrl().startsWith(getBaseURL() + idpLogoutURLPath);
             }
@@ -2090,7 +2026,7 @@ public abstract class BaseIntegrationTest
      */
     public void waitForPageWithURL(@Nonnull final String prefix) {
         Assert.assertNotNull(prefix);
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+        (new WebDriverWait(driver, Duration.ofSeconds(10))).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.getCurrentUrl().startsWith(prefix);
             }
@@ -2104,7 +2040,7 @@ public abstract class BaseIntegrationTest
      */
     public void waitForPageURLContains(@Nonnull final String fraction) {
         Assert.assertNotNull(fraction);
-        new WebDriverWait(driver, 10).until(ExpectedConditions.urlContains(fraction));
+        new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.urlContains(fraction));
     }
 
     /**
@@ -2117,14 +2053,14 @@ public abstract class BaseIntegrationTest
     public void waitForPageBodyStartsWith(@Nonnull final String prefix) {
         Assert.assertNotNull(prefix);
         try {
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            (new WebDriverWait(driver, Duration.ofSeconds(10))).until(new ExpectedCondition<Boolean>() {
                 public Boolean apply(WebDriver d) {
                     return d.findElement(By.tagName("body")).getText().startsWith(prefix);
                 }
             });
         } catch (final StaleElementReferenceException e) {
             log.debug("Caught StaleElementReferenceException, will try again...", e);
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            (new WebDriverWait(driver, Duration.ofSeconds(10))).until(new ExpectedCondition<Boolean>() {
                 public Boolean apply(WebDriver d) {
                     return d.findElement(By.tagName("body")).getText().startsWith(prefix);
                 }
@@ -2139,7 +2075,7 @@ public abstract class BaseIntegrationTest
      */
     public void waitForPageBodyContains(@Nonnull final String fraction) {
         Assert.assertNotNull(fraction);
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+        (new WebDriverWait(driver, Duration.ofSeconds(10))).until(new ExpectedCondition<Boolean>() {
             public Boolean apply(WebDriver d) {
                 return d.findElement(By.tagName("body")).getText().contains(fraction);
             }

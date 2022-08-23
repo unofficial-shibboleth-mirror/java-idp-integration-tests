@@ -41,8 +41,7 @@
         <java-support.version>8.3.2-SNAPSHOT</java-support.version>
         <opensaml.version>4.3.0-SNAPSHOT</opensaml.version>
 
-        <selenium.version>3.141.59</selenium.version>
-        <sauce.version>2.1.25</sauce.version>
+        <selenium.version>4.3.0</selenium.version>
 
         <test-distributions.directory>${project.basedir}/test-distributions</test-distributions.directory>
         <idp-to-be-tested.directory>${test-distributions.directory}/shibboleth-identity-provider-${idp-to-be-tested.version}</idp-to-be-tested.directory>
@@ -185,18 +184,6 @@
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
             <version>${selenium.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.saucelabs</groupId>
-            <artifactId>sauce_java_common</artifactId>
-            <version>${sauce.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.saucelabs</groupId>
-            <artifactId>sauce_testng</artifactId>
-            <version>${sauce.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
