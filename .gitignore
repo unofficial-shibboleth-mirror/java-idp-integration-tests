@@ -19,3 +19,6 @@
 /test-output
 /target
 /test-distributions
+.project
+.classpath
+.settings
