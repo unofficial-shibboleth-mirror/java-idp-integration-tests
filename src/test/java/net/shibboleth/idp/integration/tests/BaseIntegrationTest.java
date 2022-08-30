@@ -85,6 +85,8 @@ import org.openqa.selenium.Point;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.interactions.Actions;
@@ -1070,7 +1072,7 @@ public abstract class BaseIntegrationTest {
      * 
      * If test is local and 'SELENIUM_BROWSER' system property is 'safari', start a Safari web driver.
      * 
-     * If test is local and 'SELENIUM_BROWSER' system property is 'chrome', throw an IllegalArgumentException.
+     * If test is local and 'SELENIUM_BROWSER' system property is 'chrome', start a Chrome web driver.
      * 
      * Otherwise, start a Firefox web driver.
      * 
@@ -1080,7 +1082,6 @@ public abstract class BaseIntegrationTest {
      * 
      * @param browserData the platform+browser+version triplet
      * 
-     * @throws IllegalArgumentException if browser is chrome
      * @throws Exception if an error occurs
      */
     public void startSeleniumClient(@Nullable final BrowserData browserData) throws Exception {
@@ -1089,7 +1090,8 @@ public abstract class BaseIntegrationTest {
             final DesiredCapabilities desiredCapabilities = setUpDesiredCapabilities(browserData);
             setUpSauceDriver(desiredCapabilities);
         } else if (browserData.getBrowser().equalsIgnoreCase("chrome")) {
-            throw new IllegalArgumentException("Chrome web driver not supported");
+            log.debug("Setting up local Chrome web driver");
+            setUpChromeDriver();
         } else if (browserData.getBrowser().equalsIgnoreCase("safari")) {
             log.debug("Setting up local Safari web driver");
             setUpSafariDriver();
@@ -1563,11 +1565,27 @@ public abstract class BaseIntegrationTest {
     }
 
     /**
+     * Set up Chrome web driver.
+     * 
+     * @throws IOException ...
+     */
+    public void setUpChromeDriver() throws IOException {
+        final ChromeOptions options = new ChromeOptions();
+        options.setAcceptInsecureCerts(true);
+        options.setHeadless(true);
+        if (Boolean.getBoolean("no-headless")) {
+            options.setHeadless(false);
+        }
+        driver = new ChromeDriver(options);
+        driver.manage().window().setPosition(new Point(0, 0));
+        driver.manage().window().setSize(new Dimension(1024, 768));
+    }
+
+    /**
      * Set up Firefox web driver.
      * 
      * @throws IOException ...
      */
-    @BeforeMethod(enabled = false)
     public void setUpFirefoxDriver() throws IOException {
         final FirefoxOptions options = new FirefoxOptions();
         options.setAcceptInsecureCerts(true);
