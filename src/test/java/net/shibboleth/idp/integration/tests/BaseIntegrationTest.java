@@ -80,7 +80,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
-import org.openqa.selenium.ElementClickInterceptedException;
+import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
@@ -2242,14 +2242,14 @@ public abstract class BaseIntegrationTest {
     /**
      * Workaround being unable to click an element because of accessibility changes.
      * 
-     * Catch {@link ElementClickInterceptedException} and click via {@link Actions}.
+     * Catch {@link ElementNotInteractableException} and click via {@link Actions}.
      * 
      * @param element element to be clicked
      */
     public void clickWorkaround(final WebElement element) {
         try {
             element.click();
-        } catch (ElementClickInterceptedException e) {
+        } catch (ElementNotInteractableException e) {
             log.trace("Unable to click element {}, will try again", element);
             final Actions action = new Actions(driver);
             action.moveToElement(element).click().build().perform();
