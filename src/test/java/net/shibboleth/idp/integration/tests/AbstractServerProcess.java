@@ -52,7 +52,6 @@ import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterI
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.component.AbstractInitializableComponent;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
-import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.httpclient.HttpClientBuilder;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
@@ -228,7 +227,6 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
      */
     @Nonnull
     public AbstractServerProcess setAdditionalCommands(@Nullable final List<String> commands) {
-        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         if (commands != null) {
             additionalCommands = commands;
         }
@@ -243,7 +241,6 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
      */
     @Nonnull
     public AbstractServerProcess setServletContainerBasePath(@Nonnull final Path containerBasePath) {
-        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         pathToContainerBase = Constraint.isNotNull(containerBasePath, "Path to Servlet container base cannot be null");
         return this;
     }
@@ -256,7 +253,6 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
      */
     @Nonnull
     public AbstractServerProcess setServletContainerHomePath(@Nonnull final Path containerHomePath) {
-        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         pathToContainerHome = Constraint.isNotNull(containerHomePath, "Path to Servlet container home cannot be null");
         return this;
     }
@@ -269,7 +265,6 @@ public class AbstractServerProcess extends AbstractInitializableComponent implem
      */
     @Nonnull
     public AbstractServerProcess setStatusPageURL(@Nonnull @NotEmpty final String URL) {
-        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         statusPageURL = Constraint.isNotNull(StringSupport.trimOrNull(URL), "Status page URL cannot be null nor empty");
         return this;
     }

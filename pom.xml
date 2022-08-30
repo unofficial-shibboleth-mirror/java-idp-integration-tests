@@ -37,8 +37,7 @@
         <testbed.version>5.0.0-SNAPSHOT</testbed.version>
         <testbed.classifier>classes</testbed.classifier>
 
-        <!-- OpenSAML and Java support -->
-        <java-support.version>9.0.0-SNAPSHOT</java-support.version>
+        <!-- OpenSAML -->
         <opensaml.version>5.0.0-SNAPSHOT</opensaml.version>
 
         <selenium.version>4.3.0</selenium.version>
@@ -123,7 +122,6 @@
         <dependency>
             <groupId>net.shibboleth.utilities</groupId>
             <artifactId>java-support</artifactId>
-            <version>${java-support.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

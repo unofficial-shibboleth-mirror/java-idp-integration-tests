@@ -297,7 +297,7 @@ public abstract class BaseIntegrationTest {
     @Nonnull protected boolean useSecureBaseURL = true;
 
     /** Client IP range to allow access from. Defaults to "127.0.0.1/32". */
-    @Nonnull protected Set<String> clientIPRanges = new LinkedHashSet(Arrays.asList("127.0.0.1/32"));
+    @Nonnull protected Set<String> clientIPRanges = new LinkedHashSet<String>(Arrays.asList("127.0.0.1/32"));
 
     /** Path to idp.home. */
     @NonnullAfterInit protected Path pathToIdPHome;
@@ -438,7 +438,7 @@ public abstract class BaseIntegrationTest {
         final ProcessBuilder installerBuilder = new ProcessBuilder();
         installerBuilder.directory(pathToIdPDist.toFile());
         installerBuilder.redirectErrorStream();
-        final List<String> installerCommands = new ArrayList();
+        final List<String> installerCommands = new ArrayList<String>();
         if (isWindows()) {
             final Path pathToInstallBat = pathToIdPDist.resolve(Paths.get("bin", "install.bat"));
             Assert.assertTrue(pathToInstallBat.toFile().exists());
@@ -1452,7 +1452,7 @@ public abstract class BaseIntegrationTest {
         replacement.append(serviceDefintiion);
 
         // Add public server addresses if not localhost
-        final Set<String> addresses = new LinkedHashSet();
+        final Set<String> addresses = new LinkedHashSet<String>();
         addresses.add(address);
         addresses.add(secureAddress);
         addresses.add(privateAddress);
@@ -1487,7 +1487,7 @@ public abstract class BaseIntegrationTest {
         replacement.append(requesterRegex);
 
         // Add public server addresses if not localhost
-        final Set<String> addresses = new LinkedHashSet();
+        final Set<String> addresses = new LinkedHashSet<String>();
         addresses.add(address);
         addresses.add(secureAddress);
         addresses.add(privateAddress);

@@ -176,7 +176,7 @@ public class ClientStorageTest extends BaseIntegrationTest {
 
         submitReadForm(DEFAULT_STORAGE_SERIVCE_ID, "context", "key");
 
-        final StorageRecord deserialized = serializer.deserialize("context", "key", getPageSource());
+        final StorageRecord<?> deserialized = serializer.deserialize("context", "key", getPageSource());
 
         Assert.assertEquals(deserialized.getValue(), "value");
         Assert.assertEquals(deserialized.getVersion(), 1);
