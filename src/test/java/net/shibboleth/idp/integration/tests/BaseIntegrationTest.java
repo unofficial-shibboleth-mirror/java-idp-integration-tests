@@ -81,6 +81,7 @@ import org.apache.http.util.EntityUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.ElementNotInteractableException;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
@@ -2244,15 +2245,32 @@ public abstract class BaseIntegrationTest {
      * 
      * Catch {@link ElementNotInteractableException} and click via {@link Actions}.
      * 
+     * If element is still not clicked, try JavaScript.
+     * 
      * @param element element to be clicked
+     * @throws RuntimeException if element is not clicked
      */
-    public void clickWorkaround(final WebElement element) {
+    public void clickWorkaround(final WebElement element) throws RuntimeException {
+        boolean isSelected = element.isSelected();
+        log.trace("ClickWorkaround element '{}' isSelected '{}'", element, element.isSelected());
         try {
             element.click();
         } catch (ElementNotInteractableException e) {
             log.trace("Unable to click element {}, will try again", element);
             final Actions action = new Actions(driver);
             action.moveToElement(element).click().build().perform();
+            log.trace("ClickWorkaround element'{}' isSelected '{}'", element, element.isSelected());
+            // If element is still not clicked, try JavaScript
+            if ((isSelected && element.isSelected()) || (!isSelected && !element.isSelected())) {
+                log.trace("Unable to click element '{}', will try JavaScript", element);
+                final JavascriptExecutor js = (JavascriptExecutor) driver;
+                js.executeScript("arguments[0].click();", element);
+            }
+        }
+        // If element is not clicked, throw runtime exception
+        if ((isSelected && element.isSelected()) || (!isSelected && !element.isSelected())) {
+            log.error("Unable to click element '{}'", element);
+            throw new RuntimeException("Unable to click element " + element);
         }
     }
 
