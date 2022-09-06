@@ -120,7 +120,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>net.shibboleth.shared</groupId>
+            <groupId>net.shibboleth</groupId>
             <artifactId>shib-support</artifactId>
             <scope>test</scope>
         </dependency>
