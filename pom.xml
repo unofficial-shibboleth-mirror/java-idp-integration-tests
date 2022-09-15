@@ -74,13 +74,6 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>org.opensaml</groupId>
-                <artifactId>opensaml-tests-bom</artifactId>
-                <version>${opensaml.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
                 <groupId>net.shibboleth.idp</groupId>
                 <artifactId>idp-bom</artifactId>
                 <version>${idp.version}</version>
